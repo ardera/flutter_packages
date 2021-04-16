@@ -1,6 +1,6 @@
 name: omxplayer_video_player
 description: A package that implements video_player_platform_interface using omxplayer and platform views.
-version: 2.0.0
+version: 2.0.1
 homepage: https://ardera.dev
 repository: https://github.com/ardera/omxplayer_video_player
 
