@@ -152,6 +152,21 @@ class LibCPlatformBackend {
   late final _read_ptr = _lookup<ffi.NativeFunction<Native_read>>('read');
   late final _dart_read _read = _read_ptr.asFunction<_dart_read>();
 
+  int write(
+    int __fd,
+    ffi.Pointer<ffi.Void> __buf,
+    int __n,
+  ) {
+    return _write(
+      __fd,
+      __buf,
+      __n,
+    );
+  }
+
+  late final _write_ptr = _lookup<ffi.NativeFunction<Native_write>>('write');
+  late final _dart_write _write = _write_ptr.asFunction<_dart_write>();
+
   int tcgetpgrp(
     int __fd,
   ) {
@@ -385,6 +400,8 @@ class _SymbolAddresses {
   ffi.Pointer<ffi.NativeFunction<Native_close>> get close =>
       _library._close_ptr;
   ffi.Pointer<ffi.NativeFunction<Native_read>> get read => _library._read_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_write>> get write =>
+      _library._write_ptr;
   ffi.Pointer<ffi.NativeFunction<Native_tcgetpgrp>> get tcgetpgrp =>
       _library._tcgetpgrp_ptr;
   ffi.Pointer<ffi.NativeFunction<Native_tcsetpgrp>> get tcsetpgrp =>
@@ -6595,6 +6612,14 @@ class spi_ioc_transfer extends ffi.Struct {
   external int pad;
 }
 
+const int EPOLL_CLOEXEC = 524288;
+
+const int GPIOLINE_CHANGED_REQUESTED = 1;
+
+const int GPIOLINE_CHANGED_RELEASED = 2;
+
+const int GPIOLINE_CHANGED_CONFIG = 3;
+
 const int TCGETS = 21505;
 
 const int TCSETS = 21506;
@@ -6627,7 +6652,7 @@ const int TCSETXF = 21556;
 
 const int TCSETXW = 21557;
 
-const int EPOLL_CLOEXEC = 524288;
+const int EPOLL_CLOEXEC_1 = 524288;
 
 const int EPOLLIN = 1;
 
@@ -7451,6 +7476,18 @@ typedef _dart_read = int Function(
   int __fd,
   ffi.Pointer<ffi.Void> __buf,
   int __nbytes,
+);
+
+typedef Native_write = ffi.Int64 Function(
+  ffi.Int32 __fd,
+  ffi.Pointer<ffi.Void> __buf,
+  ffi.Uint64 __n,
+);
+
+typedef _dart_write = int Function(
+  int __fd,
+  ffi.Pointer<ffi.Void> __buf,
+  int __n,
 );
 
 typedef Native_tcgetpgrp = ffi.Int32 Function(

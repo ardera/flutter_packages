@@ -3,13 +3,13 @@
   "packages": [
     {
       "name": "_fe_analyzer_shared",
-      "rootUri": "file:///C:/Users/hanne/AppData/Local/Pub/Cache/hosted/pub.dartlang.org/_fe_analyzer_shared-19.0.0",
+      "rootUri": "file:///C:/Users/hanne/AppData/Local/Pub/Cache/hosted/pub.dartlang.org/_fe_analyzer_shared-20.0.0",
       "packageUri": "lib/",
       "languageVersion": "2.12"
     },
     {
       "name": "analyzer",
-      "rootUri": "file:///C:/Users/hanne/AppData/Local/Pub/Cache/hosted/pub.dartlang.org/analyzer-1.3.0",
+      "rootUri": "file:///C:/Users/hanne/AppData/Local/Pub/Cache/hosted/pub.dartlang.org/analyzer-1.4.0",
       "packageUri": "lib/",
       "languageVersion": "2.12"
     },
@@ -171,7 +171,7 @@
     },
     {
       "name": "quiver",
-      "rootUri": "file:///C:/Users/hanne/AppData/Local/Pub/Cache/hosted/pub.dartlang.org/quiver-3.0.0",
+      "rootUri": "file:///C:/Users/hanne/AppData/Local/Pub/Cache/hosted/pub.dartlang.org/quiver-3.0.1",
       "packageUri": "lib/",
       "languageVersion": "2.12"
     },
@@ -242,7 +242,7 @@
       "languageVersion": "2.12"
     }
   ],
-  "generated": "2021-04-16T22:49:16.138384Z",
+  "generated": "2021-04-16T23:04:04.235823Z",
   "generator": "pub",
   "generatorVersion": "2.12.2"
 }

@@ -423,7 +423,7 @@ class SpiTransferExecutor {
     final errorPort = ReceivePort()..listen(executor._onIsolateRuntimeError);
     final exitPort = ReceivePort()..listen(executor._onIsolateFinished);
 
-    final isolateFuture = Isolate.spawn(
+    Isolate.spawn(
       spiTransferExecutorEntry,
       Tuple2(
         fd,
@@ -431,9 +431,10 @@ class SpiTransferExecutor {
       ),
       onError: errorPort.sendPort,
       onExit: exitPort.sendPort,
-    ).catchError(executor._onIsolateSpawnError);
-
-    isolateCompleter.complete(isolateFuture);
+    ).then(
+      (value) => isolateCompleter.complete(value),
+      onError: executor._onIsolateSpawnError,
+    );
 
     return executor;
   }

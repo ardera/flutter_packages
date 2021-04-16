@@ -924,7 +924,6 @@ class SerialPortHandle implements StringSink, StringReader {
 
   @override
   Future<List<int>> readBytes(int numBytes) {
-    assert(numBytes != null);
     assert(numBytes >= 0);
 
     if (numBytes == 0) {

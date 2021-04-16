@@ -1,7 +1,7 @@
 targets:
   $default:
     builders:
-      bindings_generator|libc_platform_binding_gen:
+      libc_bindings_generator|libc_platform_binding_gen:
         generate_for:
           - lib/src/libc_arm.dart
           - lib/src/libc_arm64.dart

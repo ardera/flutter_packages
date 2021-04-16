@@ -14,13 +14,17 @@ import 'dart:ffi' as ffi;
 /// libc backend for arm
 class LibCPlatformBackend {
   /// Holds the symbol lookup function.
-  final ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName) _lookup;
+  final ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
+      _lookup;
 
   /// The symbols are looked up in [dynamicLibrary].
-  LibCPlatformBackend(ffi.DynamicLibrary dynamicLibrary) : _lookup = dynamicLibrary.lookup;
+  LibCPlatformBackend(ffi.DynamicLibrary dynamicLibrary)
+      : _lookup = dynamicLibrary.lookup;
 
   /// The symbols are looked up with [lookup].
-  LibCPlatformBackend.fromLookup(ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName) lookup)
+  LibCPlatformBackend.fromLookup(
+      ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
+          lookup)
       : _lookup = lookup;
 
   int ioctl(
@@ -44,8 +48,10 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _epoll_create_ptr = _lookup<ffi.NativeFunction<Native_epoll_create>>('epoll_create');
-  late final _dart_epoll_create _epoll_create = _epoll_create_ptr.asFunction<_dart_epoll_create>();
+  late final _epoll_create_ptr =
+      _lookup<ffi.NativeFunction<Native_epoll_create>>('epoll_create');
+  late final _dart_epoll_create _epoll_create =
+      _epoll_create_ptr.asFunction<_dart_epoll_create>();
 
   int epoll_create1(
     int __flags,
@@ -55,8 +61,10 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _epoll_create1_ptr = _lookup<ffi.NativeFunction<Native_epoll_create1>>('epoll_create1');
-  late final _dart_epoll_create1 _epoll_create1 = _epoll_create1_ptr.asFunction<_dart_epoll_create1>();
+  late final _epoll_create1_ptr =
+      _lookup<ffi.NativeFunction<Native_epoll_create1>>('epoll_create1');
+  late final _dart_epoll_create1 _epoll_create1 =
+      _epoll_create1_ptr.asFunction<_dart_epoll_create1>();
 
   int epoll_ctl(
     int __epfd,
@@ -72,8 +80,10 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _epoll_ctl_ptr = _lookup<ffi.NativeFunction<Native_epoll_ctl>>('epoll_ctl');
-  late final _dart_epoll_ctl _epoll_ctl = _epoll_ctl_ptr.asFunction<_dart_epoll_ctl>();
+  late final _epoll_ctl_ptr =
+      _lookup<ffi.NativeFunction<Native_epoll_ctl>>('epoll_ctl');
+  late final _dart_epoll_ctl _epoll_ctl =
+      _epoll_ctl_ptr.asFunction<_dart_epoll_ctl>();
 
   int epoll_wait(
     int __epfd,
@@ -89,15 +99,32 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _epoll_wait_ptr = _lookup<ffi.NativeFunction<Native_epoll_wait>>('epoll_wait');
-  late final _dart_epoll_wait _epoll_wait = _epoll_wait_ptr.asFunction<_dart_epoll_wait>();
+  late final _epoll_wait_ptr =
+      _lookup<ffi.NativeFunction<Native_epoll_wait>>('epoll_wait');
+  late final _dart_epoll_wait _epoll_wait =
+      _epoll_wait_ptr.asFunction<_dart_epoll_wait>();
 
   ffi.Pointer<ffi.Int32> errno_location() {
     return _errno_location();
   }
 
-  late final _errno_location_ptr = _lookup<ffi.NativeFunction<Native_errno_location>>('__errno_location');
-  late final _dart_errno_location _errno_location = _errno_location_ptr.asFunction<_dart_errno_location>();
+  late final _errno_location_ptr =
+      _lookup<ffi.NativeFunction<Native_errno_location>>('__errno_location');
+  late final _dart_errno_location _errno_location =
+      _errno_location_ptr.asFunction<_dart_errno_location>();
+
+  int open(
+    ffi.Pointer<ffi.Uint8> __file,
+    int __oflag,
+  ) {
+    return _open(
+      __file,
+      __oflag,
+    );
+  }
+
+  late final _open_ptr = _lookup<ffi.NativeFunction<Native_open>>('open');
+  late final _dart_open _open = _open_ptr.asFunction<_dart_open>();
 
   int close(
     int __fd,
@@ -125,6 +152,21 @@ class LibCPlatformBackend {
   late final _read_ptr = _lookup<ffi.NativeFunction<Native_read>>('read');
   late final _dart_read _read = _read_ptr.asFunction<_dart_read>();
 
+  int write(
+    int __fd,
+    ffi.Pointer<ffi.Void> __buf,
+    int __n,
+  ) {
+    return _write(
+      __fd,
+      __buf,
+      __n,
+    );
+  }
+
+  late final _write_ptr = _lookup<ffi.NativeFunction<Native_write>>('write');
+  late final _dart_write _write = _write_ptr.asFunction<_dart_write>();
+
   int tcgetpgrp(
     int __fd,
   ) {
@@ -133,8 +175,10 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _tcgetpgrp_ptr = _lookup<ffi.NativeFunction<Native_tcgetpgrp>>('tcgetpgrp');
-  late final _dart_tcgetpgrp _tcgetpgrp = _tcgetpgrp_ptr.asFunction<_dart_tcgetpgrp>();
+  late final _tcgetpgrp_ptr =
+      _lookup<ffi.NativeFunction<Native_tcgetpgrp>>('tcgetpgrp');
+  late final _dart_tcgetpgrp _tcgetpgrp =
+      _tcgetpgrp_ptr.asFunction<_dart_tcgetpgrp>();
 
   int tcsetpgrp(
     int __fd,
@@ -146,8 +190,10 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _tcsetpgrp_ptr = _lookup<ffi.NativeFunction<Native_tcsetpgrp>>('tcsetpgrp');
-  late final _dart_tcsetpgrp _tcsetpgrp = _tcsetpgrp_ptr.asFunction<_dart_tcsetpgrp>();
+  late final _tcsetpgrp_ptr =
+      _lookup<ffi.NativeFunction<Native_tcsetpgrp>>('tcsetpgrp');
+  late final _dart_tcsetpgrp _tcsetpgrp =
+      _tcsetpgrp_ptr.asFunction<_dart_tcsetpgrp>();
 
   int cfgetospeed(
     ffi.Pointer<termios> __termios_p,
@@ -157,8 +203,10 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _cfgetospeed_ptr = _lookup<ffi.NativeFunction<Native_cfgetospeed>>('cfgetospeed');
-  late final _dart_cfgetospeed _cfgetospeed = _cfgetospeed_ptr.asFunction<_dart_cfgetospeed>();
+  late final _cfgetospeed_ptr =
+      _lookup<ffi.NativeFunction<Native_cfgetospeed>>('cfgetospeed');
+  late final _dart_cfgetospeed _cfgetospeed =
+      _cfgetospeed_ptr.asFunction<_dart_cfgetospeed>();
 
   int cfgetispeed(
     ffi.Pointer<termios> __termios_p,
@@ -168,8 +216,10 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _cfgetispeed_ptr = _lookup<ffi.NativeFunction<Native_cfgetispeed>>('cfgetispeed');
-  late final _dart_cfgetispeed _cfgetispeed = _cfgetispeed_ptr.asFunction<_dart_cfgetispeed>();
+  late final _cfgetispeed_ptr =
+      _lookup<ffi.NativeFunction<Native_cfgetispeed>>('cfgetispeed');
+  late final _dart_cfgetispeed _cfgetispeed =
+      _cfgetispeed_ptr.asFunction<_dart_cfgetispeed>();
 
   int cfsetospeed(
     ffi.Pointer<termios> __termios_p,
@@ -181,8 +231,10 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _cfsetospeed_ptr = _lookup<ffi.NativeFunction<Native_cfsetospeed>>('cfsetospeed');
-  late final _dart_cfsetospeed _cfsetospeed = _cfsetospeed_ptr.asFunction<_dart_cfsetospeed>();
+  late final _cfsetospeed_ptr =
+      _lookup<ffi.NativeFunction<Native_cfsetospeed>>('cfsetospeed');
+  late final _dart_cfsetospeed _cfsetospeed =
+      _cfsetospeed_ptr.asFunction<_dart_cfsetospeed>();
 
   int cfsetispeed(
     ffi.Pointer<termios> __termios_p,
@@ -194,8 +246,10 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _cfsetispeed_ptr = _lookup<ffi.NativeFunction<Native_cfsetispeed>>('cfsetispeed');
-  late final _dart_cfsetispeed _cfsetispeed = _cfsetispeed_ptr.asFunction<_dart_cfsetispeed>();
+  late final _cfsetispeed_ptr =
+      _lookup<ffi.NativeFunction<Native_cfsetispeed>>('cfsetispeed');
+  late final _dart_cfsetispeed _cfsetispeed =
+      _cfsetispeed_ptr.asFunction<_dart_cfsetispeed>();
 
   int cfsetspeed(
     ffi.Pointer<termios> __termios_p,
@@ -207,8 +261,10 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _cfsetspeed_ptr = _lookup<ffi.NativeFunction<Native_cfsetspeed>>('cfsetspeed');
-  late final _dart_cfsetspeed _cfsetspeed = _cfsetspeed_ptr.asFunction<_dart_cfsetspeed>();
+  late final _cfsetspeed_ptr =
+      _lookup<ffi.NativeFunction<Native_cfsetspeed>>('cfsetspeed');
+  late final _dart_cfsetspeed _cfsetspeed =
+      _cfsetspeed_ptr.asFunction<_dart_cfsetspeed>();
 
   int tcgetattr(
     int __fd,
@@ -220,8 +276,10 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _tcgetattr_ptr = _lookup<ffi.NativeFunction<Native_tcgetattr>>('tcgetattr');
-  late final _dart_tcgetattr _tcgetattr = _tcgetattr_ptr.asFunction<_dart_tcgetattr>();
+  late final _tcgetattr_ptr =
+      _lookup<ffi.NativeFunction<Native_tcgetattr>>('tcgetattr');
+  late final _dart_tcgetattr _tcgetattr =
+      _tcgetattr_ptr.asFunction<_dart_tcgetattr>();
 
   int tcsetattr(
     int __fd,
@@ -235,8 +293,10 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _tcsetattr_ptr = _lookup<ffi.NativeFunction<Native_tcsetattr>>('tcsetattr');
-  late final _dart_tcsetattr _tcsetattr = _tcsetattr_ptr.asFunction<_dart_tcsetattr>();
+  late final _tcsetattr_ptr =
+      _lookup<ffi.NativeFunction<Native_tcsetattr>>('tcsetattr');
+  late final _dart_tcsetattr _tcsetattr =
+      _tcsetattr_ptr.asFunction<_dart_tcsetattr>();
 
   void cfmakeraw(
     ffi.Pointer<termios> __termios_p,
@@ -246,8 +306,10 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _cfmakeraw_ptr = _lookup<ffi.NativeFunction<Native_cfmakeraw>>('cfmakeraw');
-  late final _dart_cfmakeraw _cfmakeraw = _cfmakeraw_ptr.asFunction<_dart_cfmakeraw>();
+  late final _cfmakeraw_ptr =
+      _lookup<ffi.NativeFunction<Native_cfmakeraw>>('cfmakeraw');
+  late final _dart_cfmakeraw _cfmakeraw =
+      _cfmakeraw_ptr.asFunction<_dart_cfmakeraw>();
 
   int tcsendbreak(
     int __fd,
@@ -259,8 +321,10 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _tcsendbreak_ptr = _lookup<ffi.NativeFunction<Native_tcsendbreak>>('tcsendbreak');
-  late final _dart_tcsendbreak _tcsendbreak = _tcsendbreak_ptr.asFunction<_dart_tcsendbreak>();
+  late final _tcsendbreak_ptr =
+      _lookup<ffi.NativeFunction<Native_tcsendbreak>>('tcsendbreak');
+  late final _dart_tcsendbreak _tcsendbreak =
+      _tcsendbreak_ptr.asFunction<_dart_tcsendbreak>();
 
   int tcdrain(
     int __fd,
@@ -270,7 +334,8 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _tcdrain_ptr = _lookup<ffi.NativeFunction<Native_tcdrain>>('tcdrain');
+  late final _tcdrain_ptr =
+      _lookup<ffi.NativeFunction<Native_tcdrain>>('tcdrain');
   late final _dart_tcdrain _tcdrain = _tcdrain_ptr.asFunction<_dart_tcdrain>();
 
   int tcflush(
@@ -283,7 +348,8 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _tcflush_ptr = _lookup<ffi.NativeFunction<Native_tcflush>>('tcflush');
+  late final _tcflush_ptr =
+      _lookup<ffi.NativeFunction<Native_tcflush>>('tcflush');
   late final _dart_tcflush _tcflush = _tcflush_ptr.asFunction<_dart_tcflush>();
 
   int tcflow(
@@ -307,8 +373,10 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _tcgetsid_ptr = _lookup<ffi.NativeFunction<Native_tcgetsid>>('tcgetsid');
-  late final _dart_tcgetsid _tcgetsid = _tcgetsid_ptr.asFunction<_dart_tcgetsid>();
+  late final _tcgetsid_ptr =
+      _lookup<ffi.NativeFunction<Native_tcgetsid>>('tcgetsid');
+  late final _dart_tcgetsid _tcgetsid =
+      _tcgetsid_ptr.asFunction<_dart_tcgetsid>();
 
   late final addresses = _SymbolAddresses(this);
 }
@@ -316,29 +384,54 @@ class LibCPlatformBackend {
 class _SymbolAddresses {
   final LibCPlatformBackend _library;
   _SymbolAddresses(this._library);
-  ffi.Pointer<ffi.NativeFunction<Native_ioctl>> get ioctl => _library._ioctl_ptr;
-  ffi.Pointer<ffi.NativeFunction<Native_epoll_create>> get epoll_create => _library._epoll_create_ptr;
-  ffi.Pointer<ffi.NativeFunction<Native_epoll_create1>> get epoll_create1 => _library._epoll_create1_ptr;
-  ffi.Pointer<ffi.NativeFunction<Native_epoll_ctl>> get epoll_ctl => _library._epoll_ctl_ptr;
-  ffi.Pointer<ffi.NativeFunction<Native_epoll_wait>> get epoll_wait => _library._epoll_wait_ptr;
-  ffi.Pointer<ffi.NativeFunction<Native_errno_location>> get errno_location => _library._errno_location_ptr;
-  ffi.Pointer<ffi.NativeFunction<Native_close>> get close => _library._close_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_ioctl>> get ioctl =>
+      _library._ioctl_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_epoll_create>> get epoll_create =>
+      _library._epoll_create_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_epoll_create1>> get epoll_create1 =>
+      _library._epoll_create1_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_epoll_ctl>> get epoll_ctl =>
+      _library._epoll_ctl_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_epoll_wait>> get epoll_wait =>
+      _library._epoll_wait_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_errno_location>> get errno_location =>
+      _library._errno_location_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_open>> get open => _library._open_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_close>> get close =>
+      _library._close_ptr;
   ffi.Pointer<ffi.NativeFunction<Native_read>> get read => _library._read_ptr;
-  ffi.Pointer<ffi.NativeFunction<Native_tcgetpgrp>> get tcgetpgrp => _library._tcgetpgrp_ptr;
-  ffi.Pointer<ffi.NativeFunction<Native_tcsetpgrp>> get tcsetpgrp => _library._tcsetpgrp_ptr;
-  ffi.Pointer<ffi.NativeFunction<Native_cfgetospeed>> get cfgetospeed => _library._cfgetospeed_ptr;
-  ffi.Pointer<ffi.NativeFunction<Native_cfgetispeed>> get cfgetispeed => _library._cfgetispeed_ptr;
-  ffi.Pointer<ffi.NativeFunction<Native_cfsetospeed>> get cfsetospeed => _library._cfsetospeed_ptr;
-  ffi.Pointer<ffi.NativeFunction<Native_cfsetispeed>> get cfsetispeed => _library._cfsetispeed_ptr;
-  ffi.Pointer<ffi.NativeFunction<Native_cfsetspeed>> get cfsetspeed => _library._cfsetspeed_ptr;
-  ffi.Pointer<ffi.NativeFunction<Native_tcgetattr>> get tcgetattr => _library._tcgetattr_ptr;
-  ffi.Pointer<ffi.NativeFunction<Native_tcsetattr>> get tcsetattr => _library._tcsetattr_ptr;
-  ffi.Pointer<ffi.NativeFunction<Native_cfmakeraw>> get cfmakeraw => _library._cfmakeraw_ptr;
-  ffi.Pointer<ffi.NativeFunction<Native_tcsendbreak>> get tcsendbreak => _library._tcsendbreak_ptr;
-  ffi.Pointer<ffi.NativeFunction<Native_tcdrain>> get tcdrain => _library._tcdrain_ptr;
-  ffi.Pointer<ffi.NativeFunction<Native_tcflush>> get tcflush => _library._tcflush_ptr;
-  ffi.Pointer<ffi.NativeFunction<Native_tcflow>> get tcflow => _library._tcflow_ptr;
-  ffi.Pointer<ffi.NativeFunction<Native_tcgetsid>> get tcgetsid => _library._tcgetsid_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_write>> get write =>
+      _library._write_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_tcgetpgrp>> get tcgetpgrp =>
+      _library._tcgetpgrp_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_tcsetpgrp>> get tcsetpgrp =>
+      _library._tcsetpgrp_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_cfgetospeed>> get cfgetospeed =>
+      _library._cfgetospeed_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_cfgetispeed>> get cfgetispeed =>
+      _library._cfgetispeed_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_cfsetospeed>> get cfsetospeed =>
+      _library._cfsetospeed_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_cfsetispeed>> get cfsetispeed =>
+      _library._cfsetispeed_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_cfsetspeed>> get cfsetspeed =>
+      _library._cfsetspeed_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_tcgetattr>> get tcgetattr =>
+      _library._tcgetattr_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_tcsetattr>> get tcsetattr =>
+      _library._tcsetattr_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_cfmakeraw>> get cfmakeraw =>
+      _library._cfmakeraw_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_tcsendbreak>> get tcsendbreak =>
+      _library._tcsendbreak_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_tcdrain>> get tcdrain =>
+      _library._tcdrain_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_tcflush>> get tcflush =>
+      _library._tcflush_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_tcflow>> get tcflow =>
+      _library._tcflow_ptr;
+  ffi.Pointer<ffi.NativeFunction<Native_tcgetsid>> get tcgetsid =>
+      _library._tcgetsid_ptr;
 }
 
 abstract class EPOLL_EVENTS {
@@ -443,7 +536,8 @@ class termios extends ffi.Struct {
   external int _unique_c_cc_item_31;
 
   /// Helper for array `c_cc`.
-  ArrayHelper_termios_c_cc_level0 get c_cc => ArrayHelper_termios_c_cc_level0(this, [32], 0, 0);
+  ArrayHelper_termios_c_cc_level0 get c_cc =>
+      ArrayHelper_termios_c_cc_level0(this, [32], 0, 0);
   @ffi.Uint32()
   external int c_ispeed;
 
@@ -458,10 +552,12 @@ class ArrayHelper_termios_c_cc_level0 {
   final int level;
   final int _absoluteIndex;
   int get length => dimensions[level];
-  ArrayHelper_termios_c_cc_level0(this._struct, this.dimensions, this.level, this._absoluteIndex);
+  ArrayHelper_termios_c_cc_level0(
+      this._struct, this.dimensions, this.level, this._absoluteIndex);
   void _checkBounds(int index) {
     if (index >= length || index < 0) {
-      throw RangeError('Dimension $level: index not in range 0..$length exclusive.');
+      throw RangeError(
+          'Dimension $level: index not in range 0..$length exclusive.');
     }
   }
 
@@ -647,7 +743,532 @@ class ArrayHelper_termios_c_cc_level0 {
 /// @label: a functional name for this GPIO chip, such as a product
 /// number, may be empty (i.e. label[0] == '\0')
 /// @lines: number of GPIO lines on this chip
-class gpiochip_info extends ffi.Opaque {}
+class gpiochip_info extends ffi.Struct {
+  @ffi.Uint8()
+  external int _unique_name_item_0;
+  @ffi.Uint8()
+  external int _unique_name_item_1;
+  @ffi.Uint8()
+  external int _unique_name_item_2;
+  @ffi.Uint8()
+  external int _unique_name_item_3;
+  @ffi.Uint8()
+  external int _unique_name_item_4;
+  @ffi.Uint8()
+  external int _unique_name_item_5;
+  @ffi.Uint8()
+  external int _unique_name_item_6;
+  @ffi.Uint8()
+  external int _unique_name_item_7;
+  @ffi.Uint8()
+  external int _unique_name_item_8;
+  @ffi.Uint8()
+  external int _unique_name_item_9;
+  @ffi.Uint8()
+  external int _unique_name_item_10;
+  @ffi.Uint8()
+  external int _unique_name_item_11;
+  @ffi.Uint8()
+  external int _unique_name_item_12;
+  @ffi.Uint8()
+  external int _unique_name_item_13;
+  @ffi.Uint8()
+  external int _unique_name_item_14;
+  @ffi.Uint8()
+  external int _unique_name_item_15;
+  @ffi.Uint8()
+  external int _unique_name_item_16;
+  @ffi.Uint8()
+  external int _unique_name_item_17;
+  @ffi.Uint8()
+  external int _unique_name_item_18;
+  @ffi.Uint8()
+  external int _unique_name_item_19;
+  @ffi.Uint8()
+  external int _unique_name_item_20;
+  @ffi.Uint8()
+  external int _unique_name_item_21;
+  @ffi.Uint8()
+  external int _unique_name_item_22;
+  @ffi.Uint8()
+  external int _unique_name_item_23;
+  @ffi.Uint8()
+  external int _unique_name_item_24;
+  @ffi.Uint8()
+  external int _unique_name_item_25;
+  @ffi.Uint8()
+  external int _unique_name_item_26;
+  @ffi.Uint8()
+  external int _unique_name_item_27;
+  @ffi.Uint8()
+  external int _unique_name_item_28;
+  @ffi.Uint8()
+  external int _unique_name_item_29;
+  @ffi.Uint8()
+  external int _unique_name_item_30;
+  @ffi.Uint8()
+  external int _unique_name_item_31;
+
+  /// Helper for array `name`.
+  ArrayHelper_gpiochip_info_name_level0 get name =>
+      ArrayHelper_gpiochip_info_name_level0(this, [32], 0, 0);
+  @ffi.Uint8()
+  external int _unique_label_item_0;
+  @ffi.Uint8()
+  external int _unique_label_item_1;
+  @ffi.Uint8()
+  external int _unique_label_item_2;
+  @ffi.Uint8()
+  external int _unique_label_item_3;
+  @ffi.Uint8()
+  external int _unique_label_item_4;
+  @ffi.Uint8()
+  external int _unique_label_item_5;
+  @ffi.Uint8()
+  external int _unique_label_item_6;
+  @ffi.Uint8()
+  external int _unique_label_item_7;
+  @ffi.Uint8()
+  external int _unique_label_item_8;
+  @ffi.Uint8()
+  external int _unique_label_item_9;
+  @ffi.Uint8()
+  external int _unique_label_item_10;
+  @ffi.Uint8()
+  external int _unique_label_item_11;
+  @ffi.Uint8()
+  external int _unique_label_item_12;
+  @ffi.Uint8()
+  external int _unique_label_item_13;
+  @ffi.Uint8()
+  external int _unique_label_item_14;
+  @ffi.Uint8()
+  external int _unique_label_item_15;
+  @ffi.Uint8()
+  external int _unique_label_item_16;
+  @ffi.Uint8()
+  external int _unique_label_item_17;
+  @ffi.Uint8()
+  external int _unique_label_item_18;
+  @ffi.Uint8()
+  external int _unique_label_item_19;
+  @ffi.Uint8()
+  external int _unique_label_item_20;
+  @ffi.Uint8()
+  external int _unique_label_item_21;
+  @ffi.Uint8()
+  external int _unique_label_item_22;
+  @ffi.Uint8()
+  external int _unique_label_item_23;
+  @ffi.Uint8()
+  external int _unique_label_item_24;
+  @ffi.Uint8()
+  external int _unique_label_item_25;
+  @ffi.Uint8()
+  external int _unique_label_item_26;
+  @ffi.Uint8()
+  external int _unique_label_item_27;
+  @ffi.Uint8()
+  external int _unique_label_item_28;
+  @ffi.Uint8()
+  external int _unique_label_item_29;
+  @ffi.Uint8()
+  external int _unique_label_item_30;
+  @ffi.Uint8()
+  external int _unique_label_item_31;
+
+  /// Helper for array `label`.
+  ArrayHelper_gpiochip_info_label_level0 get label =>
+      ArrayHelper_gpiochip_info_label_level0(this, [32], 0, 0);
+  @ffi.Uint32()
+  external int lines;
+}
+
+/// Helper for array `name` in struct `gpiochip_info`.
+class ArrayHelper_gpiochip_info_name_level0 {
+  final gpiochip_info _struct;
+  final List<int> dimensions;
+  final int level;
+  final int _absoluteIndex;
+  int get length => dimensions[level];
+  ArrayHelper_gpiochip_info_name_level0(
+      this._struct, this.dimensions, this.level, this._absoluteIndex);
+  void _checkBounds(int index) {
+    if (index >= length || index < 0) {
+      throw RangeError(
+          'Dimension $level: index not in range 0..$length exclusive.');
+    }
+  }
+
+  int operator [](int index) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        return _struct._unique_name_item_0;
+      case 1:
+        return _struct._unique_name_item_1;
+      case 2:
+        return _struct._unique_name_item_2;
+      case 3:
+        return _struct._unique_name_item_3;
+      case 4:
+        return _struct._unique_name_item_4;
+      case 5:
+        return _struct._unique_name_item_5;
+      case 6:
+        return _struct._unique_name_item_6;
+      case 7:
+        return _struct._unique_name_item_7;
+      case 8:
+        return _struct._unique_name_item_8;
+      case 9:
+        return _struct._unique_name_item_9;
+      case 10:
+        return _struct._unique_name_item_10;
+      case 11:
+        return _struct._unique_name_item_11;
+      case 12:
+        return _struct._unique_name_item_12;
+      case 13:
+        return _struct._unique_name_item_13;
+      case 14:
+        return _struct._unique_name_item_14;
+      case 15:
+        return _struct._unique_name_item_15;
+      case 16:
+        return _struct._unique_name_item_16;
+      case 17:
+        return _struct._unique_name_item_17;
+      case 18:
+        return _struct._unique_name_item_18;
+      case 19:
+        return _struct._unique_name_item_19;
+      case 20:
+        return _struct._unique_name_item_20;
+      case 21:
+        return _struct._unique_name_item_21;
+      case 22:
+        return _struct._unique_name_item_22;
+      case 23:
+        return _struct._unique_name_item_23;
+      case 24:
+        return _struct._unique_name_item_24;
+      case 25:
+        return _struct._unique_name_item_25;
+      case 26:
+        return _struct._unique_name_item_26;
+      case 27:
+        return _struct._unique_name_item_27;
+      case 28:
+        return _struct._unique_name_item_28;
+      case 29:
+        return _struct._unique_name_item_29;
+      case 30:
+        return _struct._unique_name_item_30;
+      case 31:
+        return _struct._unique_name_item_31;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+
+  void operator []=(int index, int value) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        _struct._unique_name_item_0 = value;
+        break;
+      case 1:
+        _struct._unique_name_item_1 = value;
+        break;
+      case 2:
+        _struct._unique_name_item_2 = value;
+        break;
+      case 3:
+        _struct._unique_name_item_3 = value;
+        break;
+      case 4:
+        _struct._unique_name_item_4 = value;
+        break;
+      case 5:
+        _struct._unique_name_item_5 = value;
+        break;
+      case 6:
+        _struct._unique_name_item_6 = value;
+        break;
+      case 7:
+        _struct._unique_name_item_7 = value;
+        break;
+      case 8:
+        _struct._unique_name_item_8 = value;
+        break;
+      case 9:
+        _struct._unique_name_item_9 = value;
+        break;
+      case 10:
+        _struct._unique_name_item_10 = value;
+        break;
+      case 11:
+        _struct._unique_name_item_11 = value;
+        break;
+      case 12:
+        _struct._unique_name_item_12 = value;
+        break;
+      case 13:
+        _struct._unique_name_item_13 = value;
+        break;
+      case 14:
+        _struct._unique_name_item_14 = value;
+        break;
+      case 15:
+        _struct._unique_name_item_15 = value;
+        break;
+      case 16:
+        _struct._unique_name_item_16 = value;
+        break;
+      case 17:
+        _struct._unique_name_item_17 = value;
+        break;
+      case 18:
+        _struct._unique_name_item_18 = value;
+        break;
+      case 19:
+        _struct._unique_name_item_19 = value;
+        break;
+      case 20:
+        _struct._unique_name_item_20 = value;
+        break;
+      case 21:
+        _struct._unique_name_item_21 = value;
+        break;
+      case 22:
+        _struct._unique_name_item_22 = value;
+        break;
+      case 23:
+        _struct._unique_name_item_23 = value;
+        break;
+      case 24:
+        _struct._unique_name_item_24 = value;
+        break;
+      case 25:
+        _struct._unique_name_item_25 = value;
+        break;
+      case 26:
+        _struct._unique_name_item_26 = value;
+        break;
+      case 27:
+        _struct._unique_name_item_27 = value;
+        break;
+      case 28:
+        _struct._unique_name_item_28 = value;
+        break;
+      case 29:
+        _struct._unique_name_item_29 = value;
+        break;
+      case 30:
+        _struct._unique_name_item_30 = value;
+        break;
+      case 31:
+        _struct._unique_name_item_31 = value;
+        break;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+}
+
+/// Helper for array `label` in struct `gpiochip_info`.
+class ArrayHelper_gpiochip_info_label_level0 {
+  final gpiochip_info _struct;
+  final List<int> dimensions;
+  final int level;
+  final int _absoluteIndex;
+  int get length => dimensions[level];
+  ArrayHelper_gpiochip_info_label_level0(
+      this._struct, this.dimensions, this.level, this._absoluteIndex);
+  void _checkBounds(int index) {
+    if (index >= length || index < 0) {
+      throw RangeError(
+          'Dimension $level: index not in range 0..$length exclusive.');
+    }
+  }
+
+  int operator [](int index) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        return _struct._unique_label_item_0;
+      case 1:
+        return _struct._unique_label_item_1;
+      case 2:
+        return _struct._unique_label_item_2;
+      case 3:
+        return _struct._unique_label_item_3;
+      case 4:
+        return _struct._unique_label_item_4;
+      case 5:
+        return _struct._unique_label_item_5;
+      case 6:
+        return _struct._unique_label_item_6;
+      case 7:
+        return _struct._unique_label_item_7;
+      case 8:
+        return _struct._unique_label_item_8;
+      case 9:
+        return _struct._unique_label_item_9;
+      case 10:
+        return _struct._unique_label_item_10;
+      case 11:
+        return _struct._unique_label_item_11;
+      case 12:
+        return _struct._unique_label_item_12;
+      case 13:
+        return _struct._unique_label_item_13;
+      case 14:
+        return _struct._unique_label_item_14;
+      case 15:
+        return _struct._unique_label_item_15;
+      case 16:
+        return _struct._unique_label_item_16;
+      case 17:
+        return _struct._unique_label_item_17;
+      case 18:
+        return _struct._unique_label_item_18;
+      case 19:
+        return _struct._unique_label_item_19;
+      case 20:
+        return _struct._unique_label_item_20;
+      case 21:
+        return _struct._unique_label_item_21;
+      case 22:
+        return _struct._unique_label_item_22;
+      case 23:
+        return _struct._unique_label_item_23;
+      case 24:
+        return _struct._unique_label_item_24;
+      case 25:
+        return _struct._unique_label_item_25;
+      case 26:
+        return _struct._unique_label_item_26;
+      case 27:
+        return _struct._unique_label_item_27;
+      case 28:
+        return _struct._unique_label_item_28;
+      case 29:
+        return _struct._unique_label_item_29;
+      case 30:
+        return _struct._unique_label_item_30;
+      case 31:
+        return _struct._unique_label_item_31;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+
+  void operator []=(int index, int value) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        _struct._unique_label_item_0 = value;
+        break;
+      case 1:
+        _struct._unique_label_item_1 = value;
+        break;
+      case 2:
+        _struct._unique_label_item_2 = value;
+        break;
+      case 3:
+        _struct._unique_label_item_3 = value;
+        break;
+      case 4:
+        _struct._unique_label_item_4 = value;
+        break;
+      case 5:
+        _struct._unique_label_item_5 = value;
+        break;
+      case 6:
+        _struct._unique_label_item_6 = value;
+        break;
+      case 7:
+        _struct._unique_label_item_7 = value;
+        break;
+      case 8:
+        _struct._unique_label_item_8 = value;
+        break;
+      case 9:
+        _struct._unique_label_item_9 = value;
+        break;
+      case 10:
+        _struct._unique_label_item_10 = value;
+        break;
+      case 11:
+        _struct._unique_label_item_11 = value;
+        break;
+      case 12:
+        _struct._unique_label_item_12 = value;
+        break;
+      case 13:
+        _struct._unique_label_item_13 = value;
+        break;
+      case 14:
+        _struct._unique_label_item_14 = value;
+        break;
+      case 15:
+        _struct._unique_label_item_15 = value;
+        break;
+      case 16:
+        _struct._unique_label_item_16 = value;
+        break;
+      case 17:
+        _struct._unique_label_item_17 = value;
+        break;
+      case 18:
+        _struct._unique_label_item_18 = value;
+        break;
+      case 19:
+        _struct._unique_label_item_19 = value;
+        break;
+      case 20:
+        _struct._unique_label_item_20 = value;
+        break;
+      case 21:
+        _struct._unique_label_item_21 = value;
+        break;
+      case 22:
+        _struct._unique_label_item_22 = value;
+        break;
+      case 23:
+        _struct._unique_label_item_23 = value;
+        break;
+      case 24:
+        _struct._unique_label_item_24 = value;
+        break;
+      case 25:
+        _struct._unique_label_item_25 = value;
+        break;
+      case 26:
+        _struct._unique_label_item_26 = value;
+        break;
+      case 27:
+        _struct._unique_label_item_27 = value;
+        break;
+      case 28:
+        _struct._unique_label_item_28 = value;
+        break;
+      case 29:
+        _struct._unique_label_item_29 = value;
+        break;
+      case 30:
+        _struct._unique_label_item_30 = value;
+        break;
+      case 31:
+        _struct._unique_label_item_31 = value;
+        break;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+}
 
 /// struct gpio_v2_line_values - Values of GPIO lines
 /// @bits: a bitmap containing the value of the lines, set to 1 for active
@@ -754,10 +1375,12 @@ class ArrayHelper_gpio_v2_line_config_padding_level0 {
   final int level;
   final int _absoluteIndex;
   int get length => dimensions[level];
-  ArrayHelper_gpio_v2_line_config_padding_level0(this._struct, this.dimensions, this.level, this._absoluteIndex);
+  ArrayHelper_gpio_v2_line_config_padding_level0(
+      this._struct, this.dimensions, this.level, this._absoluteIndex);
   void _checkBounds(int index) {
     if (index >= length || index < 0) {
-      throw RangeError('Dimension $level: index not in range 0..$length exclusive.');
+      throw RangeError(
+          'Dimension $level: index not in range 0..$length exclusive.');
     }
   }
 
@@ -810,10 +1433,12 @@ class ArrayHelper_gpio_v2_line_config_attrs_level0 {
   final int level;
   final int _absoluteIndex;
   int get length => dimensions[level];
-  ArrayHelper_gpio_v2_line_config_attrs_level0(this._struct, this.dimensions, this.level, this._absoluteIndex);
+  ArrayHelper_gpio_v2_line_config_attrs_level0(
+      this._struct, this.dimensions, this.level, this._absoluteIndex);
   void _checkBounds(int index) {
     if (index >= length || index < 0) {
-      throw RangeError('Dimension $level: index not in range 0..$length exclusive.');
+      throw RangeError(
+          'Dimension $level: index not in range 0..$length exclusive.');
     }
   }
 
@@ -903,7 +1528,836 @@ class ArrayHelper_gpio_v2_line_config_attrs_level0 {
 /// @fd: if successful this field will contain a valid anonymous file handle
 /// after a %GPIO_GET_LINE_IOCTL operation, zero or negative value means
 /// error
-class gpio_v2_line_request extends ffi.Opaque {}
+class gpio_v2_line_request extends ffi.Struct {
+  @ffi.Uint32()
+  external int _unique_offsets_item_0;
+  @ffi.Uint32()
+  external int _unique_offsets_item_1;
+  @ffi.Uint32()
+  external int _unique_offsets_item_2;
+  @ffi.Uint32()
+  external int _unique_offsets_item_3;
+  @ffi.Uint32()
+  external int _unique_offsets_item_4;
+  @ffi.Uint32()
+  external int _unique_offsets_item_5;
+  @ffi.Uint32()
+  external int _unique_offsets_item_6;
+  @ffi.Uint32()
+  external int _unique_offsets_item_7;
+  @ffi.Uint32()
+  external int _unique_offsets_item_8;
+  @ffi.Uint32()
+  external int _unique_offsets_item_9;
+  @ffi.Uint32()
+  external int _unique_offsets_item_10;
+  @ffi.Uint32()
+  external int _unique_offsets_item_11;
+  @ffi.Uint32()
+  external int _unique_offsets_item_12;
+  @ffi.Uint32()
+  external int _unique_offsets_item_13;
+  @ffi.Uint32()
+  external int _unique_offsets_item_14;
+  @ffi.Uint32()
+  external int _unique_offsets_item_15;
+  @ffi.Uint32()
+  external int _unique_offsets_item_16;
+  @ffi.Uint32()
+  external int _unique_offsets_item_17;
+  @ffi.Uint32()
+  external int _unique_offsets_item_18;
+  @ffi.Uint32()
+  external int _unique_offsets_item_19;
+  @ffi.Uint32()
+  external int _unique_offsets_item_20;
+  @ffi.Uint32()
+  external int _unique_offsets_item_21;
+  @ffi.Uint32()
+  external int _unique_offsets_item_22;
+  @ffi.Uint32()
+  external int _unique_offsets_item_23;
+  @ffi.Uint32()
+  external int _unique_offsets_item_24;
+  @ffi.Uint32()
+  external int _unique_offsets_item_25;
+  @ffi.Uint32()
+  external int _unique_offsets_item_26;
+  @ffi.Uint32()
+  external int _unique_offsets_item_27;
+  @ffi.Uint32()
+  external int _unique_offsets_item_28;
+  @ffi.Uint32()
+  external int _unique_offsets_item_29;
+  @ffi.Uint32()
+  external int _unique_offsets_item_30;
+  @ffi.Uint32()
+  external int _unique_offsets_item_31;
+  @ffi.Uint32()
+  external int _unique_offsets_item_32;
+  @ffi.Uint32()
+  external int _unique_offsets_item_33;
+  @ffi.Uint32()
+  external int _unique_offsets_item_34;
+  @ffi.Uint32()
+  external int _unique_offsets_item_35;
+  @ffi.Uint32()
+  external int _unique_offsets_item_36;
+  @ffi.Uint32()
+  external int _unique_offsets_item_37;
+  @ffi.Uint32()
+  external int _unique_offsets_item_38;
+  @ffi.Uint32()
+  external int _unique_offsets_item_39;
+  @ffi.Uint32()
+  external int _unique_offsets_item_40;
+  @ffi.Uint32()
+  external int _unique_offsets_item_41;
+  @ffi.Uint32()
+  external int _unique_offsets_item_42;
+  @ffi.Uint32()
+  external int _unique_offsets_item_43;
+  @ffi.Uint32()
+  external int _unique_offsets_item_44;
+  @ffi.Uint32()
+  external int _unique_offsets_item_45;
+  @ffi.Uint32()
+  external int _unique_offsets_item_46;
+  @ffi.Uint32()
+  external int _unique_offsets_item_47;
+  @ffi.Uint32()
+  external int _unique_offsets_item_48;
+  @ffi.Uint32()
+  external int _unique_offsets_item_49;
+  @ffi.Uint32()
+  external int _unique_offsets_item_50;
+  @ffi.Uint32()
+  external int _unique_offsets_item_51;
+  @ffi.Uint32()
+  external int _unique_offsets_item_52;
+  @ffi.Uint32()
+  external int _unique_offsets_item_53;
+  @ffi.Uint32()
+  external int _unique_offsets_item_54;
+  @ffi.Uint32()
+  external int _unique_offsets_item_55;
+  @ffi.Uint32()
+  external int _unique_offsets_item_56;
+  @ffi.Uint32()
+  external int _unique_offsets_item_57;
+  @ffi.Uint32()
+  external int _unique_offsets_item_58;
+  @ffi.Uint32()
+  external int _unique_offsets_item_59;
+  @ffi.Uint32()
+  external int _unique_offsets_item_60;
+  @ffi.Uint32()
+  external int _unique_offsets_item_61;
+  @ffi.Uint32()
+  external int _unique_offsets_item_62;
+  @ffi.Uint32()
+  external int _unique_offsets_item_63;
+
+  /// Helper for array `offsets`.
+  ArrayHelper_gpio_v2_line_request_offsets_level0 get offsets =>
+      ArrayHelper_gpio_v2_line_request_offsets_level0(this, [64], 0, 0);
+  @ffi.Uint8()
+  external int _unique_consumer_item_0;
+  @ffi.Uint8()
+  external int _unique_consumer_item_1;
+  @ffi.Uint8()
+  external int _unique_consumer_item_2;
+  @ffi.Uint8()
+  external int _unique_consumer_item_3;
+  @ffi.Uint8()
+  external int _unique_consumer_item_4;
+  @ffi.Uint8()
+  external int _unique_consumer_item_5;
+  @ffi.Uint8()
+  external int _unique_consumer_item_6;
+  @ffi.Uint8()
+  external int _unique_consumer_item_7;
+  @ffi.Uint8()
+  external int _unique_consumer_item_8;
+  @ffi.Uint8()
+  external int _unique_consumer_item_9;
+  @ffi.Uint8()
+  external int _unique_consumer_item_10;
+  @ffi.Uint8()
+  external int _unique_consumer_item_11;
+  @ffi.Uint8()
+  external int _unique_consumer_item_12;
+  @ffi.Uint8()
+  external int _unique_consumer_item_13;
+  @ffi.Uint8()
+  external int _unique_consumer_item_14;
+  @ffi.Uint8()
+  external int _unique_consumer_item_15;
+  @ffi.Uint8()
+  external int _unique_consumer_item_16;
+  @ffi.Uint8()
+  external int _unique_consumer_item_17;
+  @ffi.Uint8()
+  external int _unique_consumer_item_18;
+  @ffi.Uint8()
+  external int _unique_consumer_item_19;
+  @ffi.Uint8()
+  external int _unique_consumer_item_20;
+  @ffi.Uint8()
+  external int _unique_consumer_item_21;
+  @ffi.Uint8()
+  external int _unique_consumer_item_22;
+  @ffi.Uint8()
+  external int _unique_consumer_item_23;
+  @ffi.Uint8()
+  external int _unique_consumer_item_24;
+  @ffi.Uint8()
+  external int _unique_consumer_item_25;
+  @ffi.Uint8()
+  external int _unique_consumer_item_26;
+  @ffi.Uint8()
+  external int _unique_consumer_item_27;
+  @ffi.Uint8()
+  external int _unique_consumer_item_28;
+  @ffi.Uint8()
+  external int _unique_consumer_item_29;
+  @ffi.Uint8()
+  external int _unique_consumer_item_30;
+  @ffi.Uint8()
+  external int _unique_consumer_item_31;
+
+  /// Helper for array `consumer`.
+  ArrayHelper_gpio_v2_line_request_consumer_level0 get consumer =>
+      ArrayHelper_gpio_v2_line_request_consumer_level0(this, [32], 0, 0);
+  external gpio_v2_line_config config;
+
+  @ffi.Uint32()
+  external int num_lines;
+
+  @ffi.Uint32()
+  external int event_buffer_size;
+
+  @ffi.Uint32()
+  external int _unique_padding_item_0;
+  @ffi.Uint32()
+  external int _unique_padding_item_1;
+  @ffi.Uint32()
+  external int _unique_padding_item_2;
+  @ffi.Uint32()
+  external int _unique_padding_item_3;
+  @ffi.Uint32()
+  external int _unique_padding_item_4;
+
+  /// Helper for array `padding`.
+  ArrayHelper_gpio_v2_line_request_padding_level0 get padding =>
+      ArrayHelper_gpio_v2_line_request_padding_level0(this, [5], 0, 0);
+  @ffi.Int32()
+  external int fd;
+}
+
+/// Helper for array `offsets` in struct `gpio_v2_line_request`.
+class ArrayHelper_gpio_v2_line_request_offsets_level0 {
+  final gpio_v2_line_request _struct;
+  final List<int> dimensions;
+  final int level;
+  final int _absoluteIndex;
+  int get length => dimensions[level];
+  ArrayHelper_gpio_v2_line_request_offsets_level0(
+      this._struct, this.dimensions, this.level, this._absoluteIndex);
+  void _checkBounds(int index) {
+    if (index >= length || index < 0) {
+      throw RangeError(
+          'Dimension $level: index not in range 0..$length exclusive.');
+    }
+  }
+
+  int operator [](int index) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        return _struct._unique_offsets_item_0;
+      case 1:
+        return _struct._unique_offsets_item_1;
+      case 2:
+        return _struct._unique_offsets_item_2;
+      case 3:
+        return _struct._unique_offsets_item_3;
+      case 4:
+        return _struct._unique_offsets_item_4;
+      case 5:
+        return _struct._unique_offsets_item_5;
+      case 6:
+        return _struct._unique_offsets_item_6;
+      case 7:
+        return _struct._unique_offsets_item_7;
+      case 8:
+        return _struct._unique_offsets_item_8;
+      case 9:
+        return _struct._unique_offsets_item_9;
+      case 10:
+        return _struct._unique_offsets_item_10;
+      case 11:
+        return _struct._unique_offsets_item_11;
+      case 12:
+        return _struct._unique_offsets_item_12;
+      case 13:
+        return _struct._unique_offsets_item_13;
+      case 14:
+        return _struct._unique_offsets_item_14;
+      case 15:
+        return _struct._unique_offsets_item_15;
+      case 16:
+        return _struct._unique_offsets_item_16;
+      case 17:
+        return _struct._unique_offsets_item_17;
+      case 18:
+        return _struct._unique_offsets_item_18;
+      case 19:
+        return _struct._unique_offsets_item_19;
+      case 20:
+        return _struct._unique_offsets_item_20;
+      case 21:
+        return _struct._unique_offsets_item_21;
+      case 22:
+        return _struct._unique_offsets_item_22;
+      case 23:
+        return _struct._unique_offsets_item_23;
+      case 24:
+        return _struct._unique_offsets_item_24;
+      case 25:
+        return _struct._unique_offsets_item_25;
+      case 26:
+        return _struct._unique_offsets_item_26;
+      case 27:
+        return _struct._unique_offsets_item_27;
+      case 28:
+        return _struct._unique_offsets_item_28;
+      case 29:
+        return _struct._unique_offsets_item_29;
+      case 30:
+        return _struct._unique_offsets_item_30;
+      case 31:
+        return _struct._unique_offsets_item_31;
+      case 32:
+        return _struct._unique_offsets_item_32;
+      case 33:
+        return _struct._unique_offsets_item_33;
+      case 34:
+        return _struct._unique_offsets_item_34;
+      case 35:
+        return _struct._unique_offsets_item_35;
+      case 36:
+        return _struct._unique_offsets_item_36;
+      case 37:
+        return _struct._unique_offsets_item_37;
+      case 38:
+        return _struct._unique_offsets_item_38;
+      case 39:
+        return _struct._unique_offsets_item_39;
+      case 40:
+        return _struct._unique_offsets_item_40;
+      case 41:
+        return _struct._unique_offsets_item_41;
+      case 42:
+        return _struct._unique_offsets_item_42;
+      case 43:
+        return _struct._unique_offsets_item_43;
+      case 44:
+        return _struct._unique_offsets_item_44;
+      case 45:
+        return _struct._unique_offsets_item_45;
+      case 46:
+        return _struct._unique_offsets_item_46;
+      case 47:
+        return _struct._unique_offsets_item_47;
+      case 48:
+        return _struct._unique_offsets_item_48;
+      case 49:
+        return _struct._unique_offsets_item_49;
+      case 50:
+        return _struct._unique_offsets_item_50;
+      case 51:
+        return _struct._unique_offsets_item_51;
+      case 52:
+        return _struct._unique_offsets_item_52;
+      case 53:
+        return _struct._unique_offsets_item_53;
+      case 54:
+        return _struct._unique_offsets_item_54;
+      case 55:
+        return _struct._unique_offsets_item_55;
+      case 56:
+        return _struct._unique_offsets_item_56;
+      case 57:
+        return _struct._unique_offsets_item_57;
+      case 58:
+        return _struct._unique_offsets_item_58;
+      case 59:
+        return _struct._unique_offsets_item_59;
+      case 60:
+        return _struct._unique_offsets_item_60;
+      case 61:
+        return _struct._unique_offsets_item_61;
+      case 62:
+        return _struct._unique_offsets_item_62;
+      case 63:
+        return _struct._unique_offsets_item_63;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+
+  void operator []=(int index, int value) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        _struct._unique_offsets_item_0 = value;
+        break;
+      case 1:
+        _struct._unique_offsets_item_1 = value;
+        break;
+      case 2:
+        _struct._unique_offsets_item_2 = value;
+        break;
+      case 3:
+        _struct._unique_offsets_item_3 = value;
+        break;
+      case 4:
+        _struct._unique_offsets_item_4 = value;
+        break;
+      case 5:
+        _struct._unique_offsets_item_5 = value;
+        break;
+      case 6:
+        _struct._unique_offsets_item_6 = value;
+        break;
+      case 7:
+        _struct._unique_offsets_item_7 = value;
+        break;
+      case 8:
+        _struct._unique_offsets_item_8 = value;
+        break;
+      case 9:
+        _struct._unique_offsets_item_9 = value;
+        break;
+      case 10:
+        _struct._unique_offsets_item_10 = value;
+        break;
+      case 11:
+        _struct._unique_offsets_item_11 = value;
+        break;
+      case 12:
+        _struct._unique_offsets_item_12 = value;
+        break;
+      case 13:
+        _struct._unique_offsets_item_13 = value;
+        break;
+      case 14:
+        _struct._unique_offsets_item_14 = value;
+        break;
+      case 15:
+        _struct._unique_offsets_item_15 = value;
+        break;
+      case 16:
+        _struct._unique_offsets_item_16 = value;
+        break;
+      case 17:
+        _struct._unique_offsets_item_17 = value;
+        break;
+      case 18:
+        _struct._unique_offsets_item_18 = value;
+        break;
+      case 19:
+        _struct._unique_offsets_item_19 = value;
+        break;
+      case 20:
+        _struct._unique_offsets_item_20 = value;
+        break;
+      case 21:
+        _struct._unique_offsets_item_21 = value;
+        break;
+      case 22:
+        _struct._unique_offsets_item_22 = value;
+        break;
+      case 23:
+        _struct._unique_offsets_item_23 = value;
+        break;
+      case 24:
+        _struct._unique_offsets_item_24 = value;
+        break;
+      case 25:
+        _struct._unique_offsets_item_25 = value;
+        break;
+      case 26:
+        _struct._unique_offsets_item_26 = value;
+        break;
+      case 27:
+        _struct._unique_offsets_item_27 = value;
+        break;
+      case 28:
+        _struct._unique_offsets_item_28 = value;
+        break;
+      case 29:
+        _struct._unique_offsets_item_29 = value;
+        break;
+      case 30:
+        _struct._unique_offsets_item_30 = value;
+        break;
+      case 31:
+        _struct._unique_offsets_item_31 = value;
+        break;
+      case 32:
+        _struct._unique_offsets_item_32 = value;
+        break;
+      case 33:
+        _struct._unique_offsets_item_33 = value;
+        break;
+      case 34:
+        _struct._unique_offsets_item_34 = value;
+        break;
+      case 35:
+        _struct._unique_offsets_item_35 = value;
+        break;
+      case 36:
+        _struct._unique_offsets_item_36 = value;
+        break;
+      case 37:
+        _struct._unique_offsets_item_37 = value;
+        break;
+      case 38:
+        _struct._unique_offsets_item_38 = value;
+        break;
+      case 39:
+        _struct._unique_offsets_item_39 = value;
+        break;
+      case 40:
+        _struct._unique_offsets_item_40 = value;
+        break;
+      case 41:
+        _struct._unique_offsets_item_41 = value;
+        break;
+      case 42:
+        _struct._unique_offsets_item_42 = value;
+        break;
+      case 43:
+        _struct._unique_offsets_item_43 = value;
+        break;
+      case 44:
+        _struct._unique_offsets_item_44 = value;
+        break;
+      case 45:
+        _struct._unique_offsets_item_45 = value;
+        break;
+      case 46:
+        _struct._unique_offsets_item_46 = value;
+        break;
+      case 47:
+        _struct._unique_offsets_item_47 = value;
+        break;
+      case 48:
+        _struct._unique_offsets_item_48 = value;
+        break;
+      case 49:
+        _struct._unique_offsets_item_49 = value;
+        break;
+      case 50:
+        _struct._unique_offsets_item_50 = value;
+        break;
+      case 51:
+        _struct._unique_offsets_item_51 = value;
+        break;
+      case 52:
+        _struct._unique_offsets_item_52 = value;
+        break;
+      case 53:
+        _struct._unique_offsets_item_53 = value;
+        break;
+      case 54:
+        _struct._unique_offsets_item_54 = value;
+        break;
+      case 55:
+        _struct._unique_offsets_item_55 = value;
+        break;
+      case 56:
+        _struct._unique_offsets_item_56 = value;
+        break;
+      case 57:
+        _struct._unique_offsets_item_57 = value;
+        break;
+      case 58:
+        _struct._unique_offsets_item_58 = value;
+        break;
+      case 59:
+        _struct._unique_offsets_item_59 = value;
+        break;
+      case 60:
+        _struct._unique_offsets_item_60 = value;
+        break;
+      case 61:
+        _struct._unique_offsets_item_61 = value;
+        break;
+      case 62:
+        _struct._unique_offsets_item_62 = value;
+        break;
+      case 63:
+        _struct._unique_offsets_item_63 = value;
+        break;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+}
+
+/// Helper for array `consumer` in struct `gpio_v2_line_request`.
+class ArrayHelper_gpio_v2_line_request_consumer_level0 {
+  final gpio_v2_line_request _struct;
+  final List<int> dimensions;
+  final int level;
+  final int _absoluteIndex;
+  int get length => dimensions[level];
+  ArrayHelper_gpio_v2_line_request_consumer_level0(
+      this._struct, this.dimensions, this.level, this._absoluteIndex);
+  void _checkBounds(int index) {
+    if (index >= length || index < 0) {
+      throw RangeError(
+          'Dimension $level: index not in range 0..$length exclusive.');
+    }
+  }
+
+  int operator [](int index) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        return _struct._unique_consumer_item_0;
+      case 1:
+        return _struct._unique_consumer_item_1;
+      case 2:
+        return _struct._unique_consumer_item_2;
+      case 3:
+        return _struct._unique_consumer_item_3;
+      case 4:
+        return _struct._unique_consumer_item_4;
+      case 5:
+        return _struct._unique_consumer_item_5;
+      case 6:
+        return _struct._unique_consumer_item_6;
+      case 7:
+        return _struct._unique_consumer_item_7;
+      case 8:
+        return _struct._unique_consumer_item_8;
+      case 9:
+        return _struct._unique_consumer_item_9;
+      case 10:
+        return _struct._unique_consumer_item_10;
+      case 11:
+        return _struct._unique_consumer_item_11;
+      case 12:
+        return _struct._unique_consumer_item_12;
+      case 13:
+        return _struct._unique_consumer_item_13;
+      case 14:
+        return _struct._unique_consumer_item_14;
+      case 15:
+        return _struct._unique_consumer_item_15;
+      case 16:
+        return _struct._unique_consumer_item_16;
+      case 17:
+        return _struct._unique_consumer_item_17;
+      case 18:
+        return _struct._unique_consumer_item_18;
+      case 19:
+        return _struct._unique_consumer_item_19;
+      case 20:
+        return _struct._unique_consumer_item_20;
+      case 21:
+        return _struct._unique_consumer_item_21;
+      case 22:
+        return _struct._unique_consumer_item_22;
+      case 23:
+        return _struct._unique_consumer_item_23;
+      case 24:
+        return _struct._unique_consumer_item_24;
+      case 25:
+        return _struct._unique_consumer_item_25;
+      case 26:
+        return _struct._unique_consumer_item_26;
+      case 27:
+        return _struct._unique_consumer_item_27;
+      case 28:
+        return _struct._unique_consumer_item_28;
+      case 29:
+        return _struct._unique_consumer_item_29;
+      case 30:
+        return _struct._unique_consumer_item_30;
+      case 31:
+        return _struct._unique_consumer_item_31;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+
+  void operator []=(int index, int value) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        _struct._unique_consumer_item_0 = value;
+        break;
+      case 1:
+        _struct._unique_consumer_item_1 = value;
+        break;
+      case 2:
+        _struct._unique_consumer_item_2 = value;
+        break;
+      case 3:
+        _struct._unique_consumer_item_3 = value;
+        break;
+      case 4:
+        _struct._unique_consumer_item_4 = value;
+        break;
+      case 5:
+        _struct._unique_consumer_item_5 = value;
+        break;
+      case 6:
+        _struct._unique_consumer_item_6 = value;
+        break;
+      case 7:
+        _struct._unique_consumer_item_7 = value;
+        break;
+      case 8:
+        _struct._unique_consumer_item_8 = value;
+        break;
+      case 9:
+        _struct._unique_consumer_item_9 = value;
+        break;
+      case 10:
+        _struct._unique_consumer_item_10 = value;
+        break;
+      case 11:
+        _struct._unique_consumer_item_11 = value;
+        break;
+      case 12:
+        _struct._unique_consumer_item_12 = value;
+        break;
+      case 13:
+        _struct._unique_consumer_item_13 = value;
+        break;
+      case 14:
+        _struct._unique_consumer_item_14 = value;
+        break;
+      case 15:
+        _struct._unique_consumer_item_15 = value;
+        break;
+      case 16:
+        _struct._unique_consumer_item_16 = value;
+        break;
+      case 17:
+        _struct._unique_consumer_item_17 = value;
+        break;
+      case 18:
+        _struct._unique_consumer_item_18 = value;
+        break;
+      case 19:
+        _struct._unique_consumer_item_19 = value;
+        break;
+      case 20:
+        _struct._unique_consumer_item_20 = value;
+        break;
+      case 21:
+        _struct._unique_consumer_item_21 = value;
+        break;
+      case 22:
+        _struct._unique_consumer_item_22 = value;
+        break;
+      case 23:
+        _struct._unique_consumer_item_23 = value;
+        break;
+      case 24:
+        _struct._unique_consumer_item_24 = value;
+        break;
+      case 25:
+        _struct._unique_consumer_item_25 = value;
+        break;
+      case 26:
+        _struct._unique_consumer_item_26 = value;
+        break;
+      case 27:
+        _struct._unique_consumer_item_27 = value;
+        break;
+      case 28:
+        _struct._unique_consumer_item_28 = value;
+        break;
+      case 29:
+        _struct._unique_consumer_item_29 = value;
+        break;
+      case 30:
+        _struct._unique_consumer_item_30 = value;
+        break;
+      case 31:
+        _struct._unique_consumer_item_31 = value;
+        break;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+}
+
+/// Helper for array `padding` in struct `gpio_v2_line_request`.
+class ArrayHelper_gpio_v2_line_request_padding_level0 {
+  final gpio_v2_line_request _struct;
+  final List<int> dimensions;
+  final int level;
+  final int _absoluteIndex;
+  int get length => dimensions[level];
+  ArrayHelper_gpio_v2_line_request_padding_level0(
+      this._struct, this.dimensions, this.level, this._absoluteIndex);
+  void _checkBounds(int index) {
+    if (index >= length || index < 0) {
+      throw RangeError(
+          'Dimension $level: index not in range 0..$length exclusive.');
+    }
+  }
+
+  int operator [](int index) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        return _struct._unique_padding_item_0;
+      case 1:
+        return _struct._unique_padding_item_1;
+      case 2:
+        return _struct._unique_padding_item_2;
+      case 3:
+        return _struct._unique_padding_item_3;
+      case 4:
+        return _struct._unique_padding_item_4;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+
+  void operator []=(int index, int value) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        _struct._unique_padding_item_0 = value;
+        break;
+      case 1:
+        _struct._unique_padding_item_1 = value;
+        break;
+      case 2:
+        _struct._unique_padding_item_2 = value;
+        break;
+      case 3:
+        _struct._unique_padding_item_3 = value;
+        break;
+      case 4:
+        _struct._unique_padding_item_4 = value;
+        break;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+}
 
 /// struct gpio_v2_line_info - Information about a certain GPIO line
 /// @name: the name of this GPIO line, such as the output pin of the line on
@@ -920,7 +2374,701 @@ class gpio_v2_line_request extends ffi.Opaque {}
 /// %GPIO_V2_LINE_FLAG_OUTPUT etc, added together.
 /// @attrs: the configuration attributes associated with the line
 /// @padding: reserved for future use
-class gpio_v2_line_info extends ffi.Opaque {}
+class gpio_v2_line_info extends ffi.Struct {
+  @ffi.Uint8()
+  external int _unique_name_item_0;
+  @ffi.Uint8()
+  external int _unique_name_item_1;
+  @ffi.Uint8()
+  external int _unique_name_item_2;
+  @ffi.Uint8()
+  external int _unique_name_item_3;
+  @ffi.Uint8()
+  external int _unique_name_item_4;
+  @ffi.Uint8()
+  external int _unique_name_item_5;
+  @ffi.Uint8()
+  external int _unique_name_item_6;
+  @ffi.Uint8()
+  external int _unique_name_item_7;
+  @ffi.Uint8()
+  external int _unique_name_item_8;
+  @ffi.Uint8()
+  external int _unique_name_item_9;
+  @ffi.Uint8()
+  external int _unique_name_item_10;
+  @ffi.Uint8()
+  external int _unique_name_item_11;
+  @ffi.Uint8()
+  external int _unique_name_item_12;
+  @ffi.Uint8()
+  external int _unique_name_item_13;
+  @ffi.Uint8()
+  external int _unique_name_item_14;
+  @ffi.Uint8()
+  external int _unique_name_item_15;
+  @ffi.Uint8()
+  external int _unique_name_item_16;
+  @ffi.Uint8()
+  external int _unique_name_item_17;
+  @ffi.Uint8()
+  external int _unique_name_item_18;
+  @ffi.Uint8()
+  external int _unique_name_item_19;
+  @ffi.Uint8()
+  external int _unique_name_item_20;
+  @ffi.Uint8()
+  external int _unique_name_item_21;
+  @ffi.Uint8()
+  external int _unique_name_item_22;
+  @ffi.Uint8()
+  external int _unique_name_item_23;
+  @ffi.Uint8()
+  external int _unique_name_item_24;
+  @ffi.Uint8()
+  external int _unique_name_item_25;
+  @ffi.Uint8()
+  external int _unique_name_item_26;
+  @ffi.Uint8()
+  external int _unique_name_item_27;
+  @ffi.Uint8()
+  external int _unique_name_item_28;
+  @ffi.Uint8()
+  external int _unique_name_item_29;
+  @ffi.Uint8()
+  external int _unique_name_item_30;
+  @ffi.Uint8()
+  external int _unique_name_item_31;
+
+  /// Helper for array `name`.
+  ArrayHelper_gpio_v2_line_info_name_level0 get name =>
+      ArrayHelper_gpio_v2_line_info_name_level0(this, [32], 0, 0);
+  @ffi.Uint8()
+  external int _unique_consumer_item_0;
+  @ffi.Uint8()
+  external int _unique_consumer_item_1;
+  @ffi.Uint8()
+  external int _unique_consumer_item_2;
+  @ffi.Uint8()
+  external int _unique_consumer_item_3;
+  @ffi.Uint8()
+  external int _unique_consumer_item_4;
+  @ffi.Uint8()
+  external int _unique_consumer_item_5;
+  @ffi.Uint8()
+  external int _unique_consumer_item_6;
+  @ffi.Uint8()
+  external int _unique_consumer_item_7;
+  @ffi.Uint8()
+  external int _unique_consumer_item_8;
+  @ffi.Uint8()
+  external int _unique_consumer_item_9;
+  @ffi.Uint8()
+  external int _unique_consumer_item_10;
+  @ffi.Uint8()
+  external int _unique_consumer_item_11;
+  @ffi.Uint8()
+  external int _unique_consumer_item_12;
+  @ffi.Uint8()
+  external int _unique_consumer_item_13;
+  @ffi.Uint8()
+  external int _unique_consumer_item_14;
+  @ffi.Uint8()
+  external int _unique_consumer_item_15;
+  @ffi.Uint8()
+  external int _unique_consumer_item_16;
+  @ffi.Uint8()
+  external int _unique_consumer_item_17;
+  @ffi.Uint8()
+  external int _unique_consumer_item_18;
+  @ffi.Uint8()
+  external int _unique_consumer_item_19;
+  @ffi.Uint8()
+  external int _unique_consumer_item_20;
+  @ffi.Uint8()
+  external int _unique_consumer_item_21;
+  @ffi.Uint8()
+  external int _unique_consumer_item_22;
+  @ffi.Uint8()
+  external int _unique_consumer_item_23;
+  @ffi.Uint8()
+  external int _unique_consumer_item_24;
+  @ffi.Uint8()
+  external int _unique_consumer_item_25;
+  @ffi.Uint8()
+  external int _unique_consumer_item_26;
+  @ffi.Uint8()
+  external int _unique_consumer_item_27;
+  @ffi.Uint8()
+  external int _unique_consumer_item_28;
+  @ffi.Uint8()
+  external int _unique_consumer_item_29;
+  @ffi.Uint8()
+  external int _unique_consumer_item_30;
+  @ffi.Uint8()
+  external int _unique_consumer_item_31;
+
+  /// Helper for array `consumer`.
+  ArrayHelper_gpio_v2_line_info_consumer_level0 get consumer =>
+      ArrayHelper_gpio_v2_line_info_consumer_level0(this, [32], 0, 0);
+  @ffi.Uint32()
+  external int offset;
+
+  @ffi.Uint32()
+  external int num_attrs;
+
+  @ffi.Uint64()
+  external int flags;
+
+  external gpio_v2_line_attribute _unique_attrs_item_0;
+  external gpio_v2_line_attribute _unique_attrs_item_1;
+  external gpio_v2_line_attribute _unique_attrs_item_2;
+  external gpio_v2_line_attribute _unique_attrs_item_3;
+  external gpio_v2_line_attribute _unique_attrs_item_4;
+  external gpio_v2_line_attribute _unique_attrs_item_5;
+  external gpio_v2_line_attribute _unique_attrs_item_6;
+  external gpio_v2_line_attribute _unique_attrs_item_7;
+  external gpio_v2_line_attribute _unique_attrs_item_8;
+  external gpio_v2_line_attribute _unique_attrs_item_9;
+
+  /// Helper for array `attrs`.
+  ArrayHelper_gpio_v2_line_info_attrs_level0 get attrs =>
+      ArrayHelper_gpio_v2_line_info_attrs_level0(this, [10], 0, 0);
+  @ffi.Uint32()
+  external int _unique_padding_item_0;
+  @ffi.Uint32()
+  external int _unique_padding_item_1;
+  @ffi.Uint32()
+  external int _unique_padding_item_2;
+  @ffi.Uint32()
+  external int _unique_padding_item_3;
+
+  /// Helper for array `padding`.
+  ArrayHelper_gpio_v2_line_info_padding_level0 get padding =>
+      ArrayHelper_gpio_v2_line_info_padding_level0(this, [4], 0, 0);
+}
+
+/// Helper for array `name` in struct `gpio_v2_line_info`.
+class ArrayHelper_gpio_v2_line_info_name_level0 {
+  final gpio_v2_line_info _struct;
+  final List<int> dimensions;
+  final int level;
+  final int _absoluteIndex;
+  int get length => dimensions[level];
+  ArrayHelper_gpio_v2_line_info_name_level0(
+      this._struct, this.dimensions, this.level, this._absoluteIndex);
+  void _checkBounds(int index) {
+    if (index >= length || index < 0) {
+      throw RangeError(
+          'Dimension $level: index not in range 0..$length exclusive.');
+    }
+  }
+
+  int operator [](int index) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        return _struct._unique_name_item_0;
+      case 1:
+        return _struct._unique_name_item_1;
+      case 2:
+        return _struct._unique_name_item_2;
+      case 3:
+        return _struct._unique_name_item_3;
+      case 4:
+        return _struct._unique_name_item_4;
+      case 5:
+        return _struct._unique_name_item_5;
+      case 6:
+        return _struct._unique_name_item_6;
+      case 7:
+        return _struct._unique_name_item_7;
+      case 8:
+        return _struct._unique_name_item_8;
+      case 9:
+        return _struct._unique_name_item_9;
+      case 10:
+        return _struct._unique_name_item_10;
+      case 11:
+        return _struct._unique_name_item_11;
+      case 12:
+        return _struct._unique_name_item_12;
+      case 13:
+        return _struct._unique_name_item_13;
+      case 14:
+        return _struct._unique_name_item_14;
+      case 15:
+        return _struct._unique_name_item_15;
+      case 16:
+        return _struct._unique_name_item_16;
+      case 17:
+        return _struct._unique_name_item_17;
+      case 18:
+        return _struct._unique_name_item_18;
+      case 19:
+        return _struct._unique_name_item_19;
+      case 20:
+        return _struct._unique_name_item_20;
+      case 21:
+        return _struct._unique_name_item_21;
+      case 22:
+        return _struct._unique_name_item_22;
+      case 23:
+        return _struct._unique_name_item_23;
+      case 24:
+        return _struct._unique_name_item_24;
+      case 25:
+        return _struct._unique_name_item_25;
+      case 26:
+        return _struct._unique_name_item_26;
+      case 27:
+        return _struct._unique_name_item_27;
+      case 28:
+        return _struct._unique_name_item_28;
+      case 29:
+        return _struct._unique_name_item_29;
+      case 30:
+        return _struct._unique_name_item_30;
+      case 31:
+        return _struct._unique_name_item_31;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+
+  void operator []=(int index, int value) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        _struct._unique_name_item_0 = value;
+        break;
+      case 1:
+        _struct._unique_name_item_1 = value;
+        break;
+      case 2:
+        _struct._unique_name_item_2 = value;
+        break;
+      case 3:
+        _struct._unique_name_item_3 = value;
+        break;
+      case 4:
+        _struct._unique_name_item_4 = value;
+        break;
+      case 5:
+        _struct._unique_name_item_5 = value;
+        break;
+      case 6:
+        _struct._unique_name_item_6 = value;
+        break;
+      case 7:
+        _struct._unique_name_item_7 = value;
+        break;
+      case 8:
+        _struct._unique_name_item_8 = value;
+        break;
+      case 9:
+        _struct._unique_name_item_9 = value;
+        break;
+      case 10:
+        _struct._unique_name_item_10 = value;
+        break;
+      case 11:
+        _struct._unique_name_item_11 = value;
+        break;
+      case 12:
+        _struct._unique_name_item_12 = value;
+        break;
+      case 13:
+        _struct._unique_name_item_13 = value;
+        break;
+      case 14:
+        _struct._unique_name_item_14 = value;
+        break;
+      case 15:
+        _struct._unique_name_item_15 = value;
+        break;
+      case 16:
+        _struct._unique_name_item_16 = value;
+        break;
+      case 17:
+        _struct._unique_name_item_17 = value;
+        break;
+      case 18:
+        _struct._unique_name_item_18 = value;
+        break;
+      case 19:
+        _struct._unique_name_item_19 = value;
+        break;
+      case 20:
+        _struct._unique_name_item_20 = value;
+        break;
+      case 21:
+        _struct._unique_name_item_21 = value;
+        break;
+      case 22:
+        _struct._unique_name_item_22 = value;
+        break;
+      case 23:
+        _struct._unique_name_item_23 = value;
+        break;
+      case 24:
+        _struct._unique_name_item_24 = value;
+        break;
+      case 25:
+        _struct._unique_name_item_25 = value;
+        break;
+      case 26:
+        _struct._unique_name_item_26 = value;
+        break;
+      case 27:
+        _struct._unique_name_item_27 = value;
+        break;
+      case 28:
+        _struct._unique_name_item_28 = value;
+        break;
+      case 29:
+        _struct._unique_name_item_29 = value;
+        break;
+      case 30:
+        _struct._unique_name_item_30 = value;
+        break;
+      case 31:
+        _struct._unique_name_item_31 = value;
+        break;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+}
+
+/// Helper for array `consumer` in struct `gpio_v2_line_info`.
+class ArrayHelper_gpio_v2_line_info_consumer_level0 {
+  final gpio_v2_line_info _struct;
+  final List<int> dimensions;
+  final int level;
+  final int _absoluteIndex;
+  int get length => dimensions[level];
+  ArrayHelper_gpio_v2_line_info_consumer_level0(
+      this._struct, this.dimensions, this.level, this._absoluteIndex);
+  void _checkBounds(int index) {
+    if (index >= length || index < 0) {
+      throw RangeError(
+          'Dimension $level: index not in range 0..$length exclusive.');
+    }
+  }
+
+  int operator [](int index) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        return _struct._unique_consumer_item_0;
+      case 1:
+        return _struct._unique_consumer_item_1;
+      case 2:
+        return _struct._unique_consumer_item_2;
+      case 3:
+        return _struct._unique_consumer_item_3;
+      case 4:
+        return _struct._unique_consumer_item_4;
+      case 5:
+        return _struct._unique_consumer_item_5;
+      case 6:
+        return _struct._unique_consumer_item_6;
+      case 7:
+        return _struct._unique_consumer_item_7;
+      case 8:
+        return _struct._unique_consumer_item_8;
+      case 9:
+        return _struct._unique_consumer_item_9;
+      case 10:
+        return _struct._unique_consumer_item_10;
+      case 11:
+        return _struct._unique_consumer_item_11;
+      case 12:
+        return _struct._unique_consumer_item_12;
+      case 13:
+        return _struct._unique_consumer_item_13;
+      case 14:
+        return _struct._unique_consumer_item_14;
+      case 15:
+        return _struct._unique_consumer_item_15;
+      case 16:
+        return _struct._unique_consumer_item_16;
+      case 17:
+        return _struct._unique_consumer_item_17;
+      case 18:
+        return _struct._unique_consumer_item_18;
+      case 19:
+        return _struct._unique_consumer_item_19;
+      case 20:
+        return _struct._unique_consumer_item_20;
+      case 21:
+        return _struct._unique_consumer_item_21;
+      case 22:
+        return _struct._unique_consumer_item_22;
+      case 23:
+        return _struct._unique_consumer_item_23;
+      case 24:
+        return _struct._unique_consumer_item_24;
+      case 25:
+        return _struct._unique_consumer_item_25;
+      case 26:
+        return _struct._unique_consumer_item_26;
+      case 27:
+        return _struct._unique_consumer_item_27;
+      case 28:
+        return _struct._unique_consumer_item_28;
+      case 29:
+        return _struct._unique_consumer_item_29;
+      case 30:
+        return _struct._unique_consumer_item_30;
+      case 31:
+        return _struct._unique_consumer_item_31;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+
+  void operator []=(int index, int value) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        _struct._unique_consumer_item_0 = value;
+        break;
+      case 1:
+        _struct._unique_consumer_item_1 = value;
+        break;
+      case 2:
+        _struct._unique_consumer_item_2 = value;
+        break;
+      case 3:
+        _struct._unique_consumer_item_3 = value;
+        break;
+      case 4:
+        _struct._unique_consumer_item_4 = value;
+        break;
+      case 5:
+        _struct._unique_consumer_item_5 = value;
+        break;
+      case 6:
+        _struct._unique_consumer_item_6 = value;
+        break;
+      case 7:
+        _struct._unique_consumer_item_7 = value;
+        break;
+      case 8:
+        _struct._unique_consumer_item_8 = value;
+        break;
+      case 9:
+        _struct._unique_consumer_item_9 = value;
+        break;
+      case 10:
+        _struct._unique_consumer_item_10 = value;
+        break;
+      case 11:
+        _struct._unique_consumer_item_11 = value;
+        break;
+      case 12:
+        _struct._unique_consumer_item_12 = value;
+        break;
+      case 13:
+        _struct._unique_consumer_item_13 = value;
+        break;
+      case 14:
+        _struct._unique_consumer_item_14 = value;
+        break;
+      case 15:
+        _struct._unique_consumer_item_15 = value;
+        break;
+      case 16:
+        _struct._unique_consumer_item_16 = value;
+        break;
+      case 17:
+        _struct._unique_consumer_item_17 = value;
+        break;
+      case 18:
+        _struct._unique_consumer_item_18 = value;
+        break;
+      case 19:
+        _struct._unique_consumer_item_19 = value;
+        break;
+      case 20:
+        _struct._unique_consumer_item_20 = value;
+        break;
+      case 21:
+        _struct._unique_consumer_item_21 = value;
+        break;
+      case 22:
+        _struct._unique_consumer_item_22 = value;
+        break;
+      case 23:
+        _struct._unique_consumer_item_23 = value;
+        break;
+      case 24:
+        _struct._unique_consumer_item_24 = value;
+        break;
+      case 25:
+        _struct._unique_consumer_item_25 = value;
+        break;
+      case 26:
+        _struct._unique_consumer_item_26 = value;
+        break;
+      case 27:
+        _struct._unique_consumer_item_27 = value;
+        break;
+      case 28:
+        _struct._unique_consumer_item_28 = value;
+        break;
+      case 29:
+        _struct._unique_consumer_item_29 = value;
+        break;
+      case 30:
+        _struct._unique_consumer_item_30 = value;
+        break;
+      case 31:
+        _struct._unique_consumer_item_31 = value;
+        break;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+}
+
+/// Helper for array `attrs` in struct `gpio_v2_line_info`.
+class ArrayHelper_gpio_v2_line_info_attrs_level0 {
+  final gpio_v2_line_info _struct;
+  final List<int> dimensions;
+  final int level;
+  final int _absoluteIndex;
+  int get length => dimensions[level];
+  ArrayHelper_gpio_v2_line_info_attrs_level0(
+      this._struct, this.dimensions, this.level, this._absoluteIndex);
+  void _checkBounds(int index) {
+    if (index >= length || index < 0) {
+      throw RangeError(
+          'Dimension $level: index not in range 0..$length exclusive.');
+    }
+  }
+
+  gpio_v2_line_attribute operator [](int index) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        return _struct._unique_attrs_item_0;
+      case 1:
+        return _struct._unique_attrs_item_1;
+      case 2:
+        return _struct._unique_attrs_item_2;
+      case 3:
+        return _struct._unique_attrs_item_3;
+      case 4:
+        return _struct._unique_attrs_item_4;
+      case 5:
+        return _struct._unique_attrs_item_5;
+      case 6:
+        return _struct._unique_attrs_item_6;
+      case 7:
+        return _struct._unique_attrs_item_7;
+      case 8:
+        return _struct._unique_attrs_item_8;
+      case 9:
+        return _struct._unique_attrs_item_9;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+
+  void operator []=(int index, gpio_v2_line_attribute value) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        _struct._unique_attrs_item_0 = value;
+        break;
+      case 1:
+        _struct._unique_attrs_item_1 = value;
+        break;
+      case 2:
+        _struct._unique_attrs_item_2 = value;
+        break;
+      case 3:
+        _struct._unique_attrs_item_3 = value;
+        break;
+      case 4:
+        _struct._unique_attrs_item_4 = value;
+        break;
+      case 5:
+        _struct._unique_attrs_item_5 = value;
+        break;
+      case 6:
+        _struct._unique_attrs_item_6 = value;
+        break;
+      case 7:
+        _struct._unique_attrs_item_7 = value;
+        break;
+      case 8:
+        _struct._unique_attrs_item_8 = value;
+        break;
+      case 9:
+        _struct._unique_attrs_item_9 = value;
+        break;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+}
+
+/// Helper for array `padding` in struct `gpio_v2_line_info`.
+class ArrayHelper_gpio_v2_line_info_padding_level0 {
+  final gpio_v2_line_info _struct;
+  final List<int> dimensions;
+  final int level;
+  final int _absoluteIndex;
+  int get length => dimensions[level];
+  ArrayHelper_gpio_v2_line_info_padding_level0(
+      this._struct, this.dimensions, this.level, this._absoluteIndex);
+  void _checkBounds(int index) {
+    if (index >= length || index < 0) {
+      throw RangeError(
+          'Dimension $level: index not in range 0..$length exclusive.');
+    }
+  }
+
+  int operator [](int index) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        return _struct._unique_padding_item_0;
+      case 1:
+        return _struct._unique_padding_item_1;
+      case 2:
+        return _struct._unique_padding_item_2;
+      case 3:
+        return _struct._unique_padding_item_3;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+
+  void operator []=(int index, int value) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        _struct._unique_padding_item_0 = value;
+        break;
+      case 1:
+        _struct._unique_padding_item_1 = value;
+        break;
+      case 2:
+        _struct._unique_padding_item_2 = value;
+        break;
+      case 3:
+        _struct._unique_padding_item_3 = value;
+        break;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+}
 
 /// struct gpio_v2_line_info_changed - Information about a change in status
 /// of a GPIO line
@@ -929,7 +3077,88 @@ class gpio_v2_line_info extends ffi.Opaque {}
 /// @event_type: the type of change with a value from &enum
 /// gpio_v2_line_changed_type
 /// @padding: reserved for future use
-class gpio_v2_line_info_changed extends ffi.Opaque {}
+class gpio_v2_line_info_changed extends ffi.Struct {
+  external gpio_v2_line_info info;
+
+  @ffi.Uint64()
+  external int timestamp_ns;
+
+  @ffi.Uint32()
+  external int event_type;
+
+  @ffi.Uint32()
+  external int _unique_padding_item_0;
+  @ffi.Uint32()
+  external int _unique_padding_item_1;
+  @ffi.Uint32()
+  external int _unique_padding_item_2;
+  @ffi.Uint32()
+  external int _unique_padding_item_3;
+  @ffi.Uint32()
+  external int _unique_padding_item_4;
+
+  /// Helper for array `padding`.
+  ArrayHelper_gpio_v2_line_info_changed_padding_level0 get padding =>
+      ArrayHelper_gpio_v2_line_info_changed_padding_level0(this, [5], 0, 0);
+}
+
+/// Helper for array `padding` in struct `gpio_v2_line_info_changed`.
+class ArrayHelper_gpio_v2_line_info_changed_padding_level0 {
+  final gpio_v2_line_info_changed _struct;
+  final List<int> dimensions;
+  final int level;
+  final int _absoluteIndex;
+  int get length => dimensions[level];
+  ArrayHelper_gpio_v2_line_info_changed_padding_level0(
+      this._struct, this.dimensions, this.level, this._absoluteIndex);
+  void _checkBounds(int index) {
+    if (index >= length || index < 0) {
+      throw RangeError(
+          'Dimension $level: index not in range 0..$length exclusive.');
+    }
+  }
+
+  int operator [](int index) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        return _struct._unique_padding_item_0;
+      case 1:
+        return _struct._unique_padding_item_1;
+      case 2:
+        return _struct._unique_padding_item_2;
+      case 3:
+        return _struct._unique_padding_item_3;
+      case 4:
+        return _struct._unique_padding_item_4;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+
+  void operator []=(int index, int value) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        _struct._unique_padding_item_0 = value;
+        break;
+      case 1:
+        _struct._unique_padding_item_1 = value;
+        break;
+      case 2:
+        _struct._unique_padding_item_2 = value;
+        break;
+      case 3:
+        _struct._unique_padding_item_3 = value;
+        break;
+      case 4:
+        _struct._unique_padding_item_4 = value;
+        break;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+}
 
 /// struct gpio_v2_line_event - The actual event being pushed to userspace
 /// @timestamp_ns: best estimate of time of event occurrence, in nanoseconds.
@@ -984,10 +3213,12 @@ class ArrayHelper_gpio_v2_line_event_padding_level0 {
   final int level;
   final int _absoluteIndex;
   int get length => dimensions[level];
-  ArrayHelper_gpio_v2_line_event_padding_level0(this._struct, this.dimensions, this.level, this._absoluteIndex);
+  ArrayHelper_gpio_v2_line_event_padding_level0(
+      this._struct, this.dimensions, this.level, this._absoluteIndex);
   void _checkBounds(int index) {
     if (index >= length || index < 0) {
-      throw RangeError('Dimension $level: index not in range 0..$length exclusive.');
+      throw RangeError(
+          'Dimension $level: index not in range 0..$length exclusive.');
     }
   }
 
@@ -1051,7 +3282,536 @@ class ArrayHelper_gpio_v2_line_event_padding_level0 {
 ///
 /// Note: This struct is part of ABI v1 and is deprecated.
 /// Use &struct gpio_v2_line_info instead.
-class gpioline_info extends ffi.Opaque {}
+class gpioline_info extends ffi.Struct {
+  @ffi.Uint32()
+  external int line_offset;
+
+  @ffi.Uint32()
+  external int flags;
+
+  @ffi.Uint8()
+  external int _unique_name_item_0;
+  @ffi.Uint8()
+  external int _unique_name_item_1;
+  @ffi.Uint8()
+  external int _unique_name_item_2;
+  @ffi.Uint8()
+  external int _unique_name_item_3;
+  @ffi.Uint8()
+  external int _unique_name_item_4;
+  @ffi.Uint8()
+  external int _unique_name_item_5;
+  @ffi.Uint8()
+  external int _unique_name_item_6;
+  @ffi.Uint8()
+  external int _unique_name_item_7;
+  @ffi.Uint8()
+  external int _unique_name_item_8;
+  @ffi.Uint8()
+  external int _unique_name_item_9;
+  @ffi.Uint8()
+  external int _unique_name_item_10;
+  @ffi.Uint8()
+  external int _unique_name_item_11;
+  @ffi.Uint8()
+  external int _unique_name_item_12;
+  @ffi.Uint8()
+  external int _unique_name_item_13;
+  @ffi.Uint8()
+  external int _unique_name_item_14;
+  @ffi.Uint8()
+  external int _unique_name_item_15;
+  @ffi.Uint8()
+  external int _unique_name_item_16;
+  @ffi.Uint8()
+  external int _unique_name_item_17;
+  @ffi.Uint8()
+  external int _unique_name_item_18;
+  @ffi.Uint8()
+  external int _unique_name_item_19;
+  @ffi.Uint8()
+  external int _unique_name_item_20;
+  @ffi.Uint8()
+  external int _unique_name_item_21;
+  @ffi.Uint8()
+  external int _unique_name_item_22;
+  @ffi.Uint8()
+  external int _unique_name_item_23;
+  @ffi.Uint8()
+  external int _unique_name_item_24;
+  @ffi.Uint8()
+  external int _unique_name_item_25;
+  @ffi.Uint8()
+  external int _unique_name_item_26;
+  @ffi.Uint8()
+  external int _unique_name_item_27;
+  @ffi.Uint8()
+  external int _unique_name_item_28;
+  @ffi.Uint8()
+  external int _unique_name_item_29;
+  @ffi.Uint8()
+  external int _unique_name_item_30;
+  @ffi.Uint8()
+  external int _unique_name_item_31;
+
+  /// Helper for array `name`.
+  ArrayHelper_gpioline_info_name_level0 get name =>
+      ArrayHelper_gpioline_info_name_level0(this, [32], 0, 0);
+  @ffi.Uint8()
+  external int _unique_consumer_item_0;
+  @ffi.Uint8()
+  external int _unique_consumer_item_1;
+  @ffi.Uint8()
+  external int _unique_consumer_item_2;
+  @ffi.Uint8()
+  external int _unique_consumer_item_3;
+  @ffi.Uint8()
+  external int _unique_consumer_item_4;
+  @ffi.Uint8()
+  external int _unique_consumer_item_5;
+  @ffi.Uint8()
+  external int _unique_consumer_item_6;
+  @ffi.Uint8()
+  external int _unique_consumer_item_7;
+  @ffi.Uint8()
+  external int _unique_consumer_item_8;
+  @ffi.Uint8()
+  external int _unique_consumer_item_9;
+  @ffi.Uint8()
+  external int _unique_consumer_item_10;
+  @ffi.Uint8()
+  external int _unique_consumer_item_11;
+  @ffi.Uint8()
+  external int _unique_consumer_item_12;
+  @ffi.Uint8()
+  external int _unique_consumer_item_13;
+  @ffi.Uint8()
+  external int _unique_consumer_item_14;
+  @ffi.Uint8()
+  external int _unique_consumer_item_15;
+  @ffi.Uint8()
+  external int _unique_consumer_item_16;
+  @ffi.Uint8()
+  external int _unique_consumer_item_17;
+  @ffi.Uint8()
+  external int _unique_consumer_item_18;
+  @ffi.Uint8()
+  external int _unique_consumer_item_19;
+  @ffi.Uint8()
+  external int _unique_consumer_item_20;
+  @ffi.Uint8()
+  external int _unique_consumer_item_21;
+  @ffi.Uint8()
+  external int _unique_consumer_item_22;
+  @ffi.Uint8()
+  external int _unique_consumer_item_23;
+  @ffi.Uint8()
+  external int _unique_consumer_item_24;
+  @ffi.Uint8()
+  external int _unique_consumer_item_25;
+  @ffi.Uint8()
+  external int _unique_consumer_item_26;
+  @ffi.Uint8()
+  external int _unique_consumer_item_27;
+  @ffi.Uint8()
+  external int _unique_consumer_item_28;
+  @ffi.Uint8()
+  external int _unique_consumer_item_29;
+  @ffi.Uint8()
+  external int _unique_consumer_item_30;
+  @ffi.Uint8()
+  external int _unique_consumer_item_31;
+
+  /// Helper for array `consumer`.
+  ArrayHelper_gpioline_info_consumer_level0 get consumer =>
+      ArrayHelper_gpioline_info_consumer_level0(this, [32], 0, 0);
+}
+
+/// Helper for array `name` in struct `gpioline_info`.
+class ArrayHelper_gpioline_info_name_level0 {
+  final gpioline_info _struct;
+  final List<int> dimensions;
+  final int level;
+  final int _absoluteIndex;
+  int get length => dimensions[level];
+  ArrayHelper_gpioline_info_name_level0(
+      this._struct, this.dimensions, this.level, this._absoluteIndex);
+  void _checkBounds(int index) {
+    if (index >= length || index < 0) {
+      throw RangeError(
+          'Dimension $level: index not in range 0..$length exclusive.');
+    }
+  }
+
+  int operator [](int index) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        return _struct._unique_name_item_0;
+      case 1:
+        return _struct._unique_name_item_1;
+      case 2:
+        return _struct._unique_name_item_2;
+      case 3:
+        return _struct._unique_name_item_3;
+      case 4:
+        return _struct._unique_name_item_4;
+      case 5:
+        return _struct._unique_name_item_5;
+      case 6:
+        return _struct._unique_name_item_6;
+      case 7:
+        return _struct._unique_name_item_7;
+      case 8:
+        return _struct._unique_name_item_8;
+      case 9:
+        return _struct._unique_name_item_9;
+      case 10:
+        return _struct._unique_name_item_10;
+      case 11:
+        return _struct._unique_name_item_11;
+      case 12:
+        return _struct._unique_name_item_12;
+      case 13:
+        return _struct._unique_name_item_13;
+      case 14:
+        return _struct._unique_name_item_14;
+      case 15:
+        return _struct._unique_name_item_15;
+      case 16:
+        return _struct._unique_name_item_16;
+      case 17:
+        return _struct._unique_name_item_17;
+      case 18:
+        return _struct._unique_name_item_18;
+      case 19:
+        return _struct._unique_name_item_19;
+      case 20:
+        return _struct._unique_name_item_20;
+      case 21:
+        return _struct._unique_name_item_21;
+      case 22:
+        return _struct._unique_name_item_22;
+      case 23:
+        return _struct._unique_name_item_23;
+      case 24:
+        return _struct._unique_name_item_24;
+      case 25:
+        return _struct._unique_name_item_25;
+      case 26:
+        return _struct._unique_name_item_26;
+      case 27:
+        return _struct._unique_name_item_27;
+      case 28:
+        return _struct._unique_name_item_28;
+      case 29:
+        return _struct._unique_name_item_29;
+      case 30:
+        return _struct._unique_name_item_30;
+      case 31:
+        return _struct._unique_name_item_31;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+
+  void operator []=(int index, int value) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        _struct._unique_name_item_0 = value;
+        break;
+      case 1:
+        _struct._unique_name_item_1 = value;
+        break;
+      case 2:
+        _struct._unique_name_item_2 = value;
+        break;
+      case 3:
+        _struct._unique_name_item_3 = value;
+        break;
+      case 4:
+        _struct._unique_name_item_4 = value;
+        break;
+      case 5:
+        _struct._unique_name_item_5 = value;
+        break;
+      case 6:
+        _struct._unique_name_item_6 = value;
+        break;
+      case 7:
+        _struct._unique_name_item_7 = value;
+        break;
+      case 8:
+        _struct._unique_name_item_8 = value;
+        break;
+      case 9:
+        _struct._unique_name_item_9 = value;
+        break;
+      case 10:
+        _struct._unique_name_item_10 = value;
+        break;
+      case 11:
+        _struct._unique_name_item_11 = value;
+        break;
+      case 12:
+        _struct._unique_name_item_12 = value;
+        break;
+      case 13:
+        _struct._unique_name_item_13 = value;
+        break;
+      case 14:
+        _struct._unique_name_item_14 = value;
+        break;
+      case 15:
+        _struct._unique_name_item_15 = value;
+        break;
+      case 16:
+        _struct._unique_name_item_16 = value;
+        break;
+      case 17:
+        _struct._unique_name_item_17 = value;
+        break;
+      case 18:
+        _struct._unique_name_item_18 = value;
+        break;
+      case 19:
+        _struct._unique_name_item_19 = value;
+        break;
+      case 20:
+        _struct._unique_name_item_20 = value;
+        break;
+      case 21:
+        _struct._unique_name_item_21 = value;
+        break;
+      case 22:
+        _struct._unique_name_item_22 = value;
+        break;
+      case 23:
+        _struct._unique_name_item_23 = value;
+        break;
+      case 24:
+        _struct._unique_name_item_24 = value;
+        break;
+      case 25:
+        _struct._unique_name_item_25 = value;
+        break;
+      case 26:
+        _struct._unique_name_item_26 = value;
+        break;
+      case 27:
+        _struct._unique_name_item_27 = value;
+        break;
+      case 28:
+        _struct._unique_name_item_28 = value;
+        break;
+      case 29:
+        _struct._unique_name_item_29 = value;
+        break;
+      case 30:
+        _struct._unique_name_item_30 = value;
+        break;
+      case 31:
+        _struct._unique_name_item_31 = value;
+        break;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+}
+
+/// Helper for array `consumer` in struct `gpioline_info`.
+class ArrayHelper_gpioline_info_consumer_level0 {
+  final gpioline_info _struct;
+  final List<int> dimensions;
+  final int level;
+  final int _absoluteIndex;
+  int get length => dimensions[level];
+  ArrayHelper_gpioline_info_consumer_level0(
+      this._struct, this.dimensions, this.level, this._absoluteIndex);
+  void _checkBounds(int index) {
+    if (index >= length || index < 0) {
+      throw RangeError(
+          'Dimension $level: index not in range 0..$length exclusive.');
+    }
+  }
+
+  int operator [](int index) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        return _struct._unique_consumer_item_0;
+      case 1:
+        return _struct._unique_consumer_item_1;
+      case 2:
+        return _struct._unique_consumer_item_2;
+      case 3:
+        return _struct._unique_consumer_item_3;
+      case 4:
+        return _struct._unique_consumer_item_4;
+      case 5:
+        return _struct._unique_consumer_item_5;
+      case 6:
+        return _struct._unique_consumer_item_6;
+      case 7:
+        return _struct._unique_consumer_item_7;
+      case 8:
+        return _struct._unique_consumer_item_8;
+      case 9:
+        return _struct._unique_consumer_item_9;
+      case 10:
+        return _struct._unique_consumer_item_10;
+      case 11:
+        return _struct._unique_consumer_item_11;
+      case 12:
+        return _struct._unique_consumer_item_12;
+      case 13:
+        return _struct._unique_consumer_item_13;
+      case 14:
+        return _struct._unique_consumer_item_14;
+      case 15:
+        return _struct._unique_consumer_item_15;
+      case 16:
+        return _struct._unique_consumer_item_16;
+      case 17:
+        return _struct._unique_consumer_item_17;
+      case 18:
+        return _struct._unique_consumer_item_18;
+      case 19:
+        return _struct._unique_consumer_item_19;
+      case 20:
+        return _struct._unique_consumer_item_20;
+      case 21:
+        return _struct._unique_consumer_item_21;
+      case 22:
+        return _struct._unique_consumer_item_22;
+      case 23:
+        return _struct._unique_consumer_item_23;
+      case 24:
+        return _struct._unique_consumer_item_24;
+      case 25:
+        return _struct._unique_consumer_item_25;
+      case 26:
+        return _struct._unique_consumer_item_26;
+      case 27:
+        return _struct._unique_consumer_item_27;
+      case 28:
+        return _struct._unique_consumer_item_28;
+      case 29:
+        return _struct._unique_consumer_item_29;
+      case 30:
+        return _struct._unique_consumer_item_30;
+      case 31:
+        return _struct._unique_consumer_item_31;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+
+  void operator []=(int index, int value) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        _struct._unique_consumer_item_0 = value;
+        break;
+      case 1:
+        _struct._unique_consumer_item_1 = value;
+        break;
+      case 2:
+        _struct._unique_consumer_item_2 = value;
+        break;
+      case 3:
+        _struct._unique_consumer_item_3 = value;
+        break;
+      case 4:
+        _struct._unique_consumer_item_4 = value;
+        break;
+      case 5:
+        _struct._unique_consumer_item_5 = value;
+        break;
+      case 6:
+        _struct._unique_consumer_item_6 = value;
+        break;
+      case 7:
+        _struct._unique_consumer_item_7 = value;
+        break;
+      case 8:
+        _struct._unique_consumer_item_8 = value;
+        break;
+      case 9:
+        _struct._unique_consumer_item_9 = value;
+        break;
+      case 10:
+        _struct._unique_consumer_item_10 = value;
+        break;
+      case 11:
+        _struct._unique_consumer_item_11 = value;
+        break;
+      case 12:
+        _struct._unique_consumer_item_12 = value;
+        break;
+      case 13:
+        _struct._unique_consumer_item_13 = value;
+        break;
+      case 14:
+        _struct._unique_consumer_item_14 = value;
+        break;
+      case 15:
+        _struct._unique_consumer_item_15 = value;
+        break;
+      case 16:
+        _struct._unique_consumer_item_16 = value;
+        break;
+      case 17:
+        _struct._unique_consumer_item_17 = value;
+        break;
+      case 18:
+        _struct._unique_consumer_item_18 = value;
+        break;
+      case 19:
+        _struct._unique_consumer_item_19 = value;
+        break;
+      case 20:
+        _struct._unique_consumer_item_20 = value;
+        break;
+      case 21:
+        _struct._unique_consumer_item_21 = value;
+        break;
+      case 22:
+        _struct._unique_consumer_item_22 = value;
+        break;
+      case 23:
+        _struct._unique_consumer_item_23 = value;
+        break;
+      case 24:
+        _struct._unique_consumer_item_24 = value;
+        break;
+      case 25:
+        _struct._unique_consumer_item_25 = value;
+        break;
+      case 26:
+        _struct._unique_consumer_item_26 = value;
+        break;
+      case 27:
+        _struct._unique_consumer_item_27 = value;
+        break;
+      case 28:
+        _struct._unique_consumer_item_28 = value;
+        break;
+      case 29:
+        _struct._unique_consumer_item_29 = value;
+        break;
+      case 30:
+        _struct._unique_consumer_item_30 = value;
+        break;
+      case 31:
+        _struct._unique_consumer_item_31 = value;
+        break;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+}
 
 /// struct gpioline_info_changed - Information about a change in status
 /// of a GPIO line
@@ -1069,7 +3829,88 @@ class gpioline_info extends ffi.Opaque {}
 ///
 /// Note: This struct is part of ABI v1 and is deprecated.
 /// Use &struct gpio_v2_line_info_changed instead.
-class gpioline_info_changed extends ffi.Opaque {}
+class gpioline_info_changed extends ffi.Struct {
+  external gpioline_info info;
+
+  @ffi.Uint64()
+  external int timestamp;
+
+  @ffi.Uint32()
+  external int event_type;
+
+  @ffi.Uint32()
+  external int _unique_padding_item_0;
+  @ffi.Uint32()
+  external int _unique_padding_item_1;
+  @ffi.Uint32()
+  external int _unique_padding_item_2;
+  @ffi.Uint32()
+  external int _unique_padding_item_3;
+  @ffi.Uint32()
+  external int _unique_padding_item_4;
+
+  /// Helper for array `padding`.
+  ArrayHelper_gpioline_info_changed_padding_level0 get padding =>
+      ArrayHelper_gpioline_info_changed_padding_level0(this, [5], 0, 0);
+}
+
+/// Helper for array `padding` in struct `gpioline_info_changed`.
+class ArrayHelper_gpioline_info_changed_padding_level0 {
+  final gpioline_info_changed _struct;
+  final List<int> dimensions;
+  final int level;
+  final int _absoluteIndex;
+  int get length => dimensions[level];
+  ArrayHelper_gpioline_info_changed_padding_level0(
+      this._struct, this.dimensions, this.level, this._absoluteIndex);
+  void _checkBounds(int index) {
+    if (index >= length || index < 0) {
+      throw RangeError(
+          'Dimension $level: index not in range 0..$length exclusive.');
+    }
+  }
+
+  int operator [](int index) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        return _struct._unique_padding_item_0;
+      case 1:
+        return _struct._unique_padding_item_1;
+      case 2:
+        return _struct._unique_padding_item_2;
+      case 3:
+        return _struct._unique_padding_item_3;
+      case 4:
+        return _struct._unique_padding_item_4;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+
+  void operator []=(int index, int value) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        _struct._unique_padding_item_0 = value;
+        break;
+      case 1:
+        _struct._unique_padding_item_1 = value;
+        break;
+      case 2:
+        _struct._unique_padding_item_2 = value;
+        break;
+      case 3:
+        _struct._unique_padding_item_3 = value;
+        break;
+      case 4:
+        _struct._unique_padding_item_4 = value;
+        break;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+}
 
 /// struct gpiohandle_request - Information about a GPIO handle request
 /// @lineoffsets: an array of desired lines, specified by offset index for the
@@ -1094,7 +3935,1247 @@ class gpioline_info_changed extends ffi.Opaque {}
 ///
 /// Note: This struct is part of ABI v1 and is deprecated.
 /// Use &struct gpio_v2_line_request instead.
-class gpiohandle_request extends ffi.Opaque {}
+class gpiohandle_request extends ffi.Struct {
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_0;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_1;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_2;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_3;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_4;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_5;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_6;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_7;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_8;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_9;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_10;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_11;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_12;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_13;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_14;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_15;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_16;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_17;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_18;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_19;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_20;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_21;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_22;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_23;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_24;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_25;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_26;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_27;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_28;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_29;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_30;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_31;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_32;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_33;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_34;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_35;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_36;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_37;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_38;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_39;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_40;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_41;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_42;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_43;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_44;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_45;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_46;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_47;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_48;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_49;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_50;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_51;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_52;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_53;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_54;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_55;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_56;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_57;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_58;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_59;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_60;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_61;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_62;
+  @ffi.Uint32()
+  external int _unique_lineoffsets_item_63;
+
+  /// Helper for array `lineoffsets`.
+  ArrayHelper_gpiohandle_request_lineoffsets_level0 get lineoffsets =>
+      ArrayHelper_gpiohandle_request_lineoffsets_level0(this, [64], 0, 0);
+  @ffi.Uint32()
+  external int flags;
+
+  @ffi.Uint8()
+  external int _unique_default_values_item_0;
+  @ffi.Uint8()
+  external int _unique_default_values_item_1;
+  @ffi.Uint8()
+  external int _unique_default_values_item_2;
+  @ffi.Uint8()
+  external int _unique_default_values_item_3;
+  @ffi.Uint8()
+  external int _unique_default_values_item_4;
+  @ffi.Uint8()
+  external int _unique_default_values_item_5;
+  @ffi.Uint8()
+  external int _unique_default_values_item_6;
+  @ffi.Uint8()
+  external int _unique_default_values_item_7;
+  @ffi.Uint8()
+  external int _unique_default_values_item_8;
+  @ffi.Uint8()
+  external int _unique_default_values_item_9;
+  @ffi.Uint8()
+  external int _unique_default_values_item_10;
+  @ffi.Uint8()
+  external int _unique_default_values_item_11;
+  @ffi.Uint8()
+  external int _unique_default_values_item_12;
+  @ffi.Uint8()
+  external int _unique_default_values_item_13;
+  @ffi.Uint8()
+  external int _unique_default_values_item_14;
+  @ffi.Uint8()
+  external int _unique_default_values_item_15;
+  @ffi.Uint8()
+  external int _unique_default_values_item_16;
+  @ffi.Uint8()
+  external int _unique_default_values_item_17;
+  @ffi.Uint8()
+  external int _unique_default_values_item_18;
+  @ffi.Uint8()
+  external int _unique_default_values_item_19;
+  @ffi.Uint8()
+  external int _unique_default_values_item_20;
+  @ffi.Uint8()
+  external int _unique_default_values_item_21;
+  @ffi.Uint8()
+  external int _unique_default_values_item_22;
+  @ffi.Uint8()
+  external int _unique_default_values_item_23;
+  @ffi.Uint8()
+  external int _unique_default_values_item_24;
+  @ffi.Uint8()
+  external int _unique_default_values_item_25;
+  @ffi.Uint8()
+  external int _unique_default_values_item_26;
+  @ffi.Uint8()
+  external int _unique_default_values_item_27;
+  @ffi.Uint8()
+  external int _unique_default_values_item_28;
+  @ffi.Uint8()
+  external int _unique_default_values_item_29;
+  @ffi.Uint8()
+  external int _unique_default_values_item_30;
+  @ffi.Uint8()
+  external int _unique_default_values_item_31;
+  @ffi.Uint8()
+  external int _unique_default_values_item_32;
+  @ffi.Uint8()
+  external int _unique_default_values_item_33;
+  @ffi.Uint8()
+  external int _unique_default_values_item_34;
+  @ffi.Uint8()
+  external int _unique_default_values_item_35;
+  @ffi.Uint8()
+  external int _unique_default_values_item_36;
+  @ffi.Uint8()
+  external int _unique_default_values_item_37;
+  @ffi.Uint8()
+  external int _unique_default_values_item_38;
+  @ffi.Uint8()
+  external int _unique_default_values_item_39;
+  @ffi.Uint8()
+  external int _unique_default_values_item_40;
+  @ffi.Uint8()
+  external int _unique_default_values_item_41;
+  @ffi.Uint8()
+  external int _unique_default_values_item_42;
+  @ffi.Uint8()
+  external int _unique_default_values_item_43;
+  @ffi.Uint8()
+  external int _unique_default_values_item_44;
+  @ffi.Uint8()
+  external int _unique_default_values_item_45;
+  @ffi.Uint8()
+  external int _unique_default_values_item_46;
+  @ffi.Uint8()
+  external int _unique_default_values_item_47;
+  @ffi.Uint8()
+  external int _unique_default_values_item_48;
+  @ffi.Uint8()
+  external int _unique_default_values_item_49;
+  @ffi.Uint8()
+  external int _unique_default_values_item_50;
+  @ffi.Uint8()
+  external int _unique_default_values_item_51;
+  @ffi.Uint8()
+  external int _unique_default_values_item_52;
+  @ffi.Uint8()
+  external int _unique_default_values_item_53;
+  @ffi.Uint8()
+  external int _unique_default_values_item_54;
+  @ffi.Uint8()
+  external int _unique_default_values_item_55;
+  @ffi.Uint8()
+  external int _unique_default_values_item_56;
+  @ffi.Uint8()
+  external int _unique_default_values_item_57;
+  @ffi.Uint8()
+  external int _unique_default_values_item_58;
+  @ffi.Uint8()
+  external int _unique_default_values_item_59;
+  @ffi.Uint8()
+  external int _unique_default_values_item_60;
+  @ffi.Uint8()
+  external int _unique_default_values_item_61;
+  @ffi.Uint8()
+  external int _unique_default_values_item_62;
+  @ffi.Uint8()
+  external int _unique_default_values_item_63;
+
+  /// Helper for array `default_values`.
+  ArrayHelper_gpiohandle_request_default_values_level0 get default_values =>
+      ArrayHelper_gpiohandle_request_default_values_level0(this, [64], 0, 0);
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_0;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_1;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_2;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_3;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_4;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_5;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_6;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_7;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_8;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_9;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_10;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_11;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_12;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_13;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_14;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_15;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_16;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_17;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_18;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_19;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_20;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_21;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_22;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_23;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_24;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_25;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_26;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_27;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_28;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_29;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_30;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_31;
+
+  /// Helper for array `consumer_label`.
+  ArrayHelper_gpiohandle_request_consumer_label_level0 get consumer_label =>
+      ArrayHelper_gpiohandle_request_consumer_label_level0(this, [32], 0, 0);
+  @ffi.Uint32()
+  external int lines;
+
+  @ffi.Int32()
+  external int fd;
+}
+
+/// Helper for array `lineoffsets` in struct `gpiohandle_request`.
+class ArrayHelper_gpiohandle_request_lineoffsets_level0 {
+  final gpiohandle_request _struct;
+  final List<int> dimensions;
+  final int level;
+  final int _absoluteIndex;
+  int get length => dimensions[level];
+  ArrayHelper_gpiohandle_request_lineoffsets_level0(
+      this._struct, this.dimensions, this.level, this._absoluteIndex);
+  void _checkBounds(int index) {
+    if (index >= length || index < 0) {
+      throw RangeError(
+          'Dimension $level: index not in range 0..$length exclusive.');
+    }
+  }
+
+  int operator [](int index) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        return _struct._unique_lineoffsets_item_0;
+      case 1:
+        return _struct._unique_lineoffsets_item_1;
+      case 2:
+        return _struct._unique_lineoffsets_item_2;
+      case 3:
+        return _struct._unique_lineoffsets_item_3;
+      case 4:
+        return _struct._unique_lineoffsets_item_4;
+      case 5:
+        return _struct._unique_lineoffsets_item_5;
+      case 6:
+        return _struct._unique_lineoffsets_item_6;
+      case 7:
+        return _struct._unique_lineoffsets_item_7;
+      case 8:
+        return _struct._unique_lineoffsets_item_8;
+      case 9:
+        return _struct._unique_lineoffsets_item_9;
+      case 10:
+        return _struct._unique_lineoffsets_item_10;
+      case 11:
+        return _struct._unique_lineoffsets_item_11;
+      case 12:
+        return _struct._unique_lineoffsets_item_12;
+      case 13:
+        return _struct._unique_lineoffsets_item_13;
+      case 14:
+        return _struct._unique_lineoffsets_item_14;
+      case 15:
+        return _struct._unique_lineoffsets_item_15;
+      case 16:
+        return _struct._unique_lineoffsets_item_16;
+      case 17:
+        return _struct._unique_lineoffsets_item_17;
+      case 18:
+        return _struct._unique_lineoffsets_item_18;
+      case 19:
+        return _struct._unique_lineoffsets_item_19;
+      case 20:
+        return _struct._unique_lineoffsets_item_20;
+      case 21:
+        return _struct._unique_lineoffsets_item_21;
+      case 22:
+        return _struct._unique_lineoffsets_item_22;
+      case 23:
+        return _struct._unique_lineoffsets_item_23;
+      case 24:
+        return _struct._unique_lineoffsets_item_24;
+      case 25:
+        return _struct._unique_lineoffsets_item_25;
+      case 26:
+        return _struct._unique_lineoffsets_item_26;
+      case 27:
+        return _struct._unique_lineoffsets_item_27;
+      case 28:
+        return _struct._unique_lineoffsets_item_28;
+      case 29:
+        return _struct._unique_lineoffsets_item_29;
+      case 30:
+        return _struct._unique_lineoffsets_item_30;
+      case 31:
+        return _struct._unique_lineoffsets_item_31;
+      case 32:
+        return _struct._unique_lineoffsets_item_32;
+      case 33:
+        return _struct._unique_lineoffsets_item_33;
+      case 34:
+        return _struct._unique_lineoffsets_item_34;
+      case 35:
+        return _struct._unique_lineoffsets_item_35;
+      case 36:
+        return _struct._unique_lineoffsets_item_36;
+      case 37:
+        return _struct._unique_lineoffsets_item_37;
+      case 38:
+        return _struct._unique_lineoffsets_item_38;
+      case 39:
+        return _struct._unique_lineoffsets_item_39;
+      case 40:
+        return _struct._unique_lineoffsets_item_40;
+      case 41:
+        return _struct._unique_lineoffsets_item_41;
+      case 42:
+        return _struct._unique_lineoffsets_item_42;
+      case 43:
+        return _struct._unique_lineoffsets_item_43;
+      case 44:
+        return _struct._unique_lineoffsets_item_44;
+      case 45:
+        return _struct._unique_lineoffsets_item_45;
+      case 46:
+        return _struct._unique_lineoffsets_item_46;
+      case 47:
+        return _struct._unique_lineoffsets_item_47;
+      case 48:
+        return _struct._unique_lineoffsets_item_48;
+      case 49:
+        return _struct._unique_lineoffsets_item_49;
+      case 50:
+        return _struct._unique_lineoffsets_item_50;
+      case 51:
+        return _struct._unique_lineoffsets_item_51;
+      case 52:
+        return _struct._unique_lineoffsets_item_52;
+      case 53:
+        return _struct._unique_lineoffsets_item_53;
+      case 54:
+        return _struct._unique_lineoffsets_item_54;
+      case 55:
+        return _struct._unique_lineoffsets_item_55;
+      case 56:
+        return _struct._unique_lineoffsets_item_56;
+      case 57:
+        return _struct._unique_lineoffsets_item_57;
+      case 58:
+        return _struct._unique_lineoffsets_item_58;
+      case 59:
+        return _struct._unique_lineoffsets_item_59;
+      case 60:
+        return _struct._unique_lineoffsets_item_60;
+      case 61:
+        return _struct._unique_lineoffsets_item_61;
+      case 62:
+        return _struct._unique_lineoffsets_item_62;
+      case 63:
+        return _struct._unique_lineoffsets_item_63;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+
+  void operator []=(int index, int value) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        _struct._unique_lineoffsets_item_0 = value;
+        break;
+      case 1:
+        _struct._unique_lineoffsets_item_1 = value;
+        break;
+      case 2:
+        _struct._unique_lineoffsets_item_2 = value;
+        break;
+      case 3:
+        _struct._unique_lineoffsets_item_3 = value;
+        break;
+      case 4:
+        _struct._unique_lineoffsets_item_4 = value;
+        break;
+      case 5:
+        _struct._unique_lineoffsets_item_5 = value;
+        break;
+      case 6:
+        _struct._unique_lineoffsets_item_6 = value;
+        break;
+      case 7:
+        _struct._unique_lineoffsets_item_7 = value;
+        break;
+      case 8:
+        _struct._unique_lineoffsets_item_8 = value;
+        break;
+      case 9:
+        _struct._unique_lineoffsets_item_9 = value;
+        break;
+      case 10:
+        _struct._unique_lineoffsets_item_10 = value;
+        break;
+      case 11:
+        _struct._unique_lineoffsets_item_11 = value;
+        break;
+      case 12:
+        _struct._unique_lineoffsets_item_12 = value;
+        break;
+      case 13:
+        _struct._unique_lineoffsets_item_13 = value;
+        break;
+      case 14:
+        _struct._unique_lineoffsets_item_14 = value;
+        break;
+      case 15:
+        _struct._unique_lineoffsets_item_15 = value;
+        break;
+      case 16:
+        _struct._unique_lineoffsets_item_16 = value;
+        break;
+      case 17:
+        _struct._unique_lineoffsets_item_17 = value;
+        break;
+      case 18:
+        _struct._unique_lineoffsets_item_18 = value;
+        break;
+      case 19:
+        _struct._unique_lineoffsets_item_19 = value;
+        break;
+      case 20:
+        _struct._unique_lineoffsets_item_20 = value;
+        break;
+      case 21:
+        _struct._unique_lineoffsets_item_21 = value;
+        break;
+      case 22:
+        _struct._unique_lineoffsets_item_22 = value;
+        break;
+      case 23:
+        _struct._unique_lineoffsets_item_23 = value;
+        break;
+      case 24:
+        _struct._unique_lineoffsets_item_24 = value;
+        break;
+      case 25:
+        _struct._unique_lineoffsets_item_25 = value;
+        break;
+      case 26:
+        _struct._unique_lineoffsets_item_26 = value;
+        break;
+      case 27:
+        _struct._unique_lineoffsets_item_27 = value;
+        break;
+      case 28:
+        _struct._unique_lineoffsets_item_28 = value;
+        break;
+      case 29:
+        _struct._unique_lineoffsets_item_29 = value;
+        break;
+      case 30:
+        _struct._unique_lineoffsets_item_30 = value;
+        break;
+      case 31:
+        _struct._unique_lineoffsets_item_31 = value;
+        break;
+      case 32:
+        _struct._unique_lineoffsets_item_32 = value;
+        break;
+      case 33:
+        _struct._unique_lineoffsets_item_33 = value;
+        break;
+      case 34:
+        _struct._unique_lineoffsets_item_34 = value;
+        break;
+      case 35:
+        _struct._unique_lineoffsets_item_35 = value;
+        break;
+      case 36:
+        _struct._unique_lineoffsets_item_36 = value;
+        break;
+      case 37:
+        _struct._unique_lineoffsets_item_37 = value;
+        break;
+      case 38:
+        _struct._unique_lineoffsets_item_38 = value;
+        break;
+      case 39:
+        _struct._unique_lineoffsets_item_39 = value;
+        break;
+      case 40:
+        _struct._unique_lineoffsets_item_40 = value;
+        break;
+      case 41:
+        _struct._unique_lineoffsets_item_41 = value;
+        break;
+      case 42:
+        _struct._unique_lineoffsets_item_42 = value;
+        break;
+      case 43:
+        _struct._unique_lineoffsets_item_43 = value;
+        break;
+      case 44:
+        _struct._unique_lineoffsets_item_44 = value;
+        break;
+      case 45:
+        _struct._unique_lineoffsets_item_45 = value;
+        break;
+      case 46:
+        _struct._unique_lineoffsets_item_46 = value;
+        break;
+      case 47:
+        _struct._unique_lineoffsets_item_47 = value;
+        break;
+      case 48:
+        _struct._unique_lineoffsets_item_48 = value;
+        break;
+      case 49:
+        _struct._unique_lineoffsets_item_49 = value;
+        break;
+      case 50:
+        _struct._unique_lineoffsets_item_50 = value;
+        break;
+      case 51:
+        _struct._unique_lineoffsets_item_51 = value;
+        break;
+      case 52:
+        _struct._unique_lineoffsets_item_52 = value;
+        break;
+      case 53:
+        _struct._unique_lineoffsets_item_53 = value;
+        break;
+      case 54:
+        _struct._unique_lineoffsets_item_54 = value;
+        break;
+      case 55:
+        _struct._unique_lineoffsets_item_55 = value;
+        break;
+      case 56:
+        _struct._unique_lineoffsets_item_56 = value;
+        break;
+      case 57:
+        _struct._unique_lineoffsets_item_57 = value;
+        break;
+      case 58:
+        _struct._unique_lineoffsets_item_58 = value;
+        break;
+      case 59:
+        _struct._unique_lineoffsets_item_59 = value;
+        break;
+      case 60:
+        _struct._unique_lineoffsets_item_60 = value;
+        break;
+      case 61:
+        _struct._unique_lineoffsets_item_61 = value;
+        break;
+      case 62:
+        _struct._unique_lineoffsets_item_62 = value;
+        break;
+      case 63:
+        _struct._unique_lineoffsets_item_63 = value;
+        break;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+}
+
+/// Helper for array `default_values` in struct `gpiohandle_request`.
+class ArrayHelper_gpiohandle_request_default_values_level0 {
+  final gpiohandle_request _struct;
+  final List<int> dimensions;
+  final int level;
+  final int _absoluteIndex;
+  int get length => dimensions[level];
+  ArrayHelper_gpiohandle_request_default_values_level0(
+      this._struct, this.dimensions, this.level, this._absoluteIndex);
+  void _checkBounds(int index) {
+    if (index >= length || index < 0) {
+      throw RangeError(
+          'Dimension $level: index not in range 0..$length exclusive.');
+    }
+  }
+
+  int operator [](int index) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        return _struct._unique_default_values_item_0;
+      case 1:
+        return _struct._unique_default_values_item_1;
+      case 2:
+        return _struct._unique_default_values_item_2;
+      case 3:
+        return _struct._unique_default_values_item_3;
+      case 4:
+        return _struct._unique_default_values_item_4;
+      case 5:
+        return _struct._unique_default_values_item_5;
+      case 6:
+        return _struct._unique_default_values_item_6;
+      case 7:
+        return _struct._unique_default_values_item_7;
+      case 8:
+        return _struct._unique_default_values_item_8;
+      case 9:
+        return _struct._unique_default_values_item_9;
+      case 10:
+        return _struct._unique_default_values_item_10;
+      case 11:
+        return _struct._unique_default_values_item_11;
+      case 12:
+        return _struct._unique_default_values_item_12;
+      case 13:
+        return _struct._unique_default_values_item_13;
+      case 14:
+        return _struct._unique_default_values_item_14;
+      case 15:
+        return _struct._unique_default_values_item_15;
+      case 16:
+        return _struct._unique_default_values_item_16;
+      case 17:
+        return _struct._unique_default_values_item_17;
+      case 18:
+        return _struct._unique_default_values_item_18;
+      case 19:
+        return _struct._unique_default_values_item_19;
+      case 20:
+        return _struct._unique_default_values_item_20;
+      case 21:
+        return _struct._unique_default_values_item_21;
+      case 22:
+        return _struct._unique_default_values_item_22;
+      case 23:
+        return _struct._unique_default_values_item_23;
+      case 24:
+        return _struct._unique_default_values_item_24;
+      case 25:
+        return _struct._unique_default_values_item_25;
+      case 26:
+        return _struct._unique_default_values_item_26;
+      case 27:
+        return _struct._unique_default_values_item_27;
+      case 28:
+        return _struct._unique_default_values_item_28;
+      case 29:
+        return _struct._unique_default_values_item_29;
+      case 30:
+        return _struct._unique_default_values_item_30;
+      case 31:
+        return _struct._unique_default_values_item_31;
+      case 32:
+        return _struct._unique_default_values_item_32;
+      case 33:
+        return _struct._unique_default_values_item_33;
+      case 34:
+        return _struct._unique_default_values_item_34;
+      case 35:
+        return _struct._unique_default_values_item_35;
+      case 36:
+        return _struct._unique_default_values_item_36;
+      case 37:
+        return _struct._unique_default_values_item_37;
+      case 38:
+        return _struct._unique_default_values_item_38;
+      case 39:
+        return _struct._unique_default_values_item_39;
+      case 40:
+        return _struct._unique_default_values_item_40;
+      case 41:
+        return _struct._unique_default_values_item_41;
+      case 42:
+        return _struct._unique_default_values_item_42;
+      case 43:
+        return _struct._unique_default_values_item_43;
+      case 44:
+        return _struct._unique_default_values_item_44;
+      case 45:
+        return _struct._unique_default_values_item_45;
+      case 46:
+        return _struct._unique_default_values_item_46;
+      case 47:
+        return _struct._unique_default_values_item_47;
+      case 48:
+        return _struct._unique_default_values_item_48;
+      case 49:
+        return _struct._unique_default_values_item_49;
+      case 50:
+        return _struct._unique_default_values_item_50;
+      case 51:
+        return _struct._unique_default_values_item_51;
+      case 52:
+        return _struct._unique_default_values_item_52;
+      case 53:
+        return _struct._unique_default_values_item_53;
+      case 54:
+        return _struct._unique_default_values_item_54;
+      case 55:
+        return _struct._unique_default_values_item_55;
+      case 56:
+        return _struct._unique_default_values_item_56;
+      case 57:
+        return _struct._unique_default_values_item_57;
+      case 58:
+        return _struct._unique_default_values_item_58;
+      case 59:
+        return _struct._unique_default_values_item_59;
+      case 60:
+        return _struct._unique_default_values_item_60;
+      case 61:
+        return _struct._unique_default_values_item_61;
+      case 62:
+        return _struct._unique_default_values_item_62;
+      case 63:
+        return _struct._unique_default_values_item_63;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+
+  void operator []=(int index, int value) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        _struct._unique_default_values_item_0 = value;
+        break;
+      case 1:
+        _struct._unique_default_values_item_1 = value;
+        break;
+      case 2:
+        _struct._unique_default_values_item_2 = value;
+        break;
+      case 3:
+        _struct._unique_default_values_item_3 = value;
+        break;
+      case 4:
+        _struct._unique_default_values_item_4 = value;
+        break;
+      case 5:
+        _struct._unique_default_values_item_5 = value;
+        break;
+      case 6:
+        _struct._unique_default_values_item_6 = value;
+        break;
+      case 7:
+        _struct._unique_default_values_item_7 = value;
+        break;
+      case 8:
+        _struct._unique_default_values_item_8 = value;
+        break;
+      case 9:
+        _struct._unique_default_values_item_9 = value;
+        break;
+      case 10:
+        _struct._unique_default_values_item_10 = value;
+        break;
+      case 11:
+        _struct._unique_default_values_item_11 = value;
+        break;
+      case 12:
+        _struct._unique_default_values_item_12 = value;
+        break;
+      case 13:
+        _struct._unique_default_values_item_13 = value;
+        break;
+      case 14:
+        _struct._unique_default_values_item_14 = value;
+        break;
+      case 15:
+        _struct._unique_default_values_item_15 = value;
+        break;
+      case 16:
+        _struct._unique_default_values_item_16 = value;
+        break;
+      case 17:
+        _struct._unique_default_values_item_17 = value;
+        break;
+      case 18:
+        _struct._unique_default_values_item_18 = value;
+        break;
+      case 19:
+        _struct._unique_default_values_item_19 = value;
+        break;
+      case 20:
+        _struct._unique_default_values_item_20 = value;
+        break;
+      case 21:
+        _struct._unique_default_values_item_21 = value;
+        break;
+      case 22:
+        _struct._unique_default_values_item_22 = value;
+        break;
+      case 23:
+        _struct._unique_default_values_item_23 = value;
+        break;
+      case 24:
+        _struct._unique_default_values_item_24 = value;
+        break;
+      case 25:
+        _struct._unique_default_values_item_25 = value;
+        break;
+      case 26:
+        _struct._unique_default_values_item_26 = value;
+        break;
+      case 27:
+        _struct._unique_default_values_item_27 = value;
+        break;
+      case 28:
+        _struct._unique_default_values_item_28 = value;
+        break;
+      case 29:
+        _struct._unique_default_values_item_29 = value;
+        break;
+      case 30:
+        _struct._unique_default_values_item_30 = value;
+        break;
+      case 31:
+        _struct._unique_default_values_item_31 = value;
+        break;
+      case 32:
+        _struct._unique_default_values_item_32 = value;
+        break;
+      case 33:
+        _struct._unique_default_values_item_33 = value;
+        break;
+      case 34:
+        _struct._unique_default_values_item_34 = value;
+        break;
+      case 35:
+        _struct._unique_default_values_item_35 = value;
+        break;
+      case 36:
+        _struct._unique_default_values_item_36 = value;
+        break;
+      case 37:
+        _struct._unique_default_values_item_37 = value;
+        break;
+      case 38:
+        _struct._unique_default_values_item_38 = value;
+        break;
+      case 39:
+        _struct._unique_default_values_item_39 = value;
+        break;
+      case 40:
+        _struct._unique_default_values_item_40 = value;
+        break;
+      case 41:
+        _struct._unique_default_values_item_41 = value;
+        break;
+      case 42:
+        _struct._unique_default_values_item_42 = value;
+        break;
+      case 43:
+        _struct._unique_default_values_item_43 = value;
+        break;
+      case 44:
+        _struct._unique_default_values_item_44 = value;
+        break;
+      case 45:
+        _struct._unique_default_values_item_45 = value;
+        break;
+      case 46:
+        _struct._unique_default_values_item_46 = value;
+        break;
+      case 47:
+        _struct._unique_default_values_item_47 = value;
+        break;
+      case 48:
+        _struct._unique_default_values_item_48 = value;
+        break;
+      case 49:
+        _struct._unique_default_values_item_49 = value;
+        break;
+      case 50:
+        _struct._unique_default_values_item_50 = value;
+        break;
+      case 51:
+        _struct._unique_default_values_item_51 = value;
+        break;
+      case 52:
+        _struct._unique_default_values_item_52 = value;
+        break;
+      case 53:
+        _struct._unique_default_values_item_53 = value;
+        break;
+      case 54:
+        _struct._unique_default_values_item_54 = value;
+        break;
+      case 55:
+        _struct._unique_default_values_item_55 = value;
+        break;
+      case 56:
+        _struct._unique_default_values_item_56 = value;
+        break;
+      case 57:
+        _struct._unique_default_values_item_57 = value;
+        break;
+      case 58:
+        _struct._unique_default_values_item_58 = value;
+        break;
+      case 59:
+        _struct._unique_default_values_item_59 = value;
+        break;
+      case 60:
+        _struct._unique_default_values_item_60 = value;
+        break;
+      case 61:
+        _struct._unique_default_values_item_61 = value;
+        break;
+      case 62:
+        _struct._unique_default_values_item_62 = value;
+        break;
+      case 63:
+        _struct._unique_default_values_item_63 = value;
+        break;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+}
+
+/// Helper for array `consumer_label` in struct `gpiohandle_request`.
+class ArrayHelper_gpiohandle_request_consumer_label_level0 {
+  final gpiohandle_request _struct;
+  final List<int> dimensions;
+  final int level;
+  final int _absoluteIndex;
+  int get length => dimensions[level];
+  ArrayHelper_gpiohandle_request_consumer_label_level0(
+      this._struct, this.dimensions, this.level, this._absoluteIndex);
+  void _checkBounds(int index) {
+    if (index >= length || index < 0) {
+      throw RangeError(
+          'Dimension $level: index not in range 0..$length exclusive.');
+    }
+  }
+
+  int operator [](int index) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        return _struct._unique_consumer_label_item_0;
+      case 1:
+        return _struct._unique_consumer_label_item_1;
+      case 2:
+        return _struct._unique_consumer_label_item_2;
+      case 3:
+        return _struct._unique_consumer_label_item_3;
+      case 4:
+        return _struct._unique_consumer_label_item_4;
+      case 5:
+        return _struct._unique_consumer_label_item_5;
+      case 6:
+        return _struct._unique_consumer_label_item_6;
+      case 7:
+        return _struct._unique_consumer_label_item_7;
+      case 8:
+        return _struct._unique_consumer_label_item_8;
+      case 9:
+        return _struct._unique_consumer_label_item_9;
+      case 10:
+        return _struct._unique_consumer_label_item_10;
+      case 11:
+        return _struct._unique_consumer_label_item_11;
+      case 12:
+        return _struct._unique_consumer_label_item_12;
+      case 13:
+        return _struct._unique_consumer_label_item_13;
+      case 14:
+        return _struct._unique_consumer_label_item_14;
+      case 15:
+        return _struct._unique_consumer_label_item_15;
+      case 16:
+        return _struct._unique_consumer_label_item_16;
+      case 17:
+        return _struct._unique_consumer_label_item_17;
+      case 18:
+        return _struct._unique_consumer_label_item_18;
+      case 19:
+        return _struct._unique_consumer_label_item_19;
+      case 20:
+        return _struct._unique_consumer_label_item_20;
+      case 21:
+        return _struct._unique_consumer_label_item_21;
+      case 22:
+        return _struct._unique_consumer_label_item_22;
+      case 23:
+        return _struct._unique_consumer_label_item_23;
+      case 24:
+        return _struct._unique_consumer_label_item_24;
+      case 25:
+        return _struct._unique_consumer_label_item_25;
+      case 26:
+        return _struct._unique_consumer_label_item_26;
+      case 27:
+        return _struct._unique_consumer_label_item_27;
+      case 28:
+        return _struct._unique_consumer_label_item_28;
+      case 29:
+        return _struct._unique_consumer_label_item_29;
+      case 30:
+        return _struct._unique_consumer_label_item_30;
+      case 31:
+        return _struct._unique_consumer_label_item_31;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+
+  void operator []=(int index, int value) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        _struct._unique_consumer_label_item_0 = value;
+        break;
+      case 1:
+        _struct._unique_consumer_label_item_1 = value;
+        break;
+      case 2:
+        _struct._unique_consumer_label_item_2 = value;
+        break;
+      case 3:
+        _struct._unique_consumer_label_item_3 = value;
+        break;
+      case 4:
+        _struct._unique_consumer_label_item_4 = value;
+        break;
+      case 5:
+        _struct._unique_consumer_label_item_5 = value;
+        break;
+      case 6:
+        _struct._unique_consumer_label_item_6 = value;
+        break;
+      case 7:
+        _struct._unique_consumer_label_item_7 = value;
+        break;
+      case 8:
+        _struct._unique_consumer_label_item_8 = value;
+        break;
+      case 9:
+        _struct._unique_consumer_label_item_9 = value;
+        break;
+      case 10:
+        _struct._unique_consumer_label_item_10 = value;
+        break;
+      case 11:
+        _struct._unique_consumer_label_item_11 = value;
+        break;
+      case 12:
+        _struct._unique_consumer_label_item_12 = value;
+        break;
+      case 13:
+        _struct._unique_consumer_label_item_13 = value;
+        break;
+      case 14:
+        _struct._unique_consumer_label_item_14 = value;
+        break;
+      case 15:
+        _struct._unique_consumer_label_item_15 = value;
+        break;
+      case 16:
+        _struct._unique_consumer_label_item_16 = value;
+        break;
+      case 17:
+        _struct._unique_consumer_label_item_17 = value;
+        break;
+      case 18:
+        _struct._unique_consumer_label_item_18 = value;
+        break;
+      case 19:
+        _struct._unique_consumer_label_item_19 = value;
+        break;
+      case 20:
+        _struct._unique_consumer_label_item_20 = value;
+        break;
+      case 21:
+        _struct._unique_consumer_label_item_21 = value;
+        break;
+      case 22:
+        _struct._unique_consumer_label_item_22 = value;
+        break;
+      case 23:
+        _struct._unique_consumer_label_item_23 = value;
+        break;
+      case 24:
+        _struct._unique_consumer_label_item_24 = value;
+        break;
+      case 25:
+        _struct._unique_consumer_label_item_25 = value;
+        break;
+      case 26:
+        _struct._unique_consumer_label_item_26 = value;
+        break;
+      case 27:
+        _struct._unique_consumer_label_item_27 = value;
+        break;
+      case 28:
+        _struct._unique_consumer_label_item_28 = value;
+        break;
+      case 29:
+        _struct._unique_consumer_label_item_29 = value;
+        break;
+      case 30:
+        _struct._unique_consumer_label_item_30 = value;
+        break;
+      case 31:
+        _struct._unique_consumer_label_item_31 = value;
+        break;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+}
 
 /// struct gpiohandle_config - Configuration for a GPIO handle request
 /// @flags: updated flags for the requested GPIO lines, such as
@@ -1264,10 +5345,12 @@ class ArrayHelper_gpiohandle_config_default_values_level0 {
   final int level;
   final int _absoluteIndex;
   int get length => dimensions[level];
-  ArrayHelper_gpiohandle_config_default_values_level0(this._struct, this.dimensions, this.level, this._absoluteIndex);
+  ArrayHelper_gpiohandle_config_default_values_level0(
+      this._struct, this.dimensions, this.level, this._absoluteIndex);
   void _checkBounds(int index) {
     if (index >= length || index < 0) {
-      throw RangeError('Dimension $level: index not in range 0..$length exclusive.');
+      throw RangeError(
+          'Dimension $level: index not in range 0..$length exclusive.');
     }
   }
 
@@ -1615,10 +5698,12 @@ class ArrayHelper_gpiohandle_config_padding_level0 {
   final int level;
   final int _absoluteIndex;
   int get length => dimensions[level];
-  ArrayHelper_gpiohandle_config_padding_level0(this._struct, this.dimensions, this.level, this._absoluteIndex);
+  ArrayHelper_gpiohandle_config_padding_level0(
+      this._struct, this.dimensions, this.level, this._absoluteIndex);
   void _checkBounds(int index) {
     if (index >= length || index < 0) {
-      throw RangeError('Dimension $level: index not in range 0..$length exclusive.');
+      throw RangeError(
+          'Dimension $level: index not in range 0..$length exclusive.');
     }
   }
 
@@ -1797,7 +5882,8 @@ class gpiohandle_data extends ffi.Struct {
   external int _unique_values_item_63;
 
   /// Helper for array `values`.
-  ArrayHelper_gpiohandle_data_values_level0 get values => ArrayHelper_gpiohandle_data_values_level0(this, [64], 0, 0);
+  ArrayHelper_gpiohandle_data_values_level0 get values =>
+      ArrayHelper_gpiohandle_data_values_level0(this, [64], 0, 0);
 }
 
 /// Helper for array `values` in struct `gpiohandle_data`.
@@ -1807,10 +5893,12 @@ class ArrayHelper_gpiohandle_data_values_level0 {
   final int level;
   final int _absoluteIndex;
   int get length => dimensions[level];
-  ArrayHelper_gpiohandle_data_values_level0(this._struct, this.dimensions, this.level, this._absoluteIndex);
+  ArrayHelper_gpiohandle_data_values_level0(
+      this._struct, this.dimensions, this.level, this._absoluteIndex);
   void _checkBounds(int index) {
     if (index >= length || index < 0) {
-      throw RangeError('Dimension $level: index not in range 0..$length exclusive.');
+      throw RangeError(
+          'Dimension $level: index not in range 0..$length exclusive.');
     }
   }
 
@@ -2166,7 +6254,280 @@ class ArrayHelper_gpiohandle_data_values_level0 {
 ///
 /// Note: This struct is part of ABI v1 and is deprecated.
 /// Use &struct gpio_v2_line_request instead.
-class gpioevent_request extends ffi.Opaque {}
+class gpioevent_request extends ffi.Struct {
+  @ffi.Uint32()
+  external int lineoffset;
+
+  @ffi.Uint32()
+  external int handleflags;
+
+  @ffi.Uint32()
+  external int eventflags;
+
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_0;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_1;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_2;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_3;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_4;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_5;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_6;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_7;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_8;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_9;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_10;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_11;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_12;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_13;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_14;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_15;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_16;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_17;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_18;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_19;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_20;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_21;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_22;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_23;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_24;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_25;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_26;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_27;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_28;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_29;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_30;
+  @ffi.Uint8()
+  external int _unique_consumer_label_item_31;
+
+  /// Helper for array `consumer_label`.
+  ArrayHelper_gpioevent_request_consumer_label_level0 get consumer_label =>
+      ArrayHelper_gpioevent_request_consumer_label_level0(this, [32], 0, 0);
+  @ffi.Int32()
+  external int fd;
+}
+
+/// Helper for array `consumer_label` in struct `gpioevent_request`.
+class ArrayHelper_gpioevent_request_consumer_label_level0 {
+  final gpioevent_request _struct;
+  final List<int> dimensions;
+  final int level;
+  final int _absoluteIndex;
+  int get length => dimensions[level];
+  ArrayHelper_gpioevent_request_consumer_label_level0(
+      this._struct, this.dimensions, this.level, this._absoluteIndex);
+  void _checkBounds(int index) {
+    if (index >= length || index < 0) {
+      throw RangeError(
+          'Dimension $level: index not in range 0..$length exclusive.');
+    }
+  }
+
+  int operator [](int index) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        return _struct._unique_consumer_label_item_0;
+      case 1:
+        return _struct._unique_consumer_label_item_1;
+      case 2:
+        return _struct._unique_consumer_label_item_2;
+      case 3:
+        return _struct._unique_consumer_label_item_3;
+      case 4:
+        return _struct._unique_consumer_label_item_4;
+      case 5:
+        return _struct._unique_consumer_label_item_5;
+      case 6:
+        return _struct._unique_consumer_label_item_6;
+      case 7:
+        return _struct._unique_consumer_label_item_7;
+      case 8:
+        return _struct._unique_consumer_label_item_8;
+      case 9:
+        return _struct._unique_consumer_label_item_9;
+      case 10:
+        return _struct._unique_consumer_label_item_10;
+      case 11:
+        return _struct._unique_consumer_label_item_11;
+      case 12:
+        return _struct._unique_consumer_label_item_12;
+      case 13:
+        return _struct._unique_consumer_label_item_13;
+      case 14:
+        return _struct._unique_consumer_label_item_14;
+      case 15:
+        return _struct._unique_consumer_label_item_15;
+      case 16:
+        return _struct._unique_consumer_label_item_16;
+      case 17:
+        return _struct._unique_consumer_label_item_17;
+      case 18:
+        return _struct._unique_consumer_label_item_18;
+      case 19:
+        return _struct._unique_consumer_label_item_19;
+      case 20:
+        return _struct._unique_consumer_label_item_20;
+      case 21:
+        return _struct._unique_consumer_label_item_21;
+      case 22:
+        return _struct._unique_consumer_label_item_22;
+      case 23:
+        return _struct._unique_consumer_label_item_23;
+      case 24:
+        return _struct._unique_consumer_label_item_24;
+      case 25:
+        return _struct._unique_consumer_label_item_25;
+      case 26:
+        return _struct._unique_consumer_label_item_26;
+      case 27:
+        return _struct._unique_consumer_label_item_27;
+      case 28:
+        return _struct._unique_consumer_label_item_28;
+      case 29:
+        return _struct._unique_consumer_label_item_29;
+      case 30:
+        return _struct._unique_consumer_label_item_30;
+      case 31:
+        return _struct._unique_consumer_label_item_31;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+
+  void operator []=(int index, int value) {
+    _checkBounds(index);
+    switch (_absoluteIndex + index) {
+      case 0:
+        _struct._unique_consumer_label_item_0 = value;
+        break;
+      case 1:
+        _struct._unique_consumer_label_item_1 = value;
+        break;
+      case 2:
+        _struct._unique_consumer_label_item_2 = value;
+        break;
+      case 3:
+        _struct._unique_consumer_label_item_3 = value;
+        break;
+      case 4:
+        _struct._unique_consumer_label_item_4 = value;
+        break;
+      case 5:
+        _struct._unique_consumer_label_item_5 = value;
+        break;
+      case 6:
+        _struct._unique_consumer_label_item_6 = value;
+        break;
+      case 7:
+        _struct._unique_consumer_label_item_7 = value;
+        break;
+      case 8:
+        _struct._unique_consumer_label_item_8 = value;
+        break;
+      case 9:
+        _struct._unique_consumer_label_item_9 = value;
+        break;
+      case 10:
+        _struct._unique_consumer_label_item_10 = value;
+        break;
+      case 11:
+        _struct._unique_consumer_label_item_11 = value;
+        break;
+      case 12:
+        _struct._unique_consumer_label_item_12 = value;
+        break;
+      case 13:
+        _struct._unique_consumer_label_item_13 = value;
+        break;
+      case 14:
+        _struct._unique_consumer_label_item_14 = value;
+        break;
+      case 15:
+        _struct._unique_consumer_label_item_15 = value;
+        break;
+      case 16:
+        _struct._unique_consumer_label_item_16 = value;
+        break;
+      case 17:
+        _struct._unique_consumer_label_item_17 = value;
+        break;
+      case 18:
+        _struct._unique_consumer_label_item_18 = value;
+        break;
+      case 19:
+        _struct._unique_consumer_label_item_19 = value;
+        break;
+      case 20:
+        _struct._unique_consumer_label_item_20 = value;
+        break;
+      case 21:
+        _struct._unique_consumer_label_item_21 = value;
+        break;
+      case 22:
+        _struct._unique_consumer_label_item_22 = value;
+        break;
+      case 23:
+        _struct._unique_consumer_label_item_23 = value;
+        break;
+      case 24:
+        _struct._unique_consumer_label_item_24 = value;
+        break;
+      case 25:
+        _struct._unique_consumer_label_item_25 = value;
+        break;
+      case 26:
+        _struct._unique_consumer_label_item_26 = value;
+        break;
+      case 27:
+        _struct._unique_consumer_label_item_27 = value;
+        break;
+      case 28:
+        _struct._unique_consumer_label_item_28 = value;
+        break;
+      case 29:
+        _struct._unique_consumer_label_item_29 = value;
+        break;
+      case 30:
+        _struct._unique_consumer_label_item_30 = value;
+        break;
+      case 31:
+        _struct._unique_consumer_label_item_31 = value;
+        break;
+      default:
+        throw Exception('Invalid Array Helper generated.');
+    }
+  }
+}
 
 /// struct gpioevent_data - The actual event being pushed to userspace
 /// @timestamp: best estimate of time of event occurrence, in nanoseconds
@@ -2251,6 +6612,14 @@ class spi_ioc_transfer extends ffi.Struct {
   external int pad;
 }
 
+const int EPOLL_CLOEXEC = 524288;
+
+const int GPIOLINE_CHANGED_REQUESTED = 1;
+
+const int GPIOLINE_CHANGED_RELEASED = 2;
+
+const int GPIOLINE_CHANGED_CONFIG = 3;
+
 const int TCGETS = 21505;
 
 const int TCSETS = 21506;
@@ -2283,7 +6652,7 @@ const int TCSETXF = 21556;
 
 const int TCSETXW = 21557;
 
-const int EPOLL_CLOEXEC = 524288;
+const int EPOLL_CLOEXEC_1 = 524288;
 
 const int EPOLLIN = 1;
 
@@ -3079,6 +7448,16 @@ typedef Native_errno_location = ffi.Pointer<ffi.Int32> Function();
 
 typedef _dart_errno_location = ffi.Pointer<ffi.Int32> Function();
 
+typedef Native_open = ffi.Int32 Function(
+  ffi.Pointer<ffi.Uint8> __file,
+  ffi.Int32 __oflag,
+);
+
+typedef _dart_open = int Function(
+  ffi.Pointer<ffi.Uint8> __file,
+  int __oflag,
+);
+
 typedef Native_close = ffi.Int32 Function(
   ffi.Int32 __fd,
 );
@@ -3097,6 +7476,18 @@ typedef _dart_read = int Function(
   int __fd,
   ffi.Pointer<ffi.Void> __buf,
   int __nbytes,
+);
+
+typedef Native_write = ffi.Int32 Function(
+  ffi.Int32 __fd,
+  ffi.Pointer<ffi.Void> __buf,
+  ffi.Uint32 __n,
+);
+
+typedef _dart_write = int Function(
+  int __fd,
+  ffi.Pointer<ffi.Void> __buf,
+  int __n,
 );
 
 typedef Native_tcgetpgrp = ffi.Int32 Function(
