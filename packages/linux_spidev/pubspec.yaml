@@ -1,6 +1,6 @@
 name: linux_spidev
 description: Dart package for accessing SPI on Linux using the spidev interface.
-version: 0.0.1
+version: 0.1.0
 author: Hannes Winkler
 homepage: https://ardera.dev
 

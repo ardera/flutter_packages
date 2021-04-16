@@ -1,3 +1,8 @@
-## [0.0.1] - TODO: Add release date.
+## [0.1.0]
 
-* TODO: Describe initial release.
+* migrate to null-safety
+* migrate to FFI 1.0
+
+## [0.0.1]
+
+* initial release.

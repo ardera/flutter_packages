@@ -158,12 +158,10 @@ packages:
   ffigen:
     dependency: transitive
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: dc858c9d43f0c03fd91f502133047077c38f98e7
-      url: "git@github.com:ardera/ffigen.git"
-    source: git
-    version: "2.4.1"
+      name: ffigen
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.4.2"
   file:
     dependency: transitive
     description:
