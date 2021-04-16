@@ -1,0 +1,13 @@
+name: example
+description: Example usage of linux_serial.
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.12.0 <3.0.0"
+
+dependencies:
+  linux_serial:
+    path: ../

@@ -1,0 +1,21 @@
+name: libc_bindings_generator
+description: A dart:ffi bindings generator for libc.
+version: 0.0.1
+
+dependencies:
+  ffigen: ^2.4.2
+  ffi: ^1.0.0
+  async: ^2.5.0
+  convert: ^3.0.0
+  crypto: ^3.0.1
+  path: ^1.8.0
+  logging: ^1.0.1
+  source_gen: ^1.0.0
+  analyzer: ^1.3.0
+  win32: ^2.0.5
+  xdg_directories: ^0.2.0
+  dart_style: ^2.0.0
+  code_builder: ^3.7.0
+
+environment:
+  sdk: ">=2.12.0 <3.0.0"
