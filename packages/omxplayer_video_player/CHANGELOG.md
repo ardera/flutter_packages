@@ -1,3 +1,7 @@
+## [2.0.1] - 17.04.2021
+* add supported platforms hint in readme
+* change repo
+
 ## [2.0.0] - 13.03.2021
 
 * Update to null-safe video_player_platform_interface
