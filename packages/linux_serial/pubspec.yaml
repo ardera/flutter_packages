@@ -1,6 +1,6 @@
 name: linux_serial
-description: Dart package for accessing serial on Linux.
-version: 0.1.0-nullsafety.2
+description: Dart package for accessing serial ports on Linux using dart:ffi.
+version: 0.1.0-nullsafety.3
 homepage: https://ardera.dev
 repository: https://github.com/ardera/flutter_packages
 

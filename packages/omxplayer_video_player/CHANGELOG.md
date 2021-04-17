@@ -1,4 +1,4 @@
-## [2.0.1] - 17.04.2021
+## [2.0.0+1] - 17.04.2021
 * add supported platforms hint in readme
 * change repo
 

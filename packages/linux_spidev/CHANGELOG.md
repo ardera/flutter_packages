@@ -1,3 +1,11 @@
+## [0.1.0-nullsafety.3]
+
+* improve readme
+
+## [0.1.0-nullsafety.2]
+
+* include repo link
+
 ## [0.1.0-nullsafety]
 
 * migrate to null-safety

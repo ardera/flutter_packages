@@ -38,8 +38,8 @@ enum SpiTransferMode { single, dual, quad }
 class SpiTransfer<T extends SpiTransferData> {
   SpiTransfer({
     required this.data,
-    required this.properties,
-  });
+    SpiTransferProperties? properties,
+  }) : this.properties = properties ?? SpiTransferProperties.defaultProperties;
 
   final T data;
   final SpiTransferProperties properties;
