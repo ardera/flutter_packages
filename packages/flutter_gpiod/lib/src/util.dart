@@ -25,44 +25,38 @@ void writeStringToArrayHelper(String str, int length, void setElement(int index,
 typedef _dart_errno_location = ffi.Pointer<ffi.Int32> Function();
 
 extension Errno on LibC {
-  int get errno {
+  ffi.Pointer<ffi.Int32> errnoLocation() {
     try {
-      return this.errno_location().value;
+      return this.errno_location();
     } on ArgumentError {}
 
     try {
-      return this
-          .lookup<ffi.NativeFunction<_dart_errno_location>>('__errno')
-          .asFunction<_dart_errno_location>()
-          .call()
-          .value;
+      return this.lookup<ffi.NativeFunction<_dart_errno_location>>('__errno').asFunction<_dart_errno_location>().call();
     } on ArgumentError {}
 
     try {
-      return this
-          .lookup<ffi.NativeFunction<_dart_errno_location>>('errno')
-          .asFunction<_dart_errno_location>()
-          .call()
-          .value;
+      return this.lookup<ffi.NativeFunction<_dart_errno_location>>('errno').asFunction<_dart_errno_location>().call();
     } on ArgumentError {}
 
     try {
       return this
           .lookup<ffi.NativeFunction<_dart_errno_location>>('_dl_errno')
           .asFunction<_dart_errno_location>()
-          .call()
-          .value;
+          .call();
     } on ArgumentError {}
 
     try {
       return this
           .lookup<ffi.NativeFunction<_dart_errno_location>>('__libc_errno')
           .asFunction<_dart_errno_location>()
-          .call()
-          .value;
+          .call();
     } on ArgumentError {}
 
     throw UnsupportedError('Couldn\'t get the errno.');
+  }
+
+  int get errno {
+    return errnoLocation().value;
   }
 }
 

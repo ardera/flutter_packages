@@ -128,13 +128,90 @@ ffi.Pointer<gpioevent_data> newGpioEventData({
   );
 }
 
-void _eventIsolateEntry(Tuple2<SendPort, int> args) {
+int _syscall3<A0, A1, A2>(
+  ffi.Pointer<ffi.Int32> errnoPtr,
+  int Function(A0, A1, A2) fn,
+  A0 arg0,
+  A1 arg1,
+  A2 arg2,
+) {
+  late int ok, errno;
+
+  do {
+    ok = fn(arg0, arg1, arg2);
+    if (ok < 0) {
+      errno = errnoPtr.value;
+    }
+  } while (ok < 0 && errno != EINTR);
+
+  return ok < 0 ? errno : 0;
+}
+
+int _syscall4<A0, A1, A2, A3>(
+  ffi.Pointer<ffi.Int32> errnoPtr,
+  int Function(A0, A1, A2, A3) fn,
+  A0 arg0,
+  A1 arg1,
+  A2 arg2,
+  A3 arg3,
+) {
+  late int ok, errno;
+
+  do {
+    ok = fn(arg0, arg1, arg2, arg3);
+    if (ok < 0) {
+      errno = errnoPtr.value;
+    }
+  } while (ok < 0 && errno != EINTR);
+
+  return ok < 0 ? errno : 0;
+}
+
+void _eventIsolateEntry2(List args) {
   int ok;
 
-  final sendPort = args.item1;
-  final epollFd = args.item2;
+  final sendPort = args[0] as SendPort;
+  final epollFd = args[1] as int;
 
-  final libc = LibC(ffi.DynamicLibrary.open("libc.so.6"));
+  /*
+  final epollWaitAddr = args[2] as int;
+  final epollWait = ffi.Pointer.fromAddress(epollWaitAddr)
+      .cast<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Pointer<epoll_event>, ffi.Int32, ffi.Int32)>>()
+      .asFunction<int Function(int, ffi.Pointer<epoll_event>, int, int)>();
+  */
+
+  final epollWait = args[2] as int Function(int, ffi.Pointer<epoll_event>, int, int);
+
+  /*
+  final epollCtlAddr = args[3] as int;
+  final epollCtl = ffi.Pointer.fromAddress(epollCtlAddr)
+      .cast<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Int32, ffi.Int32, ffi.Pointer<epoll_event>)>>()
+      .asFunction<int Function(int, int, int, ffi.Pointer<epoll_event>)>();
+  */
+
+  final epollCtl = args[3] as int Function(int, int, int, ffi.Pointer<epoll_event>);
+
+  /*
+  final readAddr = args[4] as int?;
+  final readAddr64 = args[5] as int?;
+  late final int Function(int, ffi.Pointer<ffi.Void>, int) read;
+  if (readAddr != null) {
+    read = ffi.Pointer.fromAddress(readAddr)
+        .cast<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Pointer<ffi.Void>, ffi.Uint32)>>()
+        .asFunction();
+  } else if (readAddr64 != null) {
+    read = ffi.Pointer.fromAddress(readAddr64)
+        .cast<ffi.NativeFunction<ffi.Int64 Function(ffi.Int32, ffi.Pointer<ffi.Void>, ffi.Uint64)>>()
+        .asFunction();
+  } else {
+    throw ArgumentError("Either `args[4]` (readAddr) or `args[5]` (readAddr64) must be non-null.");
+  }
+  */
+
+  final read = args[4] as int Function(int, ffi.Pointer<ffi.Void>, int);
+
+  final getErrnoAddr = args[5] as ffi.Pointer<ffi.Int32> Function();
+  final errnoPtr = getErrnoAddr();
 
   final maxEpollEvents = 64;
   final epollEvents = newEpollEvent(count: maxEpollEvents, allocator: ffi.calloc);
@@ -143,26 +220,51 @@ void _eventIsolateEntry(Tuple2<SendPort, int> args) {
   final events = newGpioEventData(count: maxEvents);
 
   while (true) {
-    ok = libc.epoll_wait(epollFd, epollEvents.cast<epoll_event>(), maxEpollEvents, -1);
-    if (ok < 0) {
+    ok = _syscall4(
+      errnoPtr,
+      epollWait,
+      epollFd,
+      epollEvents.cast<epoll_event>(),
+      maxEpollEvents,
+      -1,
+    );
+    if (ok != 0) {
       freeStruct(epollEvents);
       freeStruct(events);
-      throw LinuxError("Could not wait for GPIO events", "epoll_wait", libc.errno);
+      throw LinuxError("Could not wait for GPIO events", "epoll_wait", ok);
     }
 
     final convertedEvents = <List<int>>[];
     var nReady = ok;
-    for (var i = 0; (i < maxEpollEvents) && (nReady > 0); i++) {
+    for (var i = 0; i < maxEpollEvents && nReady > 0; i++) {
       final epollEvent = epollEvents.elementAt(i).ref;
 
       if (epollEvent.events != 0) {
-        ok = libc.read(epollEvent.u64, events.cast<ffi.Void>(), maxEvents * ffi.sizeOf<gpioevent_data>());
-        if (ok < 0) {
+        ok = _syscall3(
+          errnoPtr,
+          read,
+          epollEvent.u64,
+          events.cast<ffi.Void>(),
+          maxEvents * ffi.sizeOf<gpioevent_data>(),
+        );
+        if (ok != 0) {
           freeStruct(epollEvents);
           freeStruct(events);
-          throw LinuxError("Could not read GPIO events from event line fd", "read", libc.errno);
+          throw LinuxError("Could not read GPIO events from event line fd", "read", ok);
         } else if (ok == 0) {
-          libc.epoll_ctl(epollFd, EPOLL_CTL_DEL, epollEvent.u64, ffi.nullptr);
+          ok = _syscall4(
+            errnoPtr,
+            epollCtl,
+            epollFd,
+            EPOLL_CTL_DEL,
+            epollEvent.u64,
+            ffi.nullptr,
+          );
+          if (ok != 0) {
+            freeStruct(epollEvents);
+            freeStruct(events);
+            throw LinuxError("Could not remove line event fd from epoll instance", "epoll_ctl", ok);
+          }
         }
 
         final nEventsRead = ok / ffi.sizeOf<gpioevent_data>();
@@ -186,7 +288,12 @@ class PlatformInterface {
   PlatformInterface._construct(this.libc, this._numChips, this._chipIndexToFd, this._epollFd, this._eventReceivePort);
 
   factory PlatformInterface._private() {
-    final libc = LibC(ffi.DynamicLibrary.open("libc.so.6"));
+    late final LibC libc;
+    if (Platform.isAndroid) {
+      libc = LibC(ffi.DynamicLibrary.open("libc.so"));
+    } else if (Platform.isLinux) {
+      libc = LibC(ffi.DynamicLibrary.open("libc.so.6"));
+    }
 
     final numChips = Directory("/dev")
         .listSync(followLinks: false, recursive: false)
@@ -217,7 +324,10 @@ class PlatformInterface {
 
     final receivePort = ReceivePort();
 
-    Isolate.spawn(_eventIsolateEntry, Tuple2(receivePort.sendPort, epollFd));
+    Isolate.spawn(
+      _eventIsolateEntry2,
+      [receivePort.sendPort, epollFd, libc.epoll_wait, libc.epoll_ctl, libc.read, libc.errnoLocation],
+    );
 
     return PlatformInterface._construct(libc, numChips, chipIndexToFd, epollFd, receivePort);
   }
