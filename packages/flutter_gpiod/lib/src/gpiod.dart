@@ -5,7 +5,6 @@ import 'dart:ffi' as ffi;
 import 'dart:isolate';
 import 'dart:typed_data';
 
-import 'package:tuple/tuple.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 import 'package:ffi/ffi.dart' as ffi show malloc, calloc, Utf8;
