@@ -721,7 +721,11 @@ class PlatformInterface {
   }
 
   bool supportsBias() {
-    assert(Platform.isLinux);
+    if (Platform.isAndroid) {
+      return false;
+    } else if (!Platform.isLinux) {
+      throw StateError("Unsupported OS: ${Platform.operatingSystem}");
+    }
 
     final matches = RegExp("^Linux (\\d*)\\.(\\d*)").firstMatch(Platform.operatingSystemVersion)!;
     if (matches.groupCount == 2) {
