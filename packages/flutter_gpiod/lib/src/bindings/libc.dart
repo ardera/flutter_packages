@@ -141,16 +141,16 @@ typedef _dart_tcgetsid = int Function(
   int __fd,
 );
 
-class _Arch {
-  const _Arch();
+class Arch {
+  const Arch();
 
-  static const arm = _Arch();
-  static const arm64 = _Arch();
-  static const i386 = _Arch();
-  static const amd64 = _Arch();
+  static const arm = Arch();
+  static const arm64 = Arch();
+  static const i386 = Arch();
+  static const amd64 = Arch();
 
-  static _Arch? _current;
-  static _Arch get current {
+  static Arch? _current;
+  static Arch get current {
     if (_current == null) {
       final result = Process.runSync('uname', ['-m']);
       if (result.exitCode != 0) {
@@ -4279,7 +4279,7 @@ class LibC {
   });
 
   factory LibC.fromLookup(ffi.Pointer<T> Function<T extends ffi.NativeType>(String) lookup) {
-    if (_Arch.isArm) {
+    if (Arch.isArm) {
       final _libcArm = arm.LibCPlatformBackend.fromLookup(lookup);
       return LibC._internal(
         lookup: lookup,
@@ -4311,7 +4311,7 @@ class LibC {
         tcflow: _libcArm.tcflow,
         tcgetsid: _libcArm.tcgetsid,
       );
-    } else if (_Arch.isArm64) {
+    } else if (Arch.isArm64) {
       final _libcArm64 = arm64.LibCPlatformBackend.fromLookup(lookup);
       return LibC._internal(
         lookup: lookup,
@@ -4343,7 +4343,7 @@ class LibC {
         tcflow: _libcArm64.tcflow,
         tcgetsid: _libcArm64.tcgetsid,
       );
-    } else if (_Arch.isI386) {
+    } else if (Arch.isI386) {
       final _libcI386 = i386.LibCPlatformBackend.fromLookup(lookup);
       return LibC._internal(
         lookup: lookup,
@@ -4375,7 +4375,7 @@ class LibC {
         tcflow: _libcI386.tcflow,
         tcgetsid: _libcI386.tcgetsid,
       );
-    } else if (_Arch.isAmd64) {
+    } else if (Arch.isAmd64) {
       final _libcAmd64 = amd64.LibCPlatformBackend.fromLookup(lookup);
       return LibC._internal(
         lookup: lookup,
@@ -4420,9 +4420,9 @@ class LibC {
 
   _dart_ioctl_ptr? _ioctl_ptr;
   int ioctl_ptr(int __fd, int __request, ffi.Pointer __pointer) {
-    if (_Arch.isArm || _Arch.isI386) {
+    if (Arch.isArm || Arch.isI386) {
       _ioctl_ptr ??= lookup<ffi.NativeFunction<Native_ioctl_ptr_32>>('ioctl').asFunction<_dart_ioctl_ptr>();
-    } else if (_Arch.isArm64 || _Arch.isAmd64) {
+    } else if (Arch.isArm64 || Arch.isAmd64) {
       _ioctl_ptr ??= lookup<ffi.NativeFunction<Native_ioctl_ptr_64>>('ioctl').asFunction<_dart_ioctl_ptr>();
     }
     return _ioctl_ptr!(__fd, __request, __pointer.cast<ffi.Void>());

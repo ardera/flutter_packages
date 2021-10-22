@@ -166,51 +166,50 @@ int _syscall4<A0, A1, A2, A3>(
   return ok < 0 ? errno : 0;
 }
 
+typedef native_epoll_wait
+    = ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Pointer<epoll_event>, ffi.Int32, ffi.Int32)>;
+typedef dart_epoll_wait = int Function(int, ffi.Pointer<epoll_event>, int, int);
+
+typedef native_epoll_ctl
+    = ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Int32, ffi.Int32, ffi.Pointer<epoll_event>)>;
+typedef dart_epoll_ctl = int Function(int, int, int, ffi.Pointer<epoll_event>);
+
+typedef native_read = ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Pointer<ffi.Void>, ffi.Uint32)>;
+typedef dart_read = int Function(int, ffi.Pointer<ffi.Void>, int);
+
+typedef native_read64 = ffi.NativeFunction<ffi.Int64 Function(ffi.Int32, ffi.Pointer<ffi.Void>, ffi.Uint64)>;
+typedef dart_read64 = dart_read;
+
+typedef native_errno_location = ffi.NativeFunction<ffi.Pointer<ffi.Int32> Function()>;
+typedef dart_errno_location = ffi.Pointer<ffi.Int32> Function();
+
 void _eventIsolateEntry2(List args) {
   int ok;
 
   final sendPort = args[0] as SendPort;
   final epollFd = args[1] as int;
 
-  /*
   final epollWaitAddr = args[2] as int;
-  final epollWait = ffi.Pointer.fromAddress(epollWaitAddr)
-      .cast<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Pointer<epoll_event>, ffi.Int32, ffi.Int32)>>()
-      .asFunction<int Function(int, ffi.Pointer<epoll_event>, int, int)>();
-  */
+  final epollWait = ffi.Pointer.fromAddress(epollWaitAddr).cast<native_epoll_wait>().asFunction<dart_epoll_wait>();
 
-  final epollWait = args[2] as int Function(int, ffi.Pointer<epoll_event>, int, int);
-
-  /*
   final epollCtlAddr = args[3] as int;
-  final epollCtl = ffi.Pointer.fromAddress(epollCtlAddr)
-      .cast<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Int32, ffi.Int32, ffi.Pointer<epoll_event>)>>()
-      .asFunction<int Function(int, int, int, ffi.Pointer<epoll_event>)>();
-  */
+  final epollCtl = ffi.Pointer.fromAddress(epollCtlAddr).cast<native_epoll_ctl>().asFunction<dart_epoll_ctl>();
 
-  final epollCtl = args[3] as int Function(int, int, int, ffi.Pointer<epoll_event>);
-
-  /*
   final readAddr = args[4] as int?;
   final readAddr64 = args[5] as int?;
-  late final int Function(int, ffi.Pointer<ffi.Void>, int) read;
+  late final dart_read read;
   if (readAddr != null) {
-    read = ffi.Pointer.fromAddress(readAddr)
-        .cast<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Pointer<ffi.Void>, ffi.Uint32)>>()
-        .asFunction();
+    read = ffi.Pointer.fromAddress(readAddr).cast<native_read>().asFunction();
   } else if (readAddr64 != null) {
-    read = ffi.Pointer.fromAddress(readAddr64)
-        .cast<ffi.NativeFunction<ffi.Int64 Function(ffi.Int32, ffi.Pointer<ffi.Void>, ffi.Uint64)>>()
-        .asFunction();
+    read = ffi.Pointer.fromAddress(readAddr64).cast<native_read64>().asFunction();
   } else {
     throw ArgumentError("Either `args[4]` (readAddr) or `args[5]` (readAddr64) must be non-null.");
   }
-  */
 
-  final read = args[4] as int Function(int, ffi.Pointer<ffi.Void>, int);
-
-  final getErrnoAddr = args[5] as ffi.Pointer<ffi.Int32> Function();
-  final errnoPtr = getErrnoAddr();
+  final getErrnoLocationAddr = args[5] as int;
+  final getErrnoLocation =
+      ffi.Pointer.fromAddress(getErrnoLocationAddr).cast<native_errno_location>().asFunction<dart_errno_location>();
+  final errnoPtr = getErrnoLocation();
 
   final maxEpollEvents = 64;
   final epollEvents = newEpollEvent(count: maxEpollEvents, allocator: ffi.calloc);
@@ -325,7 +324,15 @@ class PlatformInterface {
 
     Isolate.spawn(
       _eventIsolateEntry2,
-      [receivePort.sendPort, epollFd, libc.epoll_wait, libc.epoll_ctl, libc.read, libc.errnoLocation],
+      [
+        receivePort.sendPort,
+        epollFd,
+        libc.lookup("epoll_wait").address,
+        libc.lookup("epoll_ctl").address,
+        Arch.isArm || Arch.isI386 ? libc.lookup("read").address : null,
+        Arch.isArm64 || Arch.isAmd64 ? libc.lookup("read").address : null,
+        libc.getGetErrnoLocation().address,
+      ],
     );
 
     return PlatformInterface._construct(libc, numChips, chipIndexToFd, epollFd, receivePort);
