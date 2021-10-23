@@ -20,13 +20,13 @@ class SysrootDictEntry {
 class SysrootDict {
   static final instance = SysrootDict();
 
-  Uri get _chromiumSysrootDictUri => Uri.parse(
-        'https://chromium.googlesource.com/chromium/src/build/+/master/linux/sysroot_scripts/sysroots.json?format=TEXT',
-      );
+  late final _chromiumSysrootDictUri = Uri.parse(
+    'https://chromium.googlesource.com/chromium/src/build/+/master/linux/sysroot_scripts/sysroots.json?format=TEXT',
+  );
 
-  Uri get _dartSysrootDictUri => Uri.parse(
-        'https://raw.githubusercontent.com/dart-lang/sdk/master/build/linux/sysroot_scripts/sysroots.json',
-      );
+  late final Uri _dartSysrootDictUri = Uri.parse(
+    'https://raw.githubusercontent.com/dart-lang/sdk/master/build/linux/sysroot_scripts/sysroots.json',
+  );
 
   Future<Map<String, dynamic>> get _json async {
     final chromiumJsonString = await httpGetString(_chromiumSysrootDictUri, base64: true);

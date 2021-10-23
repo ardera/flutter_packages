@@ -27,8 +27,14 @@ class LibCPlatformBackend {
   final AssetId? backendFile;
   final LibraryReader? reader;
 
-  const LibCPlatformBackend(this.arch, this.platform,
-      [this.sysroot, this.backendFileContents, this.backendFile, this.reader]);
+  const LibCPlatformBackend(
+    this.arch,
+    this.platform, [
+    this.sysroot,
+    this.backendFileContents,
+    this.backendFile,
+    this.reader,
+  ]);
 
   factory LibCPlatformBackend.fromJsonAndPackage(dynamic json, String package) {
     final typedMap = (json as Map).cast<String, dynamic>();
@@ -226,6 +232,7 @@ class LibCPlatformBackendGenerator extends Generator {
   static const _kSevenZipCommand = 'sevenZipCommand';
   static const _kWindowsLlvmPath = 'windowsLlvmPath';
   static const _kLinuxLlvmPath = 'linuxLlvmPath';
+  static const _kFfigenOptions = 'ffigen-options';
   static const _cacheDirName = 'dart_libc_bindings_generator';
 
   final Logger _logger;
@@ -245,10 +252,14 @@ class LibCPlatformBackendGenerator extends Generator {
     }
   }
 
+  Map<String, dynamic>? get _ffigenOptions => (_options[_kFfigenOptions] as Map?)?.cast<String, dynamic>();
+
   Future<LibCPlatformBackend> _ensureSysrootInstalled({required LibCPlatformBackend backend}) async {
     final cacheDir = getApplicationSupportDirectory(_cacheDirName);
 
-    if (!await cacheDir.exists()) await cacheDir.create(recursive: true);
+    if (!await cacheDir.exists()) {
+      await cacheDir.create(recursive: true);
+    }
 
     final entry = await SysrootDict.instance.lookupForTarget(
       arch: backend.arch,
@@ -298,6 +309,7 @@ class LibCPlatformBackendGenerator extends Generator {
 
   Future<LibCPlatformBackend> _generatePlatformBackend({
     required LibCPlatformBackend backend,
+    required Map<String, dynamic> ffigenOptions,
   }) async {
     final arch = backend.arch;
     final sysroot = backend.sysroot!;
@@ -306,71 +318,106 @@ class LibCPlatformBackendGenerator extends Generator {
     final classname = 'LibCPlatformBackend';
 
     final config = ffigen.Config.fromYaml(YamlMap.wrap({
-//    ffigen.llvmLib: '',
       if (_llvmPath != null) ffigen.llvmPath: [_llvmPath],
       ffigen.output: Directory.systemTemp.path,
       ffigen.headers: {
-        ffigen.entryPoints: getHeaderEntryPointsForSearchPaths(searchPaths),
-        ffigen.includeDirectives: headerIncludeDirectives,
+        ffigen.entryPoints: YamlList.wrap(
+          getHeaderEntryPointsForSearchPaths(
+            ffigenOptions[ffigen.headers][ffigen.entryPoints].cast<String>(),
+            searchPaths,
+          ),
+        ),
+        if (ffigenOptions[ffigen.headers][ffigen.includeDirectives] != null)
+          ffigen.includeDirectives: ffigenOptions[ffigen.headers][ffigen.includeDirectives],
       },
-      ffigen.compilerOpts: [
+      ffigen.compilerOpts: YamlList.wrap([
         '--target=${arch.targetTriple}',
         ...getClangIncludeDirectives(searchPaths),
         '-nostdinc',
         '-nostdlib',
         if (arch == TargetArch.arm) '-D__ARM_PCS_VFP',
-      ],
+        ...?ffigenOptions[ffigen.compilerOpts]
+      ]),
 //    ffigen.compilerOptsAuto: {
 //      ffigen.macos: {
 //        ffigen.includeCStdLib: null,
 //      },
 //    },
-      ffigen.functions: {
-        ffigen.include: functionIncludes,
-        //ffigen.exclude: [],
-        ffigen.rename: functionRenames,
-        //ffigen.memberRename: {},
-        ffigen.symbolAddress: {
-          ffigen.include: ['.*']
-        },
-      },
-      ffigen.structs: {
-        ffigen.include: structIncludes,
-        //ffigen.exclude: [],
-        //ffigen.rename: {},
-        //ffigen.memberRename: {},
-        //ffigen.symbolAddress: {},
-        ffigen.structDependencies: ffigen.fullStructDependencies
-      },
-      ffigen.enums: {
-        ffigen.include: enumIncludes,
-        //ffigen.exclude: [],
-        ffigen.rename: enumRenames,
-        //ffigen.memberRename: {},
-        //ffigen.symbolAddress: {},
-      },
-      ffigen.unnamedEnums: {
-        ffigen.include: unnamedEnumInludes,
-        //ffigen.exclude: ['.*'],
-        //ffigen.rename: {},
-        //ffigen.memberRename: {},
-        //ffigen.symbolAddress: {},
-      },
-      ffigen.globals: {
-        //ffigen.include: [],
-        ffigen.exclude: ['.*'],
-        //ffigen.rename: {},
-        //ffigen.memberRename: {},
-        //ffigen.symbolAddress: {},
-      },
-      ffigen.macros: {
-        ffigen.include: macroIncludes,
-        //ffigen.exclude: [],
-        //ffigen.rename: {},
-        //ffigen.memberRename: {},
-        //ffigen.symbolAddress: {},
-      },
-      ffigen.sizemap: {
+      ffigen.functions: ffigenOptions[ffigen.functions],
+//    {
+//      ffigen.include: ffigenOptions['functionIncludes'],
+//      ffigen.exclude: ffigenOptions[],
+//      ffigen.rename: ffigenOptions['functionRenames'],
+//      ffigen.symbolAddress: {
+//        ffigen.include: ffigenOptions['functionSymbolAddressIncludes'],
+//        ffigen.exclude: ffigenOptions['functionSymbolAddressExcldues']
+//      },
+//      ffigen.exposeFunctionTypedefs: true,
+//      ffigen.leafFunctions: {
+//        ffigen.include: ffigenOptions['leafFunctionIncludes'],
+//        ffigen.exclude: ffigenOptions['leafFunctionExcludes']
+//      }
+//    },
+      ffigen.structs: ffigenOptions[ffigen.structs],
+//    ffigen.structs: {
+//      ffigen.include: structIncludes,
+//      ffigen.exclude: [],
+//      ffigen.rename: {},
+//      ffigen.memberRename: {},
+//      ffigen.symbolAddress: {},
+//      ffigen.dependencyOnly: ffigen.fullCompoundDependencies
+//       ffigen.structPack:
+//    },
+      ffigen.unions: ffigenOptions[ffigen.unions],
+//    ffigen.unions: {
+//      ffigen.include: unionIncludes,
+//      ffigen.exclude: [],
+//      ffigen.rename: {},
+//      ffigen.memberRename: {},
+//      ffigen.symbolAddress: {},
+//      ffigen.dependencyOnly: ffigen.fullCompoundDependencies
+//    },
+      ffigen.enums: ffigenOptions[ffigen.enums],
+//    ffigen.enums: {
+//      ffigen.include: enumIncludes,
+//      ffigen.exclude: [],
+//      ffigen.rename: enumRenames,
+//      ffigen.memberRename: {},
+//      ffigen.symbolAddress: {},
+//    },
+      ffigen.unnamedEnums: ffigenOptions[ffigen.unnamedEnums],
+//    ffigen.unnamedEnums: {
+//      ffigen.include: unnamedEnumInludes,
+//      ffigen.exclude: ['.*'],
+//      ffigen.rename: {},
+//      ffigen.memberRename: {},
+//      ffigen.symbolAddress: {},
+//    },
+      ffigen.globals: ffigenOptions[ffigen.globals],
+//    ffigen.globals: {
+//      ffigen.include: [],
+//      ffigen.exclude: ['.*'],
+//      ffigen.rename: {},
+//      ffigen.memberRename: {},
+//      ffigen.symbolAddress: {},
+//    },
+      ffigen.macros: ffigenOptions[ffigen.macros],
+//    ffigen.macros: {
+//      ffigen.include: macroIncludes,
+//      ffigen.exclude: [],
+//      ffigen.rename: {},
+//      ffigen.memberRename: {},
+//      ffigen.symbolAddress: {},
+//    },
+      ffigen.typedefs: ffigenOptions[ffigen.typedefs],
+//    ffigen.typedefs: {
+//      ffigen.include: typedefIncludes,
+//      ffigen.exclude: [],
+//      ffigen.rename: {},
+//      ffigen.memberRename: {},
+//      ffigen.symbolAddress: {},
+//    },
+      ffigen.sizemap: YamlMap.wrap({
         ffigen.SChar: arch.charSize,
         ffigen.UChar: arch.unsignedCharSize,
         ffigen.Short: arch.shortSize,
@@ -382,21 +429,17 @@ class LibCPlatformBackendGenerator extends Generator {
         ffigen.LongLong: arch.longLongSize,
         ffigen.ULongLong: arch.unsignedLongLongSize,
         ffigen.Enum: arch.enumSize,
-      },
+      }),
+//    ffigen.typedefmap: {},
       ffigen.sort: false,
 //    ffigen.useSupportedTypedefs: true,
-//    ffigen.warnWhenRemoving: true,
-      ffigen.arrayWorkaround: true,
+//    ffigen.comments: {ffigen.style: 'any', ffigen.length: 'full'},
 //    ffigen.dartBool: true,
-//    ffigen.useDartHandle: true,
-//    ffigen.comments: {
-//      ffigen.style: 'any',
-//      ffigen.length: 'full',
-//    },
       ffigen.name: classname,
       ffigen.description: 'libc backend for ${arch.name}',
       ffigen.preamble:
           '// ignore_for_file: non_constant_identifier_names, camel_case_types, unnecessary_brace_in_string_interps, unused_element\n'
+//    ffigen.useDartHandle: true,
     }));
 
     _logger.info('Generating bindings...');
@@ -422,7 +465,10 @@ class LibCPlatformBackendGenerator extends Generator {
     backend = await _ensureSysrootInstalled(backend: backend);
 
     _logger.info('Generating backend $backend...');
-    backend = await _generatePlatformBackend(backend: backend);
+    backend = await _generatePlatformBackend(
+      backend: backend,
+      ffigenOptions: _ffigenOptions ?? const <String, dynamic>{},
+    );
 
     return DartFormatter().format(backend.backendFileContents!);
   }

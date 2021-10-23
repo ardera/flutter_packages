@@ -105,17 +105,6 @@ void freeStruct<T extends ffi.NativeType>(
   return allocator.free(pointer);
 }
 
-ffi.Pointer<epoll_event> newEpollEvent({
-  int count = 1,
-  ffi.Allocator allocator = ffi.malloc,
-}) {
-  return newStruct<epoll_event>(
-    count: count,
-    elementSize: ffi.sizeOf<epoll_event>(),
-    allocator: allocator,
-  );
-}
-
 ffi.Pointer<gpioevent_data> newGpioEventData({
   int count = 1,
   ffi.Allocator allocator = ffi.malloc,
@@ -166,13 +155,11 @@ int _syscall4<A0, A1, A2, A3>(
   return ok < 0 ? errno : 0;
 }
 
-typedef native_epoll_wait
-    = ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Pointer<epoll_event>, ffi.Int32, ffi.Int32)>;
-typedef dart_epoll_wait = int Function(int, ffi.Pointer<epoll_event>, int, int);
+typedef native_epoll_wait = ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Pointer, ffi.Int32, ffi.Int32)>;
+typedef dart_epoll_wait = int Function(int, ffi.Pointer, int, int);
 
-typedef native_epoll_ctl
-    = ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Int32, ffi.Int32, ffi.Pointer<epoll_event>)>;
-typedef dart_epoll_ctl = int Function(int, int, int, ffi.Pointer<epoll_event>);
+typedef native_epoll_ctl = ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Int32, ffi.Int32, ffi.Pointer)>;
+typedef dart_epoll_ctl = int Function(int, int, int, ffi.Pointer);
 
 typedef native_read = ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Pointer<ffi.Void>, ffi.Uint32)>;
 typedef dart_read = int Function(int, ffi.Pointer<ffi.Void>, int);
@@ -190,10 +177,16 @@ void _eventIsolateEntry2(List args) {
   final epollFd = args[1] as int;
 
   final epollWaitAddr = args[2] as int;
-  final epollWait = ffi.Pointer.fromAddress(epollWaitAddr).cast<native_epoll_wait>().asFunction<dart_epoll_wait>();
+  final epollWaitRaw = ffi.Pointer.fromAddress(epollWaitAddr).cast<native_epoll_wait>().asFunction<dart_epoll_wait>();
+  int epollWait(int epfd, epoll_event_ptr events, int maxevents, int timeout) {
+    return epollWaitRaw(epfd, events.backing, maxevents, timeout);
+  }
 
   final epollCtlAddr = args[3] as int;
-  final epollCtl = ffi.Pointer.fromAddress(epollCtlAddr).cast<native_epoll_ctl>().asFunction<dart_epoll_ctl>();
+  final epollCtlRaw = ffi.Pointer.fromAddress(epollCtlAddr).cast<native_epoll_ctl>().asFunction<dart_epoll_ctl>();
+  int epollCtl(int epfd, int op, int fd, epoll_event_ptr event) {
+    return epollCtlRaw(epfd, op, fd, event.backing);
+  }
 
   final readAddr = args[4] as int?;
   final readAddr64 = args[5] as int?;
@@ -212,7 +205,7 @@ void _eventIsolateEntry2(List args) {
   final errnoPtr = getErrnoLocation();
 
   final maxEpollEvents = 64;
-  final epollEvents = newEpollEvent(count: maxEpollEvents, allocator: ffi.calloc);
+  final epollEvents = epoll_event_ptr.allocate(allocator: ffi.calloc, count: maxEpollEvents);
 
   final maxEvents = 16;
   final events = newGpioEventData(count: maxEvents);
@@ -222,12 +215,12 @@ void _eventIsolateEntry2(List args) {
       errnoPtr,
       epollWait,
       epollFd,
-      epollEvents.cast<epoll_event>(),
+      epollEvents,
       maxEpollEvents,
       -1,
     );
     if (ok != 0) {
-      freeStruct(epollEvents);
+      epollEvents.free();
       freeStruct(events);
       throw LinuxError("Could not wait for GPIO events", "epoll_wait", ok);
     }
@@ -235,7 +228,7 @@ void _eventIsolateEntry2(List args) {
     final convertedEvents = <List<int>>[];
     var nReady = ok;
     for (var i = 0; i < maxEpollEvents && nReady > 0; i++) {
-      final epollEvent = epollEvents.elementAt(i).ref;
+      final epollEvent = epollEvents.elementAt(i);
 
       if (epollEvent.events != 0) {
         ok = _syscall3(
@@ -246,7 +239,7 @@ void _eventIsolateEntry2(List args) {
           maxEvents * ffi.sizeOf<gpioevent_data>(),
         );
         if (ok != 0) {
-          freeStruct(epollEvents);
+          epollEvents.free();
           freeStruct(events);
           throw LinuxError("Could not read GPIO events from event line fd", "read", ok);
         } else if (ok == 0) {
@@ -256,10 +249,10 @@ void _eventIsolateEntry2(List args) {
             epollFd,
             EPOLL_CTL_DEL,
             epollEvent.u64,
-            ffi.nullptr,
+            epoll_event_ptr.nullptr,
           );
           if (ok != 0) {
-            freeStruct(epollEvents);
+            epollEvents.free();
             freeStruct(events);
             throw LinuxError("Could not remove line event fd from epoll instance", "epoll_ctl", ok);
           }
@@ -303,7 +296,7 @@ class PlatformInterface {
     for (var i = 0; i < numChips; i++) {
       final pathPtr = "/dev/gpiochip$i".toNativeUtf8();
 
-      final fd = libc.open(pathPtr.cast<ffi.Void>(), O_RDWR | O_CLOEXEC);
+      final fd = libc.open(pathPtr.cast<ffi.Int8>(), O_RDWR | O_CLOEXEC);
 
       ffi.malloc.free(pathPtr);
 
@@ -327,11 +320,11 @@ class PlatformInterface {
       [
         receivePort.sendPort,
         epollFd,
-        libc.lookup("epoll_wait").address,
-        libc.lookup("epoll_ctl").address,
-        Arch.isArm || Arch.isI386 ? libc.lookup("read").address : null,
-        Arch.isArm64 || Arch.isAmd64 ? libc.lookup("read").address : null,
-        libc.getGetErrnoLocation().address,
+        libc.addresses.epoll_wait,
+        libc.addresses.epoll_ctl,
+        Arch.isArm || Arch.isI386 ? libc.addresses.read : null,
+        Arch.isArm64 || Arch.isAmd64 ? libc.addresses.read : null,
+        libc.errno_location_symbol_address,
       ],
     );
 
@@ -359,7 +352,7 @@ class PlatformInterface {
   }
 
   void _ioctl(int fd, int request, ffi.Pointer argp) {
-    final result = libc.ioctl_ptr(fd, request, argp);
+    final result = libc.ioctl_ptr(fd, request, argp.cast<ffi.Void>());
     if (result < 0) {
       throw LinuxError("GPIO ioctl failed", "ioctl", libc.errno);
     }
@@ -433,8 +426,8 @@ class PlatformInterface {
       _ioctl(_chipFdFromChipIndex(chipIndex), GPIO_GET_CHIPINFO_IOCTL, structPtr);
 
       map = <String, dynamic>{
-        'name': stringFromInlineArray(struct.name.length, (i) => struct.name[i]),
-        'label': stringFromInlineArray(struct.label.length, (i) => struct.label[i]),
+        'name': stringFromInlineArray(32, (i) => struct.name[i]),
+        'label': stringFromInlineArray(32, (i) => struct.label[i]),
         'numLines': struct.lines
       };
     } finally {
@@ -469,8 +462,8 @@ class PlatformInterface {
       final isKernel = struct.flags & GPIOLINE_FLAG_KERNEL > 0;
 
       info = LineInfo(
-        name: stringFromInlineArray(struct.name.length, (i) => struct.name[i]),
-        consumer: stringFromInlineArray(struct.name.length, (i) => struct.consumer[i]),
+        name: stringFromInlineArray(32, (i) => struct.name[i]),
+        consumer: stringFromInlineArray(32, (i) => struct.consumer[i]),
         direction: isOut ? LineDirection.output : LineDirection.input,
         outputMode: isOpenDrain
             ? OutputMode.openDrain
@@ -536,7 +529,7 @@ class PlatformInterface {
       request.lines = 1;
       request.lineoffsets[0] = offset;
 
-      writeStringToArrayHelper(consumer, request.consumer_label.length, (i, v) => request.consumer_label[i] = v);
+      writeStringToArrayHelper(consumer, 32, (i, v) => request.consumer_label[i] = v);
 
       request.flags = (direction == LineDirection.input ? GPIOHANDLE_REQUEST_INPUT : GPIOHANDLE_REQUEST_OUTPUT) |
           (outputMode == OutputMode.openDrain
@@ -569,7 +562,7 @@ class PlatformInterface {
       final request = requestPtr.ref;
 
       request.lineoffset = offset;
-      writeStringToArrayHelper(consumer, request.consumer_label.length, (i, v) => request.consumer_label[i] = v);
+      writeStringToArrayHelper(consumer, 32, (i, v) => request.consumer_label[i] = v);
       request.handleflags = GPIOHANDLE_REQUEST_INPUT |
           (bias == Bias.disable
               ? GPIOHANDLE_REQUEST_BIAS_DISABLE
@@ -591,15 +584,14 @@ class PlatformInterface {
         _requestedLines.add(lineHandle);
         _lineHandleToLineEventFd[lineHandle] = request.fd;
 
-        final epollEventPtr = newEpollEvent();
-        final epollEvent = epollEventPtr.ref;
+        final epollEvent = epoll_event_ptr.allocate();
 
         epollEvent.events = EPOLLIN | EPOLLPRI;
         epollEvent.u64 = request.fd;
 
-        final result = libc.epoll_ctl(_epollFd, EPOLL_CTL_ADD, request.fd, epollEventPtr);
+        final result = libc.epoll_ctl(_epollFd, EPOLL_CTL_ADD, request.fd, epollEvent);
 
-        freeStruct(epollEventPtr);
+        epollEvent.free();
 
         if (result < 0) {
           final errno = libc.errno;

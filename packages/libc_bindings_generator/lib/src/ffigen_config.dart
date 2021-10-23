@@ -22,60 +22,14 @@ const headerIncludeDirectives = [
   //'**if**.h',
 ];
 
-List<String> getHeaderEntryPointsForSearchPath(Directory searchPath) {
-  Directory sys = searchPath.childDir('sys');
-  Directory linux = searchPath.childDir('linux');
-  //Directory linuxCan = linux.childDir('can');
-  Directory linuxSpi = linux.childDir('spi');
-  //Directory net = searchPath.childDir('net');
-
+List<String> getHeaderEntryPointsForSearchPath(List<String> entryPoints, Directory searchPath) {
   return [
-    // /usr/include headers
-    ...[
-      'errno.h',
-      'fcntl.h',
-      'unistd.h',
-      'termios.h',
-    ].map(searchPath.childFile),
-
-    // /usr/include/sys headers
-    ...[
-      'ioctl.h',
-      'types.h',
-      'stat.h',
-      'epoll.h',
-      //'socket.h',
-    ].map(sys.childFile),
-
-    /*
-    ...[
-      'if.h',
-    ].map(net.childFile),
-    */
-
-    // /usr/include/linux headers
-    ...[
-      'gpio.h',
-      //'can.h',
-    ].map(linux.childFile),
-
-    // /usr/include/linux/can
-    /*
-    ...[
-      'raw.h',
-      'error.h',
-    ].map(linuxCan.childFile),
-    */
-
-    // /usr/include/linux/spi headers
-    ...[
-      'spidev.h',
-    ].map(linuxSpi.childFile),
-  ].map((f) => f.path).toList();
+    for (final entryPoint in entryPoints) searchPath.childFile(entryPoint).path,
+  ];
 }
 
-List<String> getHeaderEntryPointsForSearchPaths(List<Directory> searchPaths) {
-  return [for (final searchPath in searchPaths) ...getHeaderEntryPointsForSearchPath(searchPath)];
+List<String> getHeaderEntryPointsForSearchPaths(List<String> entryPoints, List<Directory> searchPaths) {
+  return [for (final searchPath in searchPaths) ...getHeaderEntryPointsForSearchPath(entryPoints, searchPath)];
 }
 
 List<Directory> getIncludeSearchPaths(Directory sysroot, TargetArch arch) {
@@ -146,6 +100,10 @@ const functionRenames = {
   '__errno_location': 'errno_location',
 };
 
+const leafFunctions = [
+  '**',
+];
+
 const structIncludes = [
   // serial
   'termios',
@@ -179,6 +137,8 @@ const structIncludes = [
   'can_filter'
   */
 ];
+
+const unionIncludes = [];
 
 const unnamedEnumInludes = [
   /*
@@ -252,3 +212,5 @@ const macroIncludes = [
   'CANFD_.*',
   */
 ];
+
+const typedefIncludes = [];
