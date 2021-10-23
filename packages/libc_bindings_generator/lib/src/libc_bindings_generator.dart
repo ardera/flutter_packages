@@ -181,7 +181,7 @@ class FrontendLibrary implements Spec {
   }
 
   @override
-  R? accept<R extends Object?>(SpecVisitor<R?> visitor, [R? context]) {
+  R accept<R>(SpecVisitor<R> visitor, [R? context]) {
     return library.accept(visitor, context);
   }
 }
@@ -196,7 +196,11 @@ class LibCBindingsGenerator extends Generator {
     required Set<LibCPlatformBackend> backends,
     required BuildStep step,
   }) async {
-    final emitter = DartEmitter(Allocator.none, true, true);
+    final emitter = DartEmitter(
+      allocator: Allocator.none,
+      orderDirectives: true,
+      useNullSafetySyntax: true,
+    );
     final frontendLib = FrontendLibrary(backends);
     return DartFormatter().format('${frontendLib.accept(emitter)}');
   }
@@ -215,7 +219,7 @@ class LibCPlatformBackendGenerator extends Generator {
   LibCPlatformBackendGenerator({
     required Map<String, dynamic> options,
     required Logger logger,
-  })   : this._options = options,
+  })  : this._options = options,
         this._logger = logger;
 
   static final _kTargetDistro = 'distro';
