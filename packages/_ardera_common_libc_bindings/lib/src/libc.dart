@@ -12,12 +12,14 @@ export 'libc_arm.dart';
 
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, camel_case_types, unnecessary_brace_in_string_interps
 class Arch {
-  const Arch();
+  const Arch(this.name);
 
-  static const arm = Arch();
-  static const arm64 = Arch();
-  static const i386 = Arch();
-  static const amd64 = Arch();
+  final String name;
+
+  static const arm = Arch('arm');
+  static const arm64 = Arch('arm64');
+  static const i386 = Arch('i386');
+  static const amd64 = Arch('amd64');
 
   static Arch? _current;
   static Arch get current {

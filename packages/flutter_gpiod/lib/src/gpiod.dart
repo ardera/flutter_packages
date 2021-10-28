@@ -116,9 +116,9 @@ int _syscall3<A0, A1, A2>(
     if (ok < 0) {
       errno = errnoPtr.value;
     }
-  } while (ok < 0 && errno != EINTR);
+  } while (ok < 0 && errno == EINTR);
 
-  return ok < 0 ? errno : 0;
+  return ok < 0 ? -errno : ok;
 }
 
 int _syscall4<A0, A1, A2, A3>(
@@ -136,9 +136,9 @@ int _syscall4<A0, A1, A2, A3>(
     if (ok < 0) {
       errno = errnoPtr.value;
     }
-  } while (ok < 0 && errno != EINTR);
+  } while (ok < 0 && errno == EINTR);
 
-  return ok < 0 ? errno : 0;
+  return ok < 0 ? -errno : ok;
 }
 
 typedef native_epoll_wait = ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Pointer, ffi.Int32, ffi.Int32)>;
@@ -185,9 +185,10 @@ void _eventIsolateEntry2(List args) {
     throw ArgumentError("Either `args[4]` (readAddr) or `args[5]` (readAddr64) must be non-null.");
   }
 
-  final getErrnoLocationAddr = args[5] as int;
+  final getErrnoLocationAddr = args[6] as int;
   final getErrnoLocation =
       ffi.Pointer.fromAddress(getErrnoLocationAddr).cast<native_errno_location>().asFunction<dart_errno_location>();
+
   final errnoPtr = getErrnoLocation();
 
   final maxEpollEvents = 64;
@@ -205,10 +206,10 @@ void _eventIsolateEntry2(List args) {
       maxEpollEvents,
       -1,
     );
-    if (ok != 0) {
+    if (ok < 0) {
       epollEvents.free();
       freeStruct(events);
-      throw LinuxError("Could not wait for GPIO events", "epoll_wait", ok);
+      throw LinuxError("Could not wait for GPIO events", "epoll_wait", -ok);
     }
 
     final convertedEvents = <List<int>>[];
@@ -227,7 +228,7 @@ void _eventIsolateEntry2(List args) {
         if (ok != 0) {
           epollEvents.free();
           freeStruct(events);
-          throw LinuxError("Could not read GPIO events from event line fd", "read", ok);
+          throw LinuxError("Could not read GPIO events from event line fd", "read", -ok);
         } else if (ok == 0) {
           ok = _syscall4(
             errnoPtr,
@@ -240,7 +241,7 @@ void _eventIsolateEntry2(List args) {
           if (ok != 0) {
             epollEvents.free();
             freeStruct(events);
-            throw LinuxError("Could not remove line event fd from epoll instance", "epoll_ctl", ok);
+            throw LinuxError("Could not remove line event fd from epoll instance", "epoll_ctl", -ok);
           }
         }
 
