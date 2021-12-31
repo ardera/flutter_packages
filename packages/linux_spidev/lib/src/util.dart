@@ -1,6 +1,6 @@
 import 'dart:ffi' as ffi;
 
-import 'package:_ardera_common_libc_bindings/common_libc_bindings.dart';
+import 'package:_ardera_common_libc_bindings/_ardera_common_libc_bindings.dart';
 
 /// ioctl request code for synchronously performing [count] SPI transfers.
 /// Usage like this:
