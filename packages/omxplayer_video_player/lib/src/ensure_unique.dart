@@ -30,10 +30,13 @@ class UniqueRegistry implements ValueListenable<_EnsureUniqueState?> {
   @override
   _EnsureUniqueState? get value => _notifier.value;
 
-  bool isRegistered(Key key, State state) => _registry.containsKey(key) && _registry[key]!.contains(state);
+  bool isRegistered(Key key, State state) =>
+      _registry.containsKey(key) && _registry[key]!.contains(state);
 
   void register(Key key, State state) {
-    _registry.putIfAbsent(key, () => <_EnsureUniqueState>[]).insert(0, state as _EnsureUniqueState);
+    _registry
+        .putIfAbsent(key, () => <_EnsureUniqueState>[])
+        .insert(0, state as _EnsureUniqueState);
 
     // don't call this synchronously, since we're probably building widgets right now.
     _callDeferred(() => _notifier.value = _registry[key]!.first);
@@ -56,7 +59,8 @@ class _EnsureUniqueKey extends GlobalObjectKey {
 }
 
 class EnsureUnique extends StatefulWidget {
-  EnsureUnique({this.strict = false, required this.identity, required this.child});
+  EnsureUnique(
+      {this.strict = false, required this.identity, required this.child});
 
   final bool strict;
   final Key identity;
@@ -99,7 +103,8 @@ class _EnsureUniqueState extends State<EnsureUnique> {
   @override
   Widget build(BuildContext context) {
     if (_lastParent != _parent) {
-      if (_lastParent != null && UniqueRegistry.instance.isRegistered(widget.identity, this)) {
+      if (_lastParent != null &&
+          UniqueRegistry.instance.isRegistered(widget.identity, this)) {
         UniqueRegistry.instance.unregister(widget.identity, this);
       }
 

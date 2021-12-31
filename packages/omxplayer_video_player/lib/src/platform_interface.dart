@@ -11,7 +11,9 @@ class _PlatformInterface {
     final lib = ffi.DynamicLibrary.process();
 
     try {
-      final isPresent = lib.lookupFunction<omxpvidpp_is_present_func, OmxpvidppIsPresent>("omxpvidpp_is_present");
+      final isPresent =
+          lib.lookupFunction<omxpvidpp_is_present_func, OmxpvidppIsPresent>(
+              "omxpvidpp_is_present");
       return _PlatformInterface._constructor(isPresent);
     } on ArgumentError {
       return _PlatformInterface._constructor(null);
@@ -59,7 +61,8 @@ class _PlatformInterface {
           return VideoEvent(
             eventType: VideoEventType.initialized,
             duration: Duration(milliseconds: map['duration']),
-            size: Size(map['width']?.toDouble() ?? 0.0, map['height']?.toDouble() ?? 0.0),
+            size: Size(map['width']?.toDouble() ?? 0.0,
+                map['height']?.toDouble() ?? 0.0),
           );
         case 'completed':
           return VideoEvent(
@@ -83,7 +86,8 @@ class _PlatformInterface {
   }
 
   Future<void> setLooping(int playerId, bool looping) {
-    return _channel.invokeMethod<void>('setLooping', {'playerId': playerId, 'looping': looping});
+    return _channel.invokeMethod<void>(
+        'setLooping', {'playerId': playerId, 'looping': looping});
   }
 
   Future<void> play(int playerId) {
@@ -99,24 +103,29 @@ class _PlatformInterface {
   }
 
   Future<void> setVolume(int playerId, double volume) {
-    return _channel.invokeMethod<void>('setVolume', {'playerId': playerId, 'volume': volume});
+    return _channel.invokeMethod<void>(
+        'setVolume', {'playerId': playerId, 'volume': volume});
   }
 
   Future<void> seekTo(int playerId, Duration position) {
-    return _channel.invokeMethod<void>('seekTo', {'playerId': playerId, 'position': position.inMilliseconds});
+    return _channel.invokeMethod<void>(
+        'seekTo', {'playerId': playerId, 'position': position.inMilliseconds});
   }
 
   Future<Duration> getPosition(int playerId) async {
-    final result = (await _channel.invokeMethod<int>('getPosition', {'playerId': playerId}))!;
+    final result = (await _channel
+        .invokeMethod<int>('getPosition', {'playerId': playerId}))!;
     return Duration(milliseconds: result);
   }
 
   Future<void> createPlatformView(int playerId, int platformViewId) {
-    return _channel.invokeMethod<void>('createPlatformView', {'playerId': playerId, 'platformViewId': platformViewId});
+    return _channel.invokeMethod<void>('createPlatformView',
+        {'playerId': playerId, 'platformViewId': platformViewId});
   }
 
   Future<void> disposePlatformView(int playerId, int platformViewId) {
-    return _channel.invokeMethod<void>('disposePlatformView', {'playerId': playerId, 'platformViewId': platformViewId});
+    return _channel.invokeMethod<void>('disposePlatformView',
+        {'playerId': playerId, 'platformViewId': platformViewId});
   }
 
   DurationRange _toDurationRange(dynamic value) {

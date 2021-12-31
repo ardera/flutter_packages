@@ -57,3 +57,7 @@ scripts:
     select-package:
       flutter: true
       dir-exists: test
+
+  format:
+    run: melos exec -c 1 "flutter format ."
+    description: Format all packages using flutter format

@@ -53,16 +53,22 @@ class TargetArch {
 
   static const arm = TargetArch.smallLong('arm', 'arm-linux-gnueabihf');
   static const arm64 = TargetArch.largeLong('arm64', 'aarch64-linux-gnu');
-  static const i386 = TargetArch.smallLong('i386', 'i386-linux-gnu', gccDirName: 'i686-linux-gnu', aliases: ['x86']);
-  static const amd64 = TargetArch.largeLong('amd64', 'x86_64-linux-gnu', aliases: ['x64']);
-  static const mips = TargetArch.smallLong('mips', 'mipsel-linux-gnu', aliases: ['mipsel']);
-  static const mips64el = TargetArch.largeLong('mips64el', 'mips64el-linux-gnuabi64', aliases: ['mips64']);
+  static const i386 = TargetArch.smallLong('i386', 'i386-linux-gnu',
+      gccDirName: 'i686-linux-gnu', aliases: ['x86']);
+  static const amd64 =
+      TargetArch.largeLong('amd64', 'x86_64-linux-gnu', aliases: ['x64']);
+  static const mips =
+      TargetArch.smallLong('mips', 'mipsel-linux-gnu', aliases: ['mipsel']);
+  static const mips64el = TargetArch.largeLong(
+      'mips64el', 'mips64el-linux-gnuabi64',
+      aliases: ['mips64']);
 
   static const values = <TargetArch>{arm, arm64, i386, amd64, mips, mips64el};
 
   factory TargetArch.forNameOrAlias(String nameOrAlias) {
-    return values
-        .singleWhere((element) => element.name == nameOrAlias || element.aliases.any((alias) => alias == nameOrAlias));
+    return values.singleWhere((element) =>
+        element.name == nameOrAlias ||
+        element.aliases.any((alias) => alias == nameOrAlias));
   }
 
   String toString() => 'TargetArch.$name';

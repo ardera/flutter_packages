@@ -30,35 +30,44 @@ class OmxplayerVideoPlayer extends VideoPlayerPlatform {
   Future<void> init() => _PlatformInterface.instance.init();
 
   @override
-  Future<void> dispose(int textureId) => _PlatformInterface.instance.dispose(textureId);
+  Future<void> dispose(int textureId) =>
+      _PlatformInterface.instance.dispose(textureId);
 
   @override
-  Future<int?> create(DataSource dataSource) => _PlatformInterface.instance.create(dataSource);
+  Future<int?> create(DataSource dataSource) =>
+      _PlatformInterface.instance.create(dataSource);
 
   @override
-  Stream<VideoEvent> videoEventsFor(int textureId) => _PlatformInterface.instance.videoEventsFor(textureId);
+  Stream<VideoEvent> videoEventsFor(int textureId) =>
+      _PlatformInterface.instance.videoEventsFor(textureId);
 
   @override
-  Future<void> setLooping(int textureId, bool looping) => _PlatformInterface.instance.setLooping(textureId, looping);
+  Future<void> setLooping(int textureId, bool looping) =>
+      _PlatformInterface.instance.setLooping(textureId, looping);
 
   @override
-  Future<void> play(int textureId) => _PlatformInterface.instance.play(textureId);
+  Future<void> play(int textureId) =>
+      _PlatformInterface.instance.play(textureId);
 
   @override
-  Future<void> pause(int textureId) => _PlatformInterface.instance.pause(textureId);
+  Future<void> pause(int textureId) =>
+      _PlatformInterface.instance.pause(textureId);
 
   @override
-  Future<void> setVolume(int textureId, double volume) => _PlatformInterface.instance.setVolume(textureId, volume);
+  Future<void> setVolume(int textureId, double volume) =>
+      _PlatformInterface.instance.setVolume(textureId, volume);
 
   @override
-  Future<void> seekTo(int textureId, Duration position) => _PlatformInterface.instance.seekTo(textureId, position);
+  Future<void> seekTo(int textureId, Duration position) =>
+      _PlatformInterface.instance.seekTo(textureId, position);
 
   /// TODO(ardera): Implement setPlaybackSpeed
   @override
   Future<void> setPlaybackSpeed(int textureId, double speed) => Future.value();
 
   @override
-  Future<Duration> getPosition(int textureId) => _PlatformInterface.instance.getPosition(textureId);
+  Future<Duration> getPosition(int textureId) =>
+      _PlatformInterface.instance.getPosition(textureId);
 
   @override
 
@@ -86,5 +95,6 @@ class OmxplayerVideoPlayer extends VideoPlayerPlatform {
     VideoPlayerPlatform.instance = OmxplayerVideoPlayer._(strictViewBehaviour);
   }
 
-  static bool isPlatformSidePresent() => _PlatformInterface.instance.isPlatformSidePresent();
+  static bool isPlatformSidePresent() =>
+      _PlatformInterface.instance.isPlatformSidePresent();
 }

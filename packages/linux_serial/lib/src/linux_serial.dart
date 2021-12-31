@@ -19,7 +19,8 @@ import 'package:_ardera_common_libc_bindings/_ardera_common_libc_bindings.dart';
 extension StringUtf8Pointer on String {
   ffi.Pointer<ffi.Utf8> toNativeUtf8({ffi.Allocator allocator = ffi.malloc}) {
     final units = utf8.encode(this);
-    final ffi.Pointer<ffi.Uint8> result = allocator<ffi.Uint8>(units.length + 1);
+    final ffi.Pointer<ffi.Uint8> result =
+        allocator<ffi.Uint8>(units.length + 1);
     final Uint8List nativeString = result.asTypedList(units.length + 1);
     nativeString.setAll(0, units);
     nativeString[units.length] = 0;
@@ -143,7 +144,8 @@ class SynchronousComputer implements Computer {
         return computer.compute<P, R>(fn, param: param);
       });
     } else {
-      throw StateError("compute called but Computer is not running and not turning on right now.");
+      throw StateError(
+          "compute called but Computer is not running and not turning on right now.");
     }
   }
 
@@ -165,7 +167,8 @@ class SynchronousComputer implements Computer {
 
       return onTurnedOn!.then((value) => computer.turnOff());
     } else {
-      throw StateError("turnOff called but Computer is not running and not turning on right now.");
+      throw StateError(
+          "turnOff called but Computer is not running and not turning on right now.");
     }
   }
 
@@ -176,7 +179,9 @@ class SynchronousComputer implements Computer {
     } else if (_onTurnedOn != null) {
       throw StateError("turnOn called but Computer is currently turning on");
     } else {
-      _onTurnedOn = _computer.turnOn(workersCount: workersCount, verbose: verbose).then((_) {
+      _onTurnedOn = _computer
+          .turnOn(workersCount: workersCount, verbose: verbose)
+          .then((_) {
         _isRunning = true;
       }).whenComplete(() {
         _onTurnedOn = null;
@@ -197,7 +202,10 @@ int executeWrite(Tuple4<int, int, int, int> param) {
   final length = param.item4;
 
   final write = ffi.Pointer.fromAddress(writeFuncAddr)
-      .cast<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Pointer<ffi.Void>, ffi.Uint32)>>()
+      .cast<
+          ffi.NativeFunction<
+              ffi.Int32 Function(
+                  ffi.Int32, ffi.Pointer<ffi.Void>, ffi.Uint32)>>()
       .asFunction<int Function(int, ffi.Pointer<ffi.Void>, int)>();
 
   final buffer = ffi.Pointer<ffi.Uint8>.fromAddress(bufferAddr);
@@ -216,7 +224,8 @@ int executeWrite(Tuple4<int, int, int, int> param) {
 }
 
 class PlatformInterface {
-  PlatformInterface._construct(this.dylib, this.libc, this.epollFd, this.onFdReady);
+  PlatformInterface._construct(
+      this.dylib, this.libc, this.epollFd, this.onFdReady);
 
   factory PlatformInterface._private() {
     final dylib = ffi.DynamicLibrary.open("libc.so.6");
@@ -230,7 +239,10 @@ class PlatformInterface {
     final epollFd = result;
     final receivePort = ReceivePort();
     Isolate.spawn(epollerEntry, Tuple2(receivePort.sendPort, epollFd));
-    final fdReadyStream = receivePort.cast<List>().map((list) => list.cast<int>()).asBroadcastStream();
+    final fdReadyStream = receivePort
+        .cast<List>()
+        .map((list) => list.cast<int>())
+        .asBroadcastStream();
 
     return PlatformInterface._construct(dylib, libc, epollFd, fdReadyStream);
   }
@@ -254,7 +266,8 @@ class PlatformInterface {
 
     libc.tcgetattr(fd, ptr);
 
-    ptr.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
+    ptr.c_iflag &=
+        ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
     ptr.c_oflag &= ~OPOST;
     ptr.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
     ptr.c_cflag &= ~(CSIZE | PARENB);
@@ -277,7 +290,8 @@ class PlatformInterface {
       throw OSError("Could not get termios state for serial port. (tcgetattr)");
     }
 
-    ptr.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
+    ptr.c_iflag &=
+        ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
     ptr.c_oflag &= ~OPOST;
     ptr.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
     ptr.c_cflag &= ~(CSIZE | PARENB);
@@ -294,7 +308,8 @@ class PlatformInterface {
     result = libc.cfsetospeed(ptr, baudrate.asLinuxValue);
     if (result < 0) {
       ptr.free();
-      throw OSError("Could not set output speed for serial port. (cfsetospeed)");
+      throw OSError(
+          "Could not set output speed for serial port. (cfsetospeed)");
     }
 
     result = libc.tcsetattr(fd, TCSANOW, ptr);
@@ -309,7 +324,8 @@ class PlatformInterface {
   int open(String path, {Baudrate? baudrate}) {
     final allocatedPath = path.toNativeUtf8();
 
-    var result = libc.open(allocatedPath.cast(), O_RDWR | O_CLOEXEC | O_NONBLOCK);
+    var result =
+        libc.open(allocatedPath.cast(), O_RDWR | O_CLOEXEC | O_NONBLOCK);
 
     ffi.malloc.free(allocatedPath);
 
@@ -332,7 +348,9 @@ class PlatformInterface {
 
     final epollEvent = epoll_event_ptr.allocate(allocator: ffi.calloc);
 
-    epollEvent.events = EPOLL_EVENTS.EPOLLIN | EPOLL_EVENTS.EPOLLPRI | EPOLL_EVENTS.EPOLLONESHOT;
+    epollEvent.events = EPOLL_EVENTS.EPOLLIN |
+        EPOLL_EVENTS.EPOLLPRI |
+        EPOLL_EVENTS.EPOLLONESHOT;
     epollEvent.u64 = fd;
 
     result = libc.epoll_ctl(epollFd, EPOLL_CTL_ADD, fd, epollEvent);
@@ -373,8 +391,10 @@ class PlatformInterface {
 
     ptr.free();
 
-    final inputBaudrate = Baudrate.values.singleWhere((element) => element.asLinuxValue == inputSpeedAsLinuxValue);
-    final outputBaudrate = Baudrate.values.singleWhere((element) => element.asLinuxValue == outputSpeedAsLinuxValue);
+    final inputBaudrate = Baudrate.values.singleWhere(
+        (element) => element.asLinuxValue == inputSpeedAsLinuxValue);
+    final outputBaudrate = Baudrate.values.singleWhere(
+        (element) => element.asLinuxValue == outputSpeedAsLinuxValue);
 
     if (inputBaudrate.inBaudsPerSecond < outputBaudrate.inBaudsPerSecond) {
       return inputBaudrate;
@@ -391,7 +411,8 @@ class PlatformInterface {
   }
 
   void arm(int fd) {
-    final result = libc.epoll_ctl(epollFd, EPOLL_CTL_MOD, fd, _epollEventForFd[fd]!);
+    final result =
+        libc.epoll_ctl(epollFd, EPOLL_CTL_MOD, fd, _epollEventForFd[fd]!);
     if (result != 0) {
       throw OSError("Could not arm fd events. (epoll_ctl)");
     }
@@ -415,7 +436,8 @@ class PlatformInterface {
 
     return _computerForFd[fd]!
         .compute<Tuple4<int, int, int, int>, int>(executeWrite,
-            param: Tuple4<int, int, int, int>(fd, dylib.lookup("write").address, buffer.address, bufferSize))
+            param: Tuple4<int, int, int, int>(
+                fd, dylib.lookup("write").address, buffer.address, bufferSize))
         .then((result) {
       if (result < 0) {
         throw OSError("Could not write to serial port. (write)");
@@ -579,7 +601,9 @@ class SerialPorts {
     return Directory(
       "/sys/dev/char",
     ).listSync(followLinks: false).map((element) {
-      final match = RegExp("^([0-9]*):([0-9]*)\$").allMatches(basename(element.path)).single;
+      final match = RegExp("^([0-9]*):([0-9]*)\$")
+          .allMatches(basename(element.path))
+          .single;
       final major = int.parse(match.group(1)!);
       final minor = int.parse(match.group(2)!);
       final name = basename(element.resolveSymbolicLinksSync());
@@ -601,7 +625,8 @@ class SerialPorts {
       final major = e.item2;
       final minor = e.item3;
 
-      return SerialPort("/dev/$name", major, minor, _getDescriptionForMagicNumbers(major, minor) ?? "");
+      return SerialPort("/dev/$name", major, minor,
+          _getDescriptionForMagicNumbers(major, minor) ?? "");
     }).toSet();
   }
 }
@@ -688,7 +713,8 @@ class _StringReaderImpl extends StringReader {
 
   Future<String> read({int? numBytes, int? length}) async {
     if ((numBytes != null) == (length != null)) {
-      throw ArgumentError("Exactly one of `numBytes` or `length` must be given.");
+      throw ArgumentError(
+          "Exactly one of `numBytes` or `length` must be given.");
     }
 
     final encoding = this.encoding;
@@ -746,7 +772,8 @@ int getBytesPerChar(Encoding encoding) {
   } else if (encoding is Latin1Codec) {
     return 1;
   } else {
-    throw ArgumentError.value(encoding, "Encoding doesn't have a static number of bytes per character.");
+    throw ArgumentError.value(encoding,
+        "Encoding doesn't have a static number of bytes per character.");
   }
 }
 
@@ -762,14 +789,17 @@ class SerialPortHandle implements StringSink, StringReader {
         onListen: () {
           PlatformInterface.instance.flushInput(fd);
 
-          fdReadySubscription = PlatformInterface.instance.onFdReady.listen((fds) {
+          fdReadySubscription =
+              PlatformInterface.instance.onFdReady.listen((fds) {
             if (fds.contains(fd)) {
-              final actuallyRead = PlatformInterface.instance.read(fd, readBuffer, _bufferSize);
+              final actuallyRead =
+                  PlatformInterface.instance.read(fd, readBuffer, _bufferSize);
 
               PlatformInterface.instance.arm(fd);
 
               if (actuallyRead > 0) {
-                final copiedBytes = List<int>.unmodifiable(Uint8List.fromList(readBuffer.asTypedList(actuallyRead)));
+                final copiedBytes = List<int>.unmodifiable(
+                    Uint8List.fromList(readBuffer.asTypedList(actuallyRead)));
                 inputController.add(copiedBytes);
               }
             }
@@ -783,10 +813,12 @@ class SerialPortHandle implements StringSink, StringReader {
         },
         sync: true);
 
-    return SerialPortHandle._construct(fd, inputController, ffi.malloc.allocate<ffi.Uint8>(_bufferSize));
+    return SerialPortHandle._construct(
+        fd, inputController, ffi.malloc.allocate<ffi.Uint8>(_bufferSize));
   }
 
-  SerialPortHandle._construct(this._fd, this._inputController, this._writeBuffer)
+  SerialPortHandle._construct(
+      this._fd, this._inputController, this._writeBuffer)
       : stream = _inputController.stream,
         byteStream = _inputController.stream.expand((element) => element),
         _writeBufferAsTypedList = _writeBuffer.asTypedList(_bufferSize);
@@ -865,7 +897,8 @@ class SerialPortHandle implements StringSink, StringReader {
           index++;
         }
 
-        await PlatformInterface.instance.write(_fd, _writeBuffer, subTransmission.length);
+        await PlatformInterface.instance
+            .write(_fd, _writeBuffer, subTransmission.length);
       }
     });
   }
@@ -942,7 +975,9 @@ class SerialPortHandle implements StringSink, StringReader {
     }, onError: (err, stackTrace) {
       completer.completeError(err, stackTrace);
     }, onDone: () {
-      completer.completeError(StateError("Serial input stream closed prematurely."), StackTrace.current);
+      completer.completeError(
+          StateError("Serial input stream closed prematurely."),
+          StackTrace.current);
     }, cancelOnError: true);
 
     return completer.future;
@@ -951,7 +986,8 @@ class SerialPortHandle implements StringSink, StringReader {
   @override
   Future<String> read({int? length, int? numBytes}) {
     if ((numBytes != null) == (length != null)) {
-      throw ArgumentError("Exactly one of `numBytes` or `length` must be given.");
+      throw ArgumentError(
+          "Exactly one of `numBytes` or `length` must be given.");
     }
 
     final encoding = this.encoding;
@@ -985,7 +1021,9 @@ class SerialPortHandle implements StringSink, StringReader {
       }, onDone: () {
         byteSink.close();
         stringSink.close();
-        completer.completeError(StateError("Serial input stream closed prematurely."), StackTrace.current);
+        completer.completeError(
+            StateError("Serial input stream closed prematurely."),
+            StackTrace.current);
       });
 
       return completer.future;
@@ -1023,13 +1061,16 @@ class SerialPortHandle implements StringSink, StringReader {
       sub.cancel();
       byteSink.close();
       stringSink.close();
-      completer.completeError(StateError("Serial input stream closed prematurely."), StackTrace.current);
+      completer.completeError(
+          StateError("Serial input stream closed prematurely."),
+          StackTrace.current);
     });
 
     return completer.future;
   }
 
   StringReader getNewSequentialReader() {
-    return StringReader(stream.expand((element) => element), encoding: encoding);
+    return StringReader(stream.expand((element) => element),
+        encoding: encoding);
   }
 }

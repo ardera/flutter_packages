@@ -1,7 +1,8 @@
 import 'dart:io';
 
 class LinuxError extends OSError {
-  LinuxError._private([String? message, int errno = OSError.noErrorCode]) : super(message ?? "", errno);
+  LinuxError._private([String? message, int errno = OSError.noErrorCode])
+      : super(message ?? "", errno);
 
   factory LinuxError([String? description, String? method, int? errno]) {
     final hasErrno = errno != null && errno != OSError.noErrorCode;
