@@ -2,7 +2,7 @@ name: flutter_gpiod
 description:
   Dart package for accessing GPIO using the GPIO character device interface on linux / Android (root required).
   Supports signal edge listening, active state, open source/drain and (if supported by platform) bias.
-version: 0.4.0-nullsafety
+version: 1.0.0
 homepage: https://ardera.dev/
 repository: https://github.com/ardera/flutter_packages
    

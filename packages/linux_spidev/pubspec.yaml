@@ -1,6 +1,6 @@
 name: linux_spidev
 description: Dart package for accessing SPI on Linux using the spidev interface and dart:ffi.
-version: 0.1.0-nullsafety.3
+version: 0.2.0
 homepage: https://ardera.dev
 repository: https://github.com/ardera/flutter_packages
 
