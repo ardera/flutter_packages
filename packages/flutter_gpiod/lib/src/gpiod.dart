@@ -6,7 +6,7 @@ import 'dart:isolate';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 import 'package:ffi/ffi.dart' as ffi;
-import 'package:_ardera_common_libc_bindings/common_libc_bindings.dart';
+import 'package:_ardera_common_libc_bindings/_ardera_common_libc_bindings.dart';
 
 import 'util.dart';
 import 'linux_error.dart';

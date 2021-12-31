@@ -12,5 +12,4 @@ dependencies:
   meta: ^1.1.8
   tuple: ^2.0.0
   path: ^1.7.0
-  _ardera_common_libc_bindings:
-    path: ../_ardera_common_libc_bindings/
+  _ardera_common_libc_bindings: ^0.0.1

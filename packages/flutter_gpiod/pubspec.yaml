@@ -17,5 +17,4 @@ dependencies:
   ffi: ^1.0.0
   tuple: ^2.0.0
   path: ^1.8.0
-  _ardera_common_libc_bindings:
-    path: ../_ardera_common_libc_bindings
+  _ardera_common_libc_bindings: ^0.0.1

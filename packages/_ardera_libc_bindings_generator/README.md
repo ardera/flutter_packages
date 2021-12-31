@@ -1,8 +1,8 @@
 # _ardera_libc_bindings_generator
 
-Dart package providing a build target for generating some c-bindings.
+Dart package providing a build target for generating some C-bindings.
 This package is not stable. I only published it because there's no way
-to make [flutter_gpiod](https://pub.dev/packages/flutter_gpiod), [linux_serial](https://pub.dev/packages/linux_serial) and [linux_spidev](https://pub.dev/packages/linux_spidev)
+to make [_ardera_common_libc_bindings](https://pub.dev/packages/_ardera_common_libc_bindings) 
 depend on it without publishing to pub.dev. So I don't provide any support at all for any bugs, issues, feature requests, etc.
 
 In case you still want to use it, you can look at the example.

@@ -13,7 +13,7 @@ import 'package:path/path.dart';
 import 'package:tuple/tuple.dart';
 import 'package:async/async.dart';
 import 'package:synchronized/synchronized.dart';
-import 'package:_ardera_common_libc_bindings/common_libc_bindings.dart';
+import 'package:_ardera_common_libc_bindings/_ardera_common_libc_bindings.dart';
 
 /// for whatever reason, importing ffi's StringUtf8Pointer does not work.
 extension StringUtf8Pointer on String {

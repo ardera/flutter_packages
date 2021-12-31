@@ -9,7 +9,7 @@ import 'package:ffi/ffi.dart' as ffi;
 import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 import 'package:tuple/tuple.dart';
-import 'package:_ardera_common_libc_bindings/common_libc_bindings.dart';
+import 'package:_ardera_common_libc_bindings/_ardera_common_libc_bindings.dart';
 
 import 'util.dart';
 

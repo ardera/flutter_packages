@@ -15,5 +15,4 @@ dependencies:
   async: ^2.5.0
   computer: ^2.0.0
   synchronized: ^3.0.0
-  _ardera_common_libc_bindings:
-    path: ../_ardera_common_libc_bindings
+  _ardera_common_libc_bindings: ^0.0.1
