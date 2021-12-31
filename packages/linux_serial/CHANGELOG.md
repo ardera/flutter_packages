@@ -1,3 +1,7 @@
+## [0.2.0]
+
+* migrate to common bindings
+
 ## [0.1.0-nullsafety.3]
 
 * update package description

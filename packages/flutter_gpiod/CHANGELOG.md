@@ -1,3 +1,7 @@
+## [1.0.0]
+
+* migrate to common bindings
+
 ## [0.4.0-nullsafety]
 
 * migrate to null-safety
