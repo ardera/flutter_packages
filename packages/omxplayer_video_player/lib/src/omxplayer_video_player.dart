@@ -66,12 +66,13 @@ class OmxplayerVideoPlayer extends VideoPlayerPlatform {
   /// video player implementations.
   Widget buildView(int textureId) {
     return EnsureUnique(
-        strict: this._strictViewBehaviour,
-        identity: _OmxplayerKey(textureId),
-        child: OmxplayerView(
-          key: _OmxplayerKey(textureId),
-          playerId: textureId,
-        ));
+      strict: this._strictViewBehaviour,
+      identity: _OmxplayerKey(textureId),
+      child: OmxplayerView(
+        key: _OmxplayerKey(textureId),
+        playerId: textureId,
+      ),
+    );
   }
 
   /// Sets up [OmxplayerViewPlayer] as the [VideoPlayerPlatform.instance],

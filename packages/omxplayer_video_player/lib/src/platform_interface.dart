@@ -1,5 +1,6 @@
 part of omxplayer_video_player;
 
+// ignore: camel_case_types
 typedef omxpvidpp_is_present_func = ffi.Int8 Function();
 typedef OmxpvidppIsPresent = int Function();
 

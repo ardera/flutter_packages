@@ -5,12 +5,12 @@ import 'dart:isolate';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:ffi/ffi.dart' as ffi show malloc;
+import 'package:ffi/ffi.dart' as ffi;
 import 'package:meta/meta.dart';
 import 'package:path/path.dart';
 import 'package:tuple/tuple.dart';
+import 'package:_ardera_common_libc_bindings/common_libc_bindings.dart';
 
-import 'bindings/libc.dart';
 import 'util.dart';
 
 enum SpiMode { mode0, mode1, mode2, mode3 }
@@ -522,7 +522,8 @@ class SpiTransferExecutor {
     final transferId = _nextTransferId++;
     final transferCompleter = Completer<void>();
 
-    final pointer = spi_ioc_transfer.allocate(count: transfers.length);
+    final pointer = ffi.malloc.allocate<spi_ioc_transfer>(ffi.sizeOf<spi_ioc_transfer>() * transfers.length);
+
     transfers.asMap().forEach((key, value) {
       final struct = pointer.elementAt(key).ref;
       value.data._writeToStruct(struct);
@@ -592,7 +593,7 @@ class SpidevPlatformInterface {
   int open(String path) {
     final nativePath = path.toNativeUtf8();
 
-    final result = libc.open(nativePath.cast<ffi.Void>(), O_RDWR | O_CLOEXEC);
+    final result = libc.open(nativePath.cast<ffi.Int8>(), O_RDWR | O_CLOEXEC);
 
     ffi.malloc.free(nativePath);
 

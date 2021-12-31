@@ -1,29 +1,15 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:ffi' as ffi;
 import 'dart:isolate';
-import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
 import 'package:path/path.dart';
-import 'package:ffi/ffi.dart' as ffi show malloc, calloc, Utf8;
+import 'package:ffi/ffi.dart' as ffi;
+import 'package:_ardera_common_libc_bindings/common_libc_bindings.dart';
 
-import 'bindings/libc.dart';
 import 'util.dart';
 import 'linux_error.dart';
-
-/// for whatever reason, importing ffi's StringUtf8Pointer does not work.
-extension StringUtf8Pointer on String {
-  ffi.Pointer<ffi.Utf8> toNativeUtf8({ffi.Allocator allocator = ffi.malloc}) {
-    final units = utf8.encode(this);
-    final ffi.Pointer<ffi.Uint8> result = allocator<ffi.Uint8>(units.length + 1);
-    final Uint8List nativeString = result.asTypedList(units.length + 1);
-    nativeString.setAll(0, units);
-    nativeString[units.length] = 0;
-    return result.cast();
-  }
-}
 
 /// The direction of a gpiod line.
 enum LineDirection { input, output }
@@ -276,7 +262,13 @@ void _eventIsolateEntry2(List args) {
 
 /// Provides raw access to the platform-side methods.
 class PlatformInterface {
-  PlatformInterface._construct(this.libc, this._numChips, this._chipIndexToFd, this._epollFd, this._eventReceivePort);
+  PlatformInterface._construct(
+    this.libc,
+    this._numChips,
+    this._chipIndexToFd,
+    this._epollFd,
+    this._eventReceivePort,
+  );
 
   factory PlatformInterface._private() {
     late final LibC libc;
@@ -529,7 +521,11 @@ class PlatformInterface {
       request.lines = 1;
       request.lineoffsets[0] = offset;
 
-      writeStringToArrayHelper(consumer, 32, (i, v) => request.consumer_label[i] = v);
+      writeStringToArrayHelper(
+        consumer,
+        32,
+        (i, v) => request.consumer_label[i] = v,
+      );
 
       request.flags = (direction == LineDirection.input ? GPIOHANDLE_REQUEST_INPUT : GPIOHANDLE_REQUEST_OUTPUT) |
           (outputMode == OutputMode.openDrain
@@ -586,7 +582,7 @@ class PlatformInterface {
 
         final epollEvent = epoll_event_ptr.allocate();
 
-        epollEvent.events = EPOLLIN | EPOLLPRI;
+        epollEvent.events = EPOLL_EVENTS.EPOLLIN | EPOLL_EVENTS.EPOLLPRI;
         epollEvent.u64 = request.fd;
 
         final result = libc.epoll_ctl(_epollFd, EPOLL_CTL_ADD, request.fd, epollEvent);
@@ -619,13 +615,14 @@ class PlatformInterface {
     _lineHandleToLineEventFd.remove(lineHandle);
   }
 
-  void reconfigureLine(
-      {required int lineHandle,
-      required LineDirection direction,
-      OutputMode? outputMode,
-      Bias? bias,
-      ActiveState activeState = ActiveState.high,
-      bool? initialValue}) async {
+  void reconfigureLine({
+    required int lineHandle,
+    required LineDirection direction,
+    OutputMode? outputMode,
+    Bias? bias,
+    ActiveState activeState = ActiveState.high,
+    bool? initialValue,
+  }) async {
     final isInput = direction == LineDirection.input;
 
     if (isInput) {
@@ -830,10 +827,20 @@ class GpioChip {
     final details = PlatformInterface.instance.getChipDetails(chipIndex);
 
     final lines = List.generate(
-        details['numLines'], (i) => GpioLine._fromHandle(PlatformInterface.instance.getLineHandle(chipIndex, i)),
-        growable: false);
+      details['numLines'],
+      (i) => GpioLine._fromHandle(
+        PlatformInterface.instance.getLineHandle(chipIndex, i),
+      ),
+      growable: false,
+    );
 
-    return GpioChip._(chipIndex, details['name'], details['label'], details['numLines'], List.unmodifiable(lines));
+    return GpioChip._(
+      chipIndex,
+      details['name'],
+      details['label'],
+      details['numLines'],
+      List.unmodifiable(lines),
+    );
   }
 
   @override
@@ -884,15 +891,16 @@ class LineInfo {
   /// which maps active (i.e. `line.setValue(true)`) to low voltage and inactive to high voltage.
   final ActiveState activeState;
 
-  const LineInfo(
-      {this.name,
-      this.consumer,
-      required this.direction,
-      this.outputMode,
-      this.bias,
-      required this.activeState,
-      required this.isUsed,
-      required this.isRequested});
+  const LineInfo({
+    this.name,
+    this.consumer,
+    required this.direction,
+    this.outputMode,
+    this.bias,
+    required this.activeState,
+    required this.isUsed,
+    required this.isRequested,
+  });
 
   String toString() {
     final params = <String>[];
@@ -995,7 +1003,13 @@ class LineInfo {
 /// // line.release();
 /// ```
 class GpioLine {
-  GpioLine._internal(this._lineHandle, this._requested, this._info, this._triggers, this._value);
+  GpioLine._internal(
+    this._lineHandle,
+    this._requested,
+    this._info,
+    this._triggers,
+    this._value,
+  );
 
   final int _lineHandle;
   bool _requested;
@@ -1055,11 +1069,12 @@ class GpioLine {
   /// otherwise a [UnsupportedError] will be thrown.
   ///
   /// Only a free line can be requested.
-  void requestInput(
-      {required String consumer,
-      Bias? bias,
-      ActiveState activeState = ActiveState.high,
-      Set<SignalEdge> triggers = const {}}) {
+  void requestInput({
+    required String consumer,
+    Bias? bias,
+    ActiveState activeState = ActiveState.high,
+    Set<SignalEdge> triggers = const {},
+  }) {
     ArgumentError.checkNotNull(activeState, "activeState");
     ArgumentError.checkNotNull(triggers, "triggers");
     _checkSupportsBiasValue(bias);
@@ -1070,12 +1085,13 @@ class GpioLine {
     }
 
     PlatformInterface.instance.requestLine(
-        lineHandle: _lineHandle,
-        consumer: consumer,
-        direction: LineDirection.input,
-        bias: bias,
-        activeState: activeState,
-        triggers: triggers);
+      lineHandle: _lineHandle,
+      consumer: consumer,
+      direction: LineDirection.input,
+      bias: bias,
+      activeState: activeState,
+      triggers: triggers,
+    );
 
     _info = PlatformInterface.instance.getLineInfo(_lineHandle);
 
@@ -1088,12 +1104,13 @@ class GpioLine {
   /// otherwise a [UnsupportedError] will be thrown.
   ///
   /// Only a free line can be requested.
-  void requestOutput(
-      {required String consumer,
-      OutputMode outputMode = OutputMode.pushPull,
-      Bias? bias,
-      ActiveState activeState = ActiveState.high,
-      required bool initialValue}) {
+  void requestOutput({
+    required String consumer,
+    OutputMode outputMode = OutputMode.pushPull,
+    Bias? bias,
+    ActiveState activeState = ActiveState.high,
+    required bool initialValue,
+  }) {
     ArgumentError.checkNotNull(outputMode, "outputMode");
     ArgumentError.checkNotNull(activeState, "activeState");
     ArgumentError.checkNotNull(initialValue, "initialValue");
@@ -1104,13 +1121,14 @@ class GpioLine {
     }
 
     PlatformInterface.instance.requestLine(
-        lineHandle: _lineHandle,
-        consumer: consumer,
-        direction: LineDirection.output,
-        outputMode: outputMode,
-        bias: bias,
-        activeState: activeState,
-        initialValue: initialValue);
+      lineHandle: _lineHandle,
+      consumer: consumer,
+      direction: LineDirection.output,
+      outputMode: outputMode,
+      bias: bias,
+      activeState: activeState,
+      initialValue: initialValue,
+    );
 
     _info = PlatformInterface.instance.getLineInfo(_lineHandle);
     _value = initialValue;
@@ -1149,8 +1167,12 @@ class GpioLine {
       throw StateError("Can't reconfigured line because it is not requested.");
     }
 
-    PlatformInterface.instance
-        .reconfigureLine(lineHandle: _lineHandle, direction: LineDirection.input, bias: bias, activeState: activeState);
+    PlatformInterface.instance.reconfigureLine(
+      lineHandle: _lineHandle,
+      direction: LineDirection.input,
+      bias: bias,
+      activeState: activeState,
+    );
 
     _info = PlatformInterface.instance.getLineInfo(_lineHandle);
   }
@@ -1162,11 +1184,12 @@ class GpioLine {
   ///
   /// This will throw a [UnsupportedError] if
   /// [FlutterGpiod.supportsLineReconfiguration] is false.
-  void reconfigureOutput(
-      {OutputMode outputMode = OutputMode.pushPull,
-      Bias? bias,
-      ActiveState activeState = ActiveState.high,
-      required bool initialValue}) {
+  void reconfigureOutput({
+    OutputMode outputMode = OutputMode.pushPull,
+    Bias? bias,
+    ActiveState activeState = ActiveState.high,
+    required bool initialValue,
+  }) {
     ArgumentError.checkNotNull(outputMode, "outputMode");
     _checkSupportsBiasValue(bias);
     ArgumentError.checkNotNull(activeState, "activeState");
@@ -1181,12 +1204,13 @@ class GpioLine {
     }
 
     PlatformInterface.instance.reconfigureLine(
-        lineHandle: _lineHandle,
-        direction: LineDirection.output,
-        outputMode: outputMode,
-        bias: bias,
-        activeState: activeState,
-        initialValue: initialValue);
+      lineHandle: _lineHandle,
+      direction: LineDirection.output,
+      outputMode: outputMode,
+      bias: bias,
+      activeState: activeState,
+      initialValue: initialValue,
+    );
 
     _value = initialValue;
     _info = PlatformInterface.instance.getLineInfo(_lineHandle);
@@ -1232,7 +1256,7 @@ class GpioLine {
   /// Throws a [StateError] if the line is not requested.
   ///
   /// If the line is in output mode, the last written value
-  /// using [setValue] will be returned synchronously.
+  /// using [setValue] will be returned.
   /// If [setValue] was never called, the `initialValue`
   /// given to [request] or [release] will be returned.
   ///

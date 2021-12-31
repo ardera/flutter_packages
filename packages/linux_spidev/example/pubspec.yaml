@@ -1,4 +1,4 @@
-name: example
+name: linux_spidev_example
 description: Example usage of spidev.
 
 publish_to: 'none'

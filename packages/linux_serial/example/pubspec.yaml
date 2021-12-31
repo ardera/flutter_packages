@@ -1,4 +1,4 @@
-name: example
+name: linux_serial_example
 description: Example usage of linux_serial.
 
 publish_to: 'none'

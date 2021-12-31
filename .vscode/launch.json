@@ -1,0 +1,60 @@
+{
+    // Verwendet IntelliSense zum Ermitteln möglicher Attribute.
+    // Zeigen Sie auf vorhandene Attribute, um die zugehörigen Beschreibungen anzuzeigen.
+    // Weitere Informationen finden Sie unter https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "flutter_gpiod",
+            "cwd": "packages\\flutter_gpiod",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "linux_serial",
+            "cwd": "packages\\linux_serial",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "linux_spidev",
+            "cwd": "packages\\linux_spidev",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "omxplayer_video_player",
+            "cwd": "packages\\omxplayer_video_player",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "omxplayer_video_player (profile mode)",
+            "cwd": "packages\\omxplayer_video_player",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "_ardera_common_libc_bindings",
+            "cwd": "packages\\_ardera_common_libc_bindings",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "_ardera_libc_bindings_generator",
+            "cwd": "packages\\_ardera_libc_bindings_generator",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "build common libc bindings",
+            "cwd": "packages/_ardera_common_libc_bindings",
+            "request": "launch",
+            "type": "dart",
+            "program": ".dart_tool/build/entrypoint/build.dart",
+            "args": ["build"],
+            "toolArgs": ["--pause-isolates-on-start"]
+        }
+    ]
+}
