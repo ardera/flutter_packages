@@ -1,4 +1,4 @@
-name: Arderas Flutter Packages
+name: arderas_flutter_packages # Arderas Flutter Packages
 repository: https://github.com/ardera/flutter_packages
 packages:
   - packages/**

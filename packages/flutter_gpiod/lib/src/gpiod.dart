@@ -141,24 +141,19 @@ int _syscall4<A0, A1, A2, A3>(
   return ok < 0 ? -errno : ok;
 }
 
-typedef native_epoll_wait = ffi.NativeFunction<
-    ffi.Int32 Function(ffi.Int32, ffi.Pointer, ffi.Int32, ffi.Int32)>;
+typedef native_epoll_wait = ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Pointer, ffi.Int32, ffi.Int32)>;
 typedef dart_epoll_wait = int Function(int, ffi.Pointer, int, int);
 
-typedef native_epoll_ctl = ffi.NativeFunction<
-    ffi.Int32 Function(ffi.Int32, ffi.Int32, ffi.Int32, ffi.Pointer)>;
+typedef native_epoll_ctl = ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Int32, ffi.Int32, ffi.Pointer)>;
 typedef dart_epoll_ctl = int Function(int, int, int, ffi.Pointer);
 
-typedef native_read = ffi.NativeFunction<
-    ffi.Int32 Function(ffi.Int32, ffi.Pointer<ffi.Void>, ffi.Uint32)>;
+typedef native_read = ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Pointer<ffi.Void>, ffi.Uint32)>;
 typedef dart_read = int Function(int, ffi.Pointer<ffi.Void>, int);
 
-typedef native_read64 = ffi.NativeFunction<
-    ffi.Int64 Function(ffi.Int32, ffi.Pointer<ffi.Void>, ffi.Uint64)>;
+typedef native_read64 = ffi.NativeFunction<ffi.Int64 Function(ffi.Int32, ffi.Pointer<ffi.Void>, ffi.Uint64)>;
 typedef dart_read64 = dart_read;
 
-typedef native_errno_location
-    = ffi.NativeFunction<ffi.Pointer<ffi.Int32> Function()>;
+typedef native_errno_location = ffi.NativeFunction<ffi.Pointer<ffi.Int32> Function()>;
 typedef dart_errno_location = ffi.Pointer<ffi.Int32> Function();
 
 void _eventIsolateEntry2(List args) {
@@ -168,17 +163,13 @@ void _eventIsolateEntry2(List args) {
   final epollFd = args[1] as int;
 
   final epollWaitAddr = args[2] as int;
-  final epollWaitRaw = ffi.Pointer.fromAddress(epollWaitAddr)
-      .cast<native_epoll_wait>()
-      .asFunction<dart_epoll_wait>();
+  final epollWaitRaw = ffi.Pointer.fromAddress(epollWaitAddr).cast<native_epoll_wait>().asFunction<dart_epoll_wait>();
   int epollWait(int epfd, epoll_event_ptr events, int maxevents, int timeout) {
     return epollWaitRaw(epfd, events.backing, maxevents, timeout);
   }
 
   final epollCtlAddr = args[3] as int;
-  final epollCtlRaw = ffi.Pointer.fromAddress(epollCtlAddr)
-      .cast<native_epoll_ctl>()
-      .asFunction<dart_epoll_ctl>();
+  final epollCtlRaw = ffi.Pointer.fromAddress(epollCtlAddr).cast<native_epoll_ctl>().asFunction<dart_epoll_ctl>();
   int epollCtl(int epfd, int op, int fd, epoll_event_ptr event) {
     return epollCtlRaw(epfd, op, fd, event.backing);
   }
@@ -189,23 +180,19 @@ void _eventIsolateEntry2(List args) {
   if (readAddr != null) {
     read = ffi.Pointer.fromAddress(readAddr).cast<native_read>().asFunction();
   } else if (readAddr64 != null) {
-    read =
-        ffi.Pointer.fromAddress(readAddr64).cast<native_read64>().asFunction();
+    read = ffi.Pointer.fromAddress(readAddr64).cast<native_read64>().asFunction();
   } else {
-    throw ArgumentError(
-        "Either `args[4]` (readAddr) or `args[5]` (readAddr64) must be non-null.");
+    throw ArgumentError("Either `args[4]` (readAddr) or `args[5]` (readAddr64) must be non-null.");
   }
 
   final getErrnoLocationAddr = args[6] as int;
-  final getErrnoLocation = ffi.Pointer.fromAddress(getErrnoLocationAddr)
-      .cast<native_errno_location>()
-      .asFunction<dart_errno_location>();
+  final getErrnoLocation =
+      ffi.Pointer.fromAddress(getErrnoLocationAddr).cast<native_errno_location>().asFunction<dart_errno_location>();
 
   final errnoPtr = getErrnoLocation();
 
   final maxEpollEvents = 64;
-  final epollEvents =
-      epoll_event_ptr.allocate(allocator: ffi.calloc, count: maxEpollEvents);
+  final epollEvents = epoll_event_ptr.allocate(allocator: ffi.calloc, count: maxEpollEvents);
 
   final maxEvents = 16;
   final events = newGpioEventData(count: maxEvents);
@@ -241,8 +228,7 @@ void _eventIsolateEntry2(List args) {
         if (ok != 0) {
           epollEvents.free();
           freeStruct(events);
-          throw LinuxError(
-              "Could not read GPIO events from event line fd", "read", -ok);
+          throw LinuxError("Could not read GPIO events from event line fd", "read", -ok);
         } else if (ok == 0) {
           ok = _syscall4(
             errnoPtr,
@@ -255,22 +241,14 @@ void _eventIsolateEntry2(List args) {
           if (ok != 0) {
             epollEvents.free();
             freeStruct(events);
-            throw LinuxError(
-                "Could not remove line event fd from epoll instance",
-                "epoll_ctl",
-                -ok);
+            throw LinuxError("Could not remove line event fd from epoll instance", "epoll_ctl", -ok);
           }
         }
 
         final nEventsRead = ok / ffi.sizeOf<gpioevent_data>();
         for (var j = 0; j < nEventsRead; j++) {
           final event = events.elementAt(j).ref;
-          convertedEvents.add(<int>[
-            epollEvent.u64,
-            event.id,
-            event.timestamp,
-            DateTime.now().microsecondsSinceEpoch
-          ]);
+          convertedEvents.add(<int>[epollEvent.u64, event.id, event.timestamp, DateTime.now().microsecondsSinceEpoch]);
         }
 
         nReady--;
@@ -315,10 +293,11 @@ class PlatformInterface {
 
       ffi.malloc.free(pathPtr);
 
+      print('open("/dev/gpiochip$i"): $fd');
+
       if (fd < 0) {
         chipIndexToFd.values.forEach((fd) => libc.close(fd));
-        throw FileSystemException(
-            "Could not open GPIO chip $i", "/dev/gpiochip$i");
+        throw FileSystemException("Could not open GPIO chip $i", "/dev/gpiochip$i");
       }
 
       chipIndexToFd[i] = fd;
@@ -326,8 +305,7 @@ class PlatformInterface {
 
     final epollFd = libc.epoll_create1(0);
     if (epollFd < 0) {
-      throw LinuxError(
-          "Could not create epoll instance", "epoll_create1", libc.errno);
+      throw LinuxError("Could not create epoll instance", "epoll_create1", libc.errno);
     }
 
     final receivePort = ReceivePort();
@@ -337,16 +315,15 @@ class PlatformInterface {
       [
         receivePort.sendPort,
         epollFd,
-        libc.addresses.epoll_wait,
-        libc.addresses.epoll_ctl,
-        Arch.isArm || Arch.isI386 ? libc.addresses.read : null,
-        Arch.isArm64 || Arch.isAmd64 ? libc.addresses.read : null,
-        libc.errno_location_symbol_address,
+        libc.addresses.epoll_wait.address,
+        libc.addresses.epoll_ctl.address,
+        Arch.isArm || Arch.isI386 ? libc.addresses.read.address : null,
+        Arch.isArm64 || Arch.isAmd64 ? libc.addresses.read.address : null,
+        libc.errno_location_symbol_address.address,
       ],
     );
 
-    return PlatformInterface._construct(
-        libc, numChips, chipIndexToFd, epollFd, receivePort);
+    return PlatformInterface._construct(libc, numChips, chipIndexToFd, epollFd, receivePort);
   }
 
   final LibC libc;
@@ -370,6 +347,7 @@ class PlatformInterface {
   }
 
   void _ioctl(int fd, int request, ffi.Pointer argp) {
+    print("ioctl(fd: $fd, request: $request, pointer: $argp)");
     final result = libc.ioctl_ptr(fd, request, argp.cast<ffi.Void>());
     if (result < 0) {
       throw LinuxError("GPIO ioctl failed", "ioctl", libc.errno);
@@ -381,8 +359,7 @@ class PlatformInterface {
   }
 
   int _lineFdFromLineHandle(int lineHandle) {
-    return _lineHandleToLineHandleFd[lineHandle] ??
-        _lineHandleToLineEventFd[lineHandle]!;
+    return _lineHandleToLineHandleFd[lineHandle] ?? _lineHandleToLineEventFd[lineHandle]!;
   }
 
   int _chipIndexFromLineHandle(int lineHandle) {
@@ -417,15 +394,12 @@ class PlatformInterface {
                 )
                 .key;
 
-            final edge = list[1] == GPIOEVENT_EVENT_RISING_EDGE
-                ? SignalEdge.rising
-                : SignalEdge.falling;
+            final edge = list[1] == GPIOEVENT_EVENT_RISING_EDGE ? SignalEdge.rising : SignalEdge.falling;
             final timestampNanos = list[2];
             final timestamp = Duration(microseconds: timestampNanos ~/ 1000);
             final time = DateTime.fromMicrosecondsSinceEpoch(list[3]);
 
-            return GlobalSignalEvent(
-                lineHandle, SignalEvent(edge, timestampNanos, timestamp, time));
+            return GlobalSignalEvent(lineHandle, SignalEvent(edge, timestampNanos, timestamp, time));
           })
           .where((event) => event.lineHandle != -1)
           .asBroadcastStream();
@@ -439,15 +413,13 @@ class PlatformInterface {
   }
 
   Map<String, dynamic> getChipDetails(int chipIndex) {
-    final structPtr =
-        newStruct<gpiochip_info>(elementSize: ffi.sizeOf<gpiochip_info>());
+    final structPtr = newStruct<gpiochip_info>(elementSize: ffi.sizeOf<gpiochip_info>());
     final struct = structPtr.ref;
 
     Map<String, dynamic> map;
 
     try {
-      _ioctl(
-          _chipFdFromChipIndex(chipIndex), GPIO_GET_CHIPINFO_IOCTL, structPtr);
+      _ioctl(_chipFdFromChipIndex(chipIndex), GPIO_GET_CHIPINFO_IOCTL, structPtr);
 
       map = <String, dynamic>{
         'name': stringFromInlineArray(32, (i) => struct.name[i]),
@@ -469,8 +441,7 @@ class PlatformInterface {
     final fd = _chipFdFromLineHandle(lineHandle);
     final offset = _lineIndexFromLineHandle(lineHandle);
 
-    final structPtr =
-        newStruct<gpioline_info>(elementSize: ffi.sizeOf<gpioline_info>());
+    final structPtr = newStruct<gpioline_info>(elementSize: ffi.sizeOf<gpioline_info>());
     final struct = structPtr.ref;
 
     struct.line_offset = offset;
@@ -521,8 +492,7 @@ class PlatformInterface {
     final isEvent = triggers.isNotEmpty;
 
     if (isEvent && !isInput) {
-      throw ArgumentError(
-          'Line must be requested as input when triggers are requested.');
+      throw ArgumentError('Line must be requested as input when triggers are requested.');
     }
 
     if (isInput) {
@@ -549,8 +519,7 @@ class PlatformInterface {
     final offset = _lineIndexFromLineHandle(lineHandle);
 
     if (!isEvent) {
-      final requestPtr = newStruct<gpiohandle_request>(
-          elementSize: ffi.sizeOf<gpiohandle_request>());
+      final requestPtr = newStruct<gpiohandle_request>(elementSize: ffi.sizeOf<gpiohandle_request>());
       final request = requestPtr.ref;
 
       request.lines = 1;
@@ -562,9 +531,7 @@ class PlatformInterface {
         (i, v) => request.consumer_label[i] = v,
       );
 
-      request.flags = (direction == LineDirection.input
-              ? GPIOHANDLE_REQUEST_INPUT
-              : GPIOHANDLE_REQUEST_OUTPUT) |
+      request.flags = (direction == LineDirection.input ? GPIOHANDLE_REQUEST_INPUT : GPIOHANDLE_REQUEST_OUTPUT) |
           (outputMode == OutputMode.openDrain
               ? GPIOHANDLE_REQUEST_OPEN_DRAIN
               : outputMode == OutputMode.openSource
@@ -591,13 +558,11 @@ class PlatformInterface {
         freeStruct(requestPtr);
       }
     } else {
-      final requestPtr = newStruct<gpioevent_request>(
-          elementSize: ffi.sizeOf<gpioevent_request>());
+      final requestPtr = newStruct<gpioevent_request>(elementSize: ffi.sizeOf<gpioevent_request>());
       final request = requestPtr.ref;
 
       request.lineoffset = offset;
-      writeStringToArrayHelper(
-          consumer, 32, (i, v) => request.consumer_label[i] = v);
+      writeStringToArrayHelper(consumer, 32, (i, v) => request.consumer_label[i] = v);
       request.handleflags = GPIOHANDLE_REQUEST_INPUT |
           (bias == Bias.disable
               ? GPIOHANDLE_REQUEST_BIAS_DISABLE
@@ -624,16 +589,14 @@ class PlatformInterface {
         epollEvent.events = EPOLL_EVENTS.EPOLLIN | EPOLL_EVENTS.EPOLLPRI;
         epollEvent.u64 = request.fd;
 
-        final result =
-            libc.epoll_ctl(_epollFd, EPOLL_CTL_ADD, request.fd, epollEvent);
+        final result = libc.epoll_ctl(_epollFd, EPOLL_CTL_ADD, request.fd, epollEvent);
 
         epollEvent.free();
 
         if (result < 0) {
           final errno = libc.errno;
           releaseLine(lineHandle);
-          throw LinuxError("Could not add GPIO line event fd to epoll instance",
-              "epoll_ctl", errno);
+          throw LinuxError("Could not add GPIO line event fd to epoll instance", "epoll_ctl", errno);
         }
       } finally {
         freeStruct(requestPtr);
@@ -648,10 +611,7 @@ class PlatformInterface {
     var ok = libc.close(fd);
     var errno = libc.errno;
     if (ok != 0) {
-      throw LinuxError(
-          "Couldn't release line by closing line handle file descriptor.",
-          "close",
-          errno);
+      throw LinuxError("Couldn't release line by closing line handle file descriptor.", "close", errno);
     }
 
     _requestedLines.remove(lineHandle);
@@ -689,13 +649,10 @@ class PlatformInterface {
       ArgumentError.checkNotNull(initialValue, 'initialValue');
     }
 
-    final requestPtr = newStruct<gpiohandle_config>(
-        elementSize: ffi.sizeOf<gpiohandle_config>());
+    final requestPtr = newStruct<gpiohandle_config>(elementSize: ffi.sizeOf<gpiohandle_config>());
     final request = requestPtr.ref;
 
-    request.flags = (direction == LineDirection.input
-            ? GPIOHANDLE_REQUEST_INPUT
-            : GPIOHANDLE_REQUEST_OUTPUT) |
+    request.flags = (direction == LineDirection.input ? GPIOHANDLE_REQUEST_INPUT : GPIOHANDLE_REQUEST_OUTPUT) |
         (outputMode == OutputMode.openDrain
             ? GPIOHANDLE_REQUEST_OPEN_DRAIN
             : outputMode == OutputMode.openSource
@@ -715,8 +672,7 @@ class PlatformInterface {
     }
 
     try {
-      _ioctl(_lineFdFromLineHandle(lineHandle), GPIOHANDLE_SET_CONFIG_IOCTL,
-          requestPtr);
+      _ioctl(_lineFdFromLineHandle(lineHandle), GPIOHANDLE_SET_CONFIG_IOCTL, requestPtr);
     } finally {
       freeStruct(requestPtr);
     }
@@ -727,8 +683,7 @@ class PlatformInterface {
 
     final fd = _lineFdFromLineHandle(lineHandle);
 
-    final structPtr =
-        newStruct<gpiohandle_data>(elementSize: ffi.sizeOf<gpiohandle_data>());
+    final structPtr = newStruct<gpiohandle_data>(elementSize: ffi.sizeOf<gpiohandle_data>());
     final struct = structPtr.ref;
 
     bool result;
@@ -747,14 +702,12 @@ class PlatformInterface {
     assert(_requestedLines.contains(lineHandle));
     assert(_lineHandleToLineHandleFd.containsKey(lineHandle));
 
-    final structPtr =
-        newStruct<gpiohandle_data>(elementSize: ffi.sizeOf<gpiohandle_data>());
+    final structPtr = newStruct<gpiohandle_data>(elementSize: ffi.sizeOf<gpiohandle_data>());
     final struct = structPtr.ref;
 
     struct.values[0] = value ? 1 : 0;
     try {
-      _ioctl(_lineFdFromLineHandle(lineHandle),
-          GPIOHANDLE_SET_LINE_VALUES_IOCTL, structPtr);
+      _ioctl(_lineFdFromLineHandle(lineHandle), GPIOHANDLE_SET_LINE_VALUES_IOCTL, structPtr);
     } finally {
       freeStruct(structPtr);
     }
@@ -767,8 +720,7 @@ class PlatformInterface {
       throw StateError("Unsupported OS: ${Platform.operatingSystem}");
     }
 
-    final matches = RegExp("^Linux (\\d*)\\.(\\d*)")
-        .firstMatch(Platform.operatingSystemVersion)!;
+    final matches = RegExp("^Linux (\\d*)\\.(\\d*)").firstMatch(Platform.operatingSystemVersion)!;
     if (matches.groupCount == 2) {
       final major = int.parse(matches.group(1)!);
       final minor = int.parse(matches.group(2)!);
@@ -800,8 +752,7 @@ class PlatformInterface {
 /// Starting-point for querying GPIO chips or lines,
 /// and finding the line you want to control.
 class FlutterGpiod {
-  FlutterGpiod._internal(
-      this.chips, this.supportsBias, this.supportsLineReconfiguration);
+  FlutterGpiod._internal(this.chips, this.supportsBias, this.supportsLineReconfiguration);
 
   static FlutterGpiod? _instance;
 
@@ -826,15 +777,13 @@ class FlutterGpiod {
   /// If none exists, one will be constructed.
   static FlutterGpiod get instance {
     if (_instance == null) {
-      final chips = List.generate(PlatformInterface.instance.getNumChips(),
-          (i) => GpioChip._fromIndex(i),
-          growable: false);
+      final chips =
+          List.generate(PlatformInterface.instance.getNumChips(), (i) => GpioChip._fromIndex(i), growable: false);
 
       final bias = PlatformInterface.instance.supportsBias();
       final reconfig = PlatformInterface.instance.supportsLineReconfiguration();
 
-      _instance =
-          FlutterGpiod._internal(List.unmodifiable(chips), bias, reconfig);
+      _instance = FlutterGpiod._internal(List.unmodifiable(chips), bias, reconfig);
     }
 
     return _instance!;
@@ -846,9 +795,7 @@ class FlutterGpiod {
   }
 
   Stream<SignalEvent> _onSignalEvent(int lineHandle) {
-    return _onGlobalSignalEvent
-        .where((e) => e.lineHandle == lineHandle)
-        .map((e) => e.signalEvent);
+    return _onGlobalSignalEvent.where((e) => e.lineHandle == lineHandle).map((e) => e.signalEvent);
   }
 }
 
@@ -1078,8 +1025,7 @@ class GpioLine {
     final info = PlatformInterface.instance.getLineInfo(lineHandle);
 
     if (info.isRequested) {
-      return GpioLine._internal(lineHandle, true, info, const {},
-          PlatformInterface.instance.getLineValue(lineHandle));
+      return GpioLine._internal(lineHandle, true, info, const {}, PlatformInterface.instance.getLineValue(lineHandle));
     } else {
       return GpioLine._internal(lineHandle, false, null, const {}, null);
     }
@@ -1195,8 +1141,7 @@ class GpioLine {
 
   void _checkSupportsLineReconfiguration() {
     if (!FlutterGpiod.instance.supportsLineReconfiguration) {
-      throw UnsupportedError(
-          "Can't reconfigure line because that's not supported by "
+      throw UnsupportedError("Can't reconfigure line because that's not supported by "
           "the underlying version of libgpiod. "
           "You need to check `FlutterGpiod.supportsLineReconfiguration` "
           "to make sure you can reconfigure.");
@@ -1213,8 +1158,7 @@ class GpioLine {
   ///
   /// You can't specify triggers here because of platform
   /// limitations.
-  void reconfigureInput(
-      {Bias? bias, ActiveState activeState = ActiveState.high}) {
+  void reconfigureInput({Bias? bias, ActiveState activeState = ActiveState.high}) {
     ArgumentError.checkNotNull(activeState, "activeState");
     _checkSupportsBiasValue(bias);
     _checkSupportsLineReconfiguration();
@@ -1297,13 +1241,11 @@ class GpioLine {
     ArgumentError.checkNotNull(value, "value");
 
     if (_requested == false) {
-      throw StateError(
-          "Can't set line value because line is not requested and configured as output.");
+      throw StateError("Can't set line value because line is not requested and configured as output.");
     }
 
     if (_info!.direction != LineDirection.output) {
-      throw StateError(
-          "Can't set line value because line is not configured as output.");
+      throw StateError("Can't set line value because line is not configured as output.");
     }
 
     if (_value == value) return;
@@ -1346,8 +1288,7 @@ class GpioLine {
   /// like this: `rising`, `rising`, `rising`, `falling`, `rising`,
   /// even though that doesn't seem to make any sense
   /// at first glance.
-  Stream<SignalEvent> get onEvent =>
-      FlutterGpiod.instance._onSignalEvent(_lineHandle);
+  Stream<SignalEvent> get onEvent => FlutterGpiod.instance._onSignalEvent(_lineHandle);
 
   /// Broadcast stream of signal edges.
   ///

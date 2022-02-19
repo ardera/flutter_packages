@@ -346,6 +346,8 @@ class LibCPlatformBackend {
 class _SymbolAddresses {
   final LibCPlatformBackend _library;
   _SymbolAddresses(this._library);
+  ffi.Pointer<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Uint64)>>
+      get ioctl => _library._ioctlPtr;
   ffi.Pointer<
           ffi.NativeFunction<
               ffi.Int32 Function(

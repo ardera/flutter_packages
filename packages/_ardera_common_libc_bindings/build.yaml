@@ -63,6 +63,7 @@ targets:
                   - epoll_wait
                   - __errno_location
                   - read
+                  - ioctl
               leaf:
                 include:
                   - '.*'
