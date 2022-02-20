@@ -108,10 +108,10 @@ class LibC {
 
   late final int Function(int, int, ffi.Pointer<ffi.Void>) ioctl_ptr = Arch.isArm || Arch.isI386
       ? (addresses.ioctl as ffi.Pointer)
-          .cast<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Uint64, ffi.Pointer<ffi.Void>)>>()
+          .cast<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Uint32, ffi.Pointer<ffi.Void>)>>()
           .asFunction<int Function(int, int, ffi.Pointer<ffi.Void>)>(isLeaf: true)
       : (addresses.ioctl as ffi.Pointer)
-          .cast<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Uint32, ffi.Pointer<ffi.Void>)>>()
+          .cast<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Uint64, ffi.Pointer<ffi.Void>)>>()
           .asFunction<int Function(int, int, ffi.Pointer<ffi.Void>)>(isLeaf: true);
   late final int Function(int, int) ioctl = _backend.ioctl;
   late final int Function(int) epoll_create = _backend.epoll_create;

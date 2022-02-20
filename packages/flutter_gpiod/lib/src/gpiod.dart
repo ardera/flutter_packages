@@ -293,8 +293,6 @@ class PlatformInterface {
 
       ffi.malloc.free(pathPtr);
 
-      print('open("/dev/gpiochip$i"): $fd');
-
       if (fd < 0) {
         chipIndexToFd.values.forEach((fd) => libc.close(fd));
         throw FileSystemException("Could not open GPIO chip $i", "/dev/gpiochip$i");
@@ -347,7 +345,6 @@ class PlatformInterface {
   }
 
   void _ioctl(int fd, int request, ffi.Pointer argp) {
-    print("ioctl(fd: $fd, request: $request, pointer: $argp)");
     final result = libc.ioctl_ptr(fd, request, argp.cast<ffi.Void>());
     if (result < 0) {
       throw LinuxError("GPIO ioctl failed", "ioctl", libc.errno);
