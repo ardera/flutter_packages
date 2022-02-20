@@ -13,7 +13,7 @@ Matcher isFreeInputLine(Object? name, [ActiveState? activeState]) {
     true,
     LineDirection.input,
     anything,
-    anything,
+    Bias.disable,
     activeState ?? ActiveState.high,
   );
 }
@@ -27,7 +27,7 @@ Matcher isFreeOutputLine(Object? name, {Object? outputMode, Object? bias, Object
     true,
     LineDirection.output,
     outputMode ?? OutputMode.pushPull,
-    bias ?? anything,
+    bias ?? Bias.disable,
     activeState ?? ActiveState.high,
   );
 }
@@ -41,7 +41,7 @@ Matcher isKernelOutputLine(Object? name, Object? consumer, {Object? outputMode, 
     false,
     LineDirection.output,
     outputMode ?? OutputMode.pushPull,
-    bias ?? anything,
+    bias ?? Bias.disable,
     activeState ?? ActiveState.high,
   );
 }
@@ -62,7 +62,7 @@ void main() {
       final chip = FlutterGpiod.instance.chips[0];
       expect(chip.index, 0);
       expect(chip.name, 'gpiochip0');
-      expect(chip.label, anything);
+      expect(chip.label, 'pinctrl-bcm2711');
 
       final lines = chip.lines;
       expect(lines, hasLength(58));
@@ -130,7 +130,7 @@ void main() {
       final chip = FlutterGpiod.instance.chips[1];
       expect(chip.index, 1);
       expect(chip.name, 'gpiochip1');
-      expect(chip.label, anything);
+      expect(chip.label, 'raspberrypi-exp-gpio');
 
       final lines = chip.lines;
       expect(lines, hasLength(8));
@@ -148,7 +148,7 @@ void main() {
       final chip = FlutterGpiod.instance.chips[2];
       expect(chip.index, 2);
       expect(chip.name, 'gpiochip2');
-      expect(chip.label, anything);
+      expect(chip.label, '7inch-touchscreen-p');
 
       final lines = chip.lines;
       expect(lines, hasLength(2));
