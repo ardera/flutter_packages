@@ -168,14 +168,8 @@ void _eventIsolateEntry2(List args) {
     return epollWaitRaw(epfd, events.backing, maxevents, timeout);
   }
 
-  final epollCtlAddr = args[3] as int;
-  final epollCtlRaw = ffi.Pointer.fromAddress(epollCtlAddr).cast<native_epoll_ctl>().asFunction<dart_epoll_ctl>();
-  int epollCtl(int epfd, int op, int fd, epoll_event_ptr event) {
-    return epollCtlRaw(epfd, op, fd, event.backing);
-  }
-
-  final readAddr = args[4] as int?;
-  final readAddr64 = args[5] as int?;
+  final readAddr = args[3] as int?;
+  final readAddr64 = args[4] as int?;
   late final dart_read read;
   if (readAddr != null) {
     read = ffi.Pointer.fromAddress(readAddr).cast<native_read>().asFunction();
@@ -185,7 +179,7 @@ void _eventIsolateEntry2(List args) {
     throw ArgumentError("Either `args[4]` (readAddr) or `args[5]` (readAddr64) must be non-null.");
   }
 
-  final getErrnoLocationAddr = args[6] as int;
+  final getErrnoLocationAddr = args[5] as int;
   final getErrnoLocation =
       ffi.Pointer.fromAddress(getErrnoLocationAddr).cast<native_errno_location>().asFunction<dart_errno_location>();
 
@@ -216,7 +210,6 @@ void _eventIsolateEntry2(List args) {
     var nReady = ok;
     for (var i = 0; i < maxEpollEvents && nReady > 0; i++) {
       final epollEvent = epollEvents.elementAt(i);
-
       if (epollEvent.events != 0) {
         ok = _syscall3(
           errnoPtr,
@@ -225,24 +218,14 @@ void _eventIsolateEntry2(List args) {
           events.cast<ffi.Void>(),
           maxEvents * ffi.sizeOf<gpioevent_data>(),
         );
-        if (ok != 0) {
+        if (ok < 0) {
           epollEvents.free();
           freeStruct(events);
           throw LinuxError("Could not read GPIO events from event line fd", "read", -ok);
         } else if (ok == 0) {
-          ok = _syscall4(
-            errnoPtr,
-            epollCtl,
-            epollFd,
-            EPOLL_CTL_DEL,
-            epollEvent.u64,
-            epoll_event_ptr.nullptr,
+          throw LinuxError(
+            'read(${epollEvent.u64}, ${events}, ${maxEvents * ffi.sizeOf<gpioevent_data>()}) returned 0',
           );
-          if (ok != 0) {
-            epollEvents.free();
-            freeStruct(events);
-            throw LinuxError("Could not remove line event fd from epoll instance", "epoll_ctl", -ok);
-          }
         }
 
         final nEventsRead = ok / ffi.sizeOf<gpioevent_data>();
@@ -279,15 +262,15 @@ class PlatformInterface {
       libc = LibC(ffi.DynamicLibrary.open("libc.so.6"));
     }
 
-    final numChips = Directory("/dev")
+    final numChips = Directory('/dev')
         .listSync(followLinks: false, recursive: false)
-        .where((element) => basename(element.path).startsWith("gpiochip"))
+        .where((element) => basename(element.path).startsWith('gpiochip'))
         .length;
 
     final chipIndexToFd = <int, int>{};
 
     for (var i = 0; i < numChips; i++) {
-      final pathPtr = "/dev/gpiochip$i".toNativeUtf8();
+      final pathPtr = '/dev/gpiochip$i'.toNativeUtf8();
 
       final fd = libc.open(pathPtr.cast<ffi.Int8>(), O_RDWR | O_CLOEXEC);
 
@@ -295,7 +278,7 @@ class PlatformInterface {
 
       if (fd < 0) {
         chipIndexToFd.values.forEach((fd) => libc.close(fd));
-        throw FileSystemException("Could not open GPIO chip $i", "/dev/gpiochip$i");
+        throw FileSystemException('Could not open GPIO chip $i', '/dev/gpiochip$i');
       }
 
       chipIndexToFd[i] = fd;
@@ -307,6 +290,7 @@ class PlatformInterface {
     }
 
     final receivePort = ReceivePort();
+    final errorReceivePort = ReceivePort();
 
     Isolate.spawn(
       _eventIsolateEntry2,
@@ -314,12 +298,17 @@ class PlatformInterface {
         receivePort.sendPort,
         epollFd,
         libc.addresses.epoll_wait.address,
-        libc.addresses.epoll_ctl.address,
         Arch.isArm || Arch.isI386 ? libc.addresses.read.address : null,
         Arch.isArm64 || Arch.isAmd64 ? libc.addresses.read.address : null,
         libc.errno_location_symbol_address.address,
       ],
+      onError: errorReceivePort.sendPort,
+      debugName: 'flutter_gpiod event listener',
     );
+
+    errorReceivePort.listen((message) {
+      throw RemoteError(message[0], message[1]);
+    });
 
     return PlatformInterface._construct(libc, numChips, chipIndexToFd, epollFd, receivePort);
   }
@@ -582,12 +571,9 @@ class PlatformInterface {
         _lineHandleToLineEventFd[lineHandle] = request.fd;
 
         final epollEvent = epoll_event_ptr.allocate();
-
         epollEvent.events = EPOLL_EVENTS.EPOLLIN | EPOLL_EVENTS.EPOLLPRI;
         epollEvent.u64 = request.fd;
-
         final result = libc.epoll_ctl(_epollFd, EPOLL_CTL_ADD, request.fd, epollEvent);
-
         epollEvent.free();
 
         if (result < 0) {

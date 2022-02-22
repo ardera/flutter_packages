@@ -2,10 +2,9 @@
 
 import 'dart:ffi' as ffi;
 
-export 'libc_i386.g.dart' hide epoll_event, epoll_data;
+export 'libc_i386.g.dart' hide epoll_data;
 
-@ffi.Packed(1)
-class epoll_data extends ffi.Union {
+class epoll_data_real extends ffi.Union {
   external ffi.Pointer<ffi.Void> ptr;
 
   @ffi.Int32()
@@ -18,10 +17,9 @@ class epoll_data extends ffi.Union {
   external int u64;
 }
 
-@ffi.Packed(1)
-class epoll_event extends ffi.Struct {
+class epoll_event_real extends ffi.Struct {
   @ffi.Uint32()
   external int events;
 
-  external epoll_data data;
+  external epoll_data_real data;
 }

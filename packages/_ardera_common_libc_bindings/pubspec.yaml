@@ -12,6 +12,7 @@ dev_dependencies:
   lints: ^1.0.0
   _ardera_libc_bindings_generator:
     path: ../_ardera_libc_bindings_generator
+  test: ^1.20.1
     
 dependencies: 
   build_runner: ^2.1.7

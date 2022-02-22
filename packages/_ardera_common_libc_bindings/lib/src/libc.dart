@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:ffi' as ffi;
 import 'dart:io';
 
+import 'package:meta/meta.dart';
 import 'package:ffi/ffi.dart' as ffi;
 import 'libc_arm.dart' as arm;
 import 'libc_arm64.dart' as arm64;
@@ -54,6 +55,11 @@ class Arch {
     }
 
     return _current!;
+  }
+
+  @visibleForTesting
+  static set current(Arch arch) {
+    _current = arch;
   }
 
   static bool get isArm => current == arm;
@@ -118,11 +124,11 @@ class LibC {
   late final int Function(int) epoll_create1 = _backend.epoll_create1;
 
   int epoll_ctl(int __epfd, int __op, int __fd, epoll_event_ptr __event) {
-    return _backend.epoll_ctl(__epfd, __op, __fd, __event.backing);
+    return _backend.epoll_ctl(__epfd, __op, __fd, __event.nativeBacking);
   }
 
   int epoll_wait(int __epfd, epoll_event_ptr __events, int __maxevents, int __timeout) {
-    return _backend.epoll_wait(__epfd, __events.backing, __maxevents, __timeout);
+    return _backend.epoll_wait(__epfd, __events.nativeBacking, __maxevents, __timeout);
   }
 
   late final int Function(ffi.Pointer<ffi.Int8>, int) open =
@@ -193,6 +199,21 @@ class epoll_event_ptr {
 
   final ffi.Allocator allocator;
   final ffi.Pointer backing;
+
+  ffi.Pointer get nativeBacking {
+    if (Arch.isArm) {
+      return backing.cast<arm.epoll_event>();
+    } else if (Arch.isArm64) {
+      return backing.cast<arm64.epoll_event>();
+    } else if (Arch.isI386) {
+      return backing.cast<i386.epoll_event>();
+    } else if (Arch.isAmd64) {
+      return backing.cast<amd64.epoll_event>();
+    } else {
+      throw FallThroughError();
+    }
+  }
+
   bool _isAllocated = true;
 
   set events(int events) => _ref.events = events;
@@ -213,28 +234,30 @@ class epoll_event_ptr {
   epoll_event_ptr elementAt(int index) {
     late final ffi.Pointer ptr;
     if (Arch.isArm) {
-      ptr = backing.cast<arm.epoll_event>().elementAt(index);
+      ptr = backing.cast<arm.epoll_event_real>().elementAt(index);
     } else if (Arch.isArm64) {
-      ptr = backing.cast<arm64.epoll_event>().elementAt(index);
+      ptr = backing.cast<arm64.epoll_event_real>().elementAt(index);
     } else if (Arch.isI386) {
-      ptr = backing.cast<amd64.epoll_event>().elementAt(index);
+      ptr = backing.cast<i386.epoll_event_real>().elementAt(index);
     } else if (Arch.isAmd64) {
-      ptr = backing.cast<i386.epoll_event>().elementAt(index);
+      ptr = backing.cast<amd64.epoll_event_real>().elementAt(index);
     } else {
       throw FallThroughError();
     }
     return epoll_event_ptr(allocator, ptr);
   }
 
+  dynamic get ref => _ref;
+
   dynamic get _ref {
     if (Arch.isArm) {
-      return backing.cast<arm.epoll_event>().ref;
+      return backing.cast<arm.epoll_event_real>().ref;
     } else if (Arch.isArm64) {
-      return backing.cast<arm64.epoll_event>().ref;
+      return backing.cast<arm64.epoll_event_real>().ref;
     } else if (Arch.isI386) {
-      return backing.cast<amd64.epoll_event>().ref;
+      return backing.cast<i386.epoll_event_real>().ref;
     } else if (Arch.isAmd64) {
-      return backing.cast<i386.epoll_event>().ref;
+      return backing.cast<amd64.epoll_event_real>().ref;
     } else {
       throw FallThroughError();
     }
@@ -245,7 +268,8 @@ class epoll_event_ptr {
     int count = 1,
   }) {
     final bytes = sizeOf() * count;
-    return epoll_event_ptr(allocator, allocator.allocate(bytes));
+    final ptr = allocator.allocate(bytes);
+    return epoll_event_ptr(allocator, ptr);
   }
 
   void free() {
@@ -256,13 +280,13 @@ class epoll_event_ptr {
 
   static int sizeOf() {
     if (Arch.isArm) {
-      return ffi.sizeOf<arm.epoll_event>();
+      return ffi.sizeOf<arm.epoll_event_real>();
     } else if (Arch.isArm64) {
-      return ffi.sizeOf<arm64.epoll_event>();
+      return ffi.sizeOf<arm64.epoll_event_real>();
     } else if (Arch.isI386) {
-      return ffi.sizeOf<i386.epoll_event>();
+      return ffi.sizeOf<i386.epoll_event_real>();
     } else if (Arch.isAmd64) {
-      return ffi.sizeOf<amd64.epoll_event>();
+      return ffi.sizeOf<amd64.epoll_event_real>();
     } else {
       throw FallThroughError();
     }
