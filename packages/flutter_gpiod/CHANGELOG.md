@@ -1,5 +1,7 @@
 ## [0.4.0]
 
+* fix some smaller issues
+* test on pi 4 and odroid c4 using a seperate test app
 * migrate to common bindings
 
 ## [0.4.0-nullsafety]
