@@ -1,3 +1,6 @@
+## [2.0.0+2] - 23.02.2021
+* clarify relation to video_player package in readme
+
 ## [2.0.0+1] - 17.04.2021
 * add supported platforms hint in readme
 * change repo
