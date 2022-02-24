@@ -20,7 +20,8 @@ Matcher isFreeInputLine(Object? name, [ActiveState? activeState]) {
   );
 }
 
-Matcher isFreeOutputLine(Object? name, {Object? outputMode, Object? bias, Object? activeState}) {
+Matcher isFreeOutputLine(Object? name,
+    {Object? outputMode, Object? bias, Object? activeState}) {
   return matchGpioLineInfo(
     name,
     noConsumer,
@@ -34,7 +35,8 @@ Matcher isFreeOutputLine(Object? name, {Object? outputMode, Object? bias, Object
   );
 }
 
-Matcher isKernelInputLine(Object? name, Object? consumer, {Object? outputMode, Object? bias, Object? activeState}) {
+Matcher isKernelInputLine(Object? name, Object? consumer,
+    {Object? outputMode, Object? bias, Object? activeState}) {
   return matchGpioLineInfo(
     name,
     consumer,
@@ -48,7 +50,8 @@ Matcher isKernelInputLine(Object? name, Object? consumer, {Object? outputMode, O
   );
 }
 
-Matcher isKernelOutputLine(Object? name, Object? consumer, {Object? outputMode, Object? bias, Object? activeState}) {
+Matcher isKernelOutputLine(Object? name, Object? consumer,
+    {Object? outputMode, Object? bias, Object? activeState}) {
   return matchGpioLineInfo(
     name,
     consumer,
@@ -62,7 +65,8 @@ Matcher isKernelOutputLine(Object? name, Object? consumer, {Object? outputMode, 
   );
 }
 
-Matcher isOwnedInputLine(Object? name, Object? consumer, {Object? bias, Object? activeState}) {
+Matcher isOwnedInputLine(Object? name, Object? consumer,
+    {Object? bias, Object? activeState}) {
   return matchGpioLineInfo(
     name,
     consumer,
@@ -166,7 +170,10 @@ void main() {
       expect(lines, hasLength(8));
       expect(lines[0], isFreeOutputLine('BT_ON'));
       expect(lines[1], isFreeOutputLine('WL_ON'));
-      expect(lines[2], isKernelOutputLine('PWR_LED_OFF', 'led1', activeState: ActiveState.low));
+      expect(
+          lines[2],
+          isKernelOutputLine('PWR_LED_OFF', 'led1',
+              activeState: ActiveState.low));
       expect(lines[3], isFreeOutputLine('GLOBAL_RESET'));
       expect(lines[4], isKernelOutputLine('VDD_SD_IO_SEL', 'vdd-sd-io'));
       expect(lines[5], isFreeOutputLine('CAM_GPIO'));
@@ -183,7 +190,8 @@ void main() {
       final lines = chip.lines;
       expect(lines, hasLength(2));
       expect(lines[0], isKernelOutputLine(unnamed, '2.reg_bridge'));
-      expect(lines[1], isKernelOutputLine(unnamed, 'reset', activeState: ActiveState.low));
+      expect(lines[1],
+          isKernelOutputLine(unnamed, 'reset', activeState: ActiveState.low));
     }, tags: ['pi4']);
   });
 
@@ -417,11 +425,14 @@ void main() {
         final lines = FlutterGpiod.instance.chips[0].lines;
 
         // request all the lines
-        expect(() => requestInput(lines[0], consumer: 'test0'), returnsNormally);
-        expect(() => requestInput(lines[1], consumer: 'test1'), returnsNormally);
+        expect(
+            () => requestInput(lines[0], consumer: 'test0'), returnsNormally);
+        expect(
+            () => requestInput(lines[1], consumer: 'test1'), returnsNormally);
         // already consumed by 'ffe09080.usb3phy'
         // expect(() => requestInput(lines[2], consumer: 'test2'), returnsNormally);
-        expect(() => requestInput(lines[3], consumer: 'test3'), returnsNormally);
+        expect(
+            () => requestInput(lines[3], consumer: 'test3'), returnsNormally);
         // expect(() => requestInput(lines[4], consumer: 'test4'), returnsNormally);
         // expect(() => requestInput(lines[5], consumer: 'test5'), returnsNormally);
         // already consumed by 'amlsd'
@@ -432,10 +443,13 @@ void main() {
         // expect(() => requestInput(lines[10], consumer: 'test10'), returnsNormally);
         // already consumed by '?'
         // expect(() => requestInput(lines[11], consumer: 'test11'), returnsNormally);
-        expect(() => requestInput(lines[12], consumer: 'test12'), returnsNormally);
+        expect(
+            () => requestInput(lines[12], consumer: 'test12'), returnsNormally);
         // expect(() => requestInput(lines[13], consumer: 'test13'), returnsNormally);
-        expect(() => requestInput(lines[14], consumer: 'test14'), returnsNormally);
-        expect(() => requestInput(lines[15], consumer: 'test15'), returnsNormally);
+        expect(
+            () => requestInput(lines[14], consumer: 'test14'), returnsNormally);
+        expect(
+            () => requestInput(lines[15], consumer: 'test15'), returnsNormally);
 
         // check the listing matches what we expect
         expect(lines[0], isOwnedInputLine(unnamed, 'test0'));
@@ -454,11 +468,13 @@ void main() {
         expect(() => release(lines[15]), returnsNormally);
       }, tags: ['odroidc4']);
 
-      testWidgets('test odroid c4 second gpio chip requesting lines', (_) async {
+      testWidgets('test odroid c4 second gpio chip requesting lines',
+          (_) async {
         final lines = FlutterGpiod.instance.chips[1].lines;
 
         // request all the lines
-        expect(() => requestInput(lines[0], consumer: 'test0'), returnsNormally);
+        expect(
+            () => requestInput(lines[0], consumer: 'test0'), returnsNormally);
         // expect(() => requestInput(lines[1], consumer: 'test1'), returnsNormally);
         // expect(() => requestInput(lines[2], consumer: 'test2'), returnsNormally);
         // expect(() => requestInput(lines[3], consumer: 'test3'), returnsNormally);
@@ -473,18 +489,24 @@ void main() {
         // expect(() => requestInput(lines[12], consumer: 'test12'), returnsNormally);
         // expect(() => requestInput(lines[13], consumer: 'test13'), returnsNormally);
         // expect(() => requestInput(lines[14], consumer: 'test14'), returnsNormally);
-        expect(() => requestInput(lines[15], consumer: 'test15'), returnsNormally);
-        expect(() => requestInput(lines[16], consumer: 'test16'), returnsNormally);
+        expect(
+            () => requestInput(lines[15], consumer: 'test15'), returnsNormally);
+        expect(
+            () => requestInput(lines[16], consumer: 'test16'), returnsNormally);
         // expect(() => requestInput(lines[17], consumer: 'test17'), returnsNormally);
         // expect(() => requestInput(lines[18], consumer: 'test18'), returnsNormally);
         // expect(() => requestInput(lines[19], consumer: 'test19'), returnsNormally);
         // expect(() => requestInput(lines[20], consumer: 'test20'), returnsNormally);
         // already consumed by 'usb_hub'
         // expect(() => requestInput(lines[21], consumer: 'test'), returnsNormally);
-        expect(() => requestInput(lines[22], consumer: 'test22'), returnsNormally);
-        expect(() => requestInput(lines[23], consumer: 'test23'), returnsNormally);
-        expect(() => requestInput(lines[24], consumer: 'test24'), returnsNormally);
-        expect(() => requestInput(lines[25], consumer: 'test25'), returnsNormally);
+        expect(
+            () => requestInput(lines[22], consumer: 'test22'), returnsNormally);
+        expect(
+            () => requestInput(lines[23], consumer: 'test23'), returnsNormally);
+        expect(
+            () => requestInput(lines[24], consumer: 'test24'), returnsNormally);
+        expect(
+            () => requestInput(lines[25], consumer: 'test25'), returnsNormally);
         // expect(() => requestInput(lines[26], consumer: 'test26'), returnsNormally);
         // expect(() => requestInput(lines[27], consumer: 'test27'), returnsNormally);
         // expect(() => requestInput(lines[28], consumer: 'test28'), returnsNormally);
@@ -495,46 +517,78 @@ void main() {
         // expect(() => requestInput(lines[32], consumer: 'test32'), returnsNormally);
         // expect(() => requestInput(lines[33], consumer: 'test33'), returnsNormally);
         // expect(() => requestInput(lines[34], consumer: 'test34'), returnsNormally);
-        expect(() => requestInput(lines[35], consumer: 'test35'), returnsNormally);
+        expect(
+            () => requestInput(lines[35], consumer: 'test35'), returnsNormally);
         // expect(() => requestInput(lines[36], consumer: 'test36'), returnsNormally);
-        expect(() => requestInput(lines[37], consumer: 'test37'), returnsNormally);
+        expect(
+            () => requestInput(lines[37], consumer: 'test37'), returnsNormally);
         // already consumed by 'amlsd'
         // expect(() => requestInput(lines[38], consumer: 'test38'), returnsNormally);
         // expect(() => requestInput(lines[39], consumer: 'test39'), returnsNormally);
-        expect(() => requestInput(lines[40], consumer: 'test40'), returnsNormally);
-        expect(() => requestInput(lines[41], consumer: 'test41'), returnsNormally);
-        expect(() => requestInput(lines[42], consumer: 'test42'), returnsNormally);
-        expect(() => requestInput(lines[43], consumer: 'test43'), returnsNormally);
-        expect(() => requestInput(lines[44], consumer: 'test44'), returnsNormally);
-        expect(() => requestInput(lines[45], consumer: 'test45'), returnsNormally);
-        expect(() => requestInput(lines[46], consumer: 'test46'), returnsNormally);
-        expect(() => requestInput(lines[47], consumer: 'test47'), returnsNormally);
+        expect(
+            () => requestInput(lines[40], consumer: 'test40'), returnsNormally);
+        expect(
+            () => requestInput(lines[41], consumer: 'test41'), returnsNormally);
+        expect(
+            () => requestInput(lines[42], consumer: 'test42'), returnsNormally);
+        expect(
+            () => requestInput(lines[43], consumer: 'test43'), returnsNormally);
+        expect(
+            () => requestInput(lines[44], consumer: 'test44'), returnsNormally);
+        expect(
+            () => requestInput(lines[45], consumer: 'test45'), returnsNormally);
+        expect(
+            () => requestInput(lines[46], consumer: 'test46'), returnsNormally);
+        expect(
+            () => requestInput(lines[47], consumer: 'test47'), returnsNormally);
         // already consumed by 'amlsd'
         // expect(() => requestInput(lines[48], consumer: 'test'), returnsNormally);
-        expect(() => requestInput(lines[49], consumer: 'test49'), returnsNormally);
-        expect(() => requestInput(lines[50], consumer: 'test50'), returnsNormally);
-        expect(() => requestInput(lines[51], consumer: 'test51'), returnsNormally);
-        expect(() => requestInput(lines[52], consumer: 'test52'), returnsNormally);
-        expect(() => requestInput(lines[53], consumer: 'test53'), returnsNormally);
-        expect(() => requestInput(lines[54], consumer: 'test54'), returnsNormally);
-        expect(() => requestInput(lines[55], consumer: 'test55'), returnsNormally);
-        expect(() => requestInput(lines[56], consumer: 'test56'), returnsNormally);
-        expect(() => requestInput(lines[57], consumer: 'test57'), returnsNormally);
-        expect(() => requestInput(lines[58], consumer: 'test58'), returnsNormally);
-        expect(() => requestInput(lines[59], consumer: 'test59'), returnsNormally);
-        expect(() => requestInput(lines[60], consumer: 'test60'), returnsNormally);
-        expect(() => requestInput(lines[61], consumer: 'test61'), returnsNormally);
-        expect(() => requestInput(lines[62], consumer: 'test62'), returnsNormally);
-        expect(() => requestInput(lines[63], consumer: 'test63'), returnsNormally);
+        expect(
+            () => requestInput(lines[49], consumer: 'test49'), returnsNormally);
+        expect(
+            () => requestInput(lines[50], consumer: 'test50'), returnsNormally);
+        expect(
+            () => requestInput(lines[51], consumer: 'test51'), returnsNormally);
+        expect(
+            () => requestInput(lines[52], consumer: 'test52'), returnsNormally);
+        expect(
+            () => requestInput(lines[53], consumer: 'test53'), returnsNormally);
+        expect(
+            () => requestInput(lines[54], consumer: 'test54'), returnsNormally);
+        expect(
+            () => requestInput(lines[55], consumer: 'test55'), returnsNormally);
+        expect(
+            () => requestInput(lines[56], consumer: 'test56'), returnsNormally);
+        expect(
+            () => requestInput(lines[57], consumer: 'test57'), returnsNormally);
+        expect(
+            () => requestInput(lines[58], consumer: 'test58'), returnsNormally);
+        expect(
+            () => requestInput(lines[59], consumer: 'test59'), returnsNormally);
+        expect(
+            () => requestInput(lines[60], consumer: 'test60'), returnsNormally);
+        expect(
+            () => requestInput(lines[61], consumer: 'test61'), returnsNormally);
+        expect(
+            () => requestInput(lines[62], consumer: 'test62'), returnsNormally);
+        expect(
+            () => requestInput(lines[63], consumer: 'test63'), returnsNormally);
         // expect(() => requestInput(lines[64], consumer: 'test64'), returnsNormally);
         // expect(() => requestInput(lines[65], consumer: 'test65'), returnsNormally);
-        expect(() => requestInput(lines[66], consumer: 'test66'), returnsNormally);
-        expect(() => requestInput(lines[67], consumer: 'test67'), returnsNormally);
-        expect(() => requestInput(lines[68], consumer: 'test68'), returnsNormally);
-        expect(() => requestInput(lines[69], consumer: 'test69'), returnsNormally);
-        expect(() => requestInput(lines[70], consumer: 'test70'), returnsNormally);
-        expect(() => requestInput(lines[71], consumer: 'test71'), returnsNormally);
-        expect(() => requestInput(lines[72], consumer: 'test72'), returnsNormally);
+        expect(
+            () => requestInput(lines[66], consumer: 'test66'), returnsNormally);
+        expect(
+            () => requestInput(lines[67], consumer: 'test67'), returnsNormally);
+        expect(
+            () => requestInput(lines[68], consumer: 'test68'), returnsNormally);
+        expect(
+            () => requestInput(lines[69], consumer: 'test69'), returnsNormally);
+        expect(
+            () => requestInput(lines[70], consumer: 'test70'), returnsNormally);
+        expect(
+            () => requestInput(lines[71], consumer: 'test71'), returnsNormally);
+        expect(
+            () => requestInput(lines[72], consumer: 'test72'), returnsNormally);
         // expect(() => requestInput(lines[73], consumer: 'test73'), returnsNormally);
         // expect(() => requestInput(lines[74], consumer: 'test74'), returnsNormally);
         // expect(() => requestInput(lines[75], consumer: 'test75'), returnsNormally);
@@ -543,12 +597,15 @@ void main() {
         // expect(() => requestInput(lines[77], consumer: 'test77'), returnsNormally);
         // expect(() => requestInput(lines[78], consumer: 'test78'), returnsNormally);
         // expect(() => requestInput(lines[79], consumer: 'test79'), returnsNormally);
-        expect(() => requestInput(lines[80], consumer: 'test80'), returnsNormally);
-        expect(() => requestInput(lines[81], consumer: 'test81'), returnsNormally);
+        expect(
+            () => requestInput(lines[80], consumer: 'test80'), returnsNormally);
+        expect(
+            () => requestInput(lines[81], consumer: 'test81'), returnsNormally);
         // expect(() => requestInput(lines[82], consumer: 'test82'), returnsNormally);
         // expect(() => requestInput(lines[83], consumer: 'test83'), returnsNormally);
         // expect(() => requestInput(lines[84], consumer: 'test84'), returnsNormally);
-        expect(() => requestInput(lines[85], consumer: 'test85'), returnsNormally);
+        expect(
+            () => requestInput(lines[85], consumer: 'test85'), returnsNormally);
 
         // check the listing matches what we expect
         expect(lines[0], isOwnedInputLine(unnamed, 'test0'));
@@ -654,7 +711,8 @@ void main() {
         final gpiox0 = FlutterGpiod.instance.chips[1].lines[476 - 410];
 
         // Now request GPIOX.4 as input and GPIOX.0 as output
-        requestInput(gpiox4, consumer: 'test', triggers: const {SignalEdge.rising});
+        requestInput(gpiox4,
+            consumer: 'test', triggers: const {SignalEdge.rising});
         requestOutput(gpiox0, consumer: 'test', initialValue: false);
         rerequestGpiox0AsInput = true;
 
@@ -679,11 +737,14 @@ void main() {
         // wait for some time so the edge event arrives
 
         //await tester.pump(const Duration(seconds: 5));
-        (TestWidgetsFlutterBinding.ensureInitialized() as TestWidgetsFlutterBinding)
+        (TestWidgetsFlutterBinding.ensureInitialized()
+                as TestWidgetsFlutterBinding)
             .delayed(const Duration(seconds: 5))
             .then((value) {
           if (!completer.isCompleted) {
-            completer.completeError(TimeoutException('Waiting for signal edge timed out.', const Duration(seconds: 5)));
+            completer.completeError(TimeoutException(
+                'Waiting for signal edge timed out.',
+                const Duration(seconds: 5)));
           }
         });
 
