@@ -11,4 +11,3 @@ dev_dependencies:
   _ardera_libc_bindings_generator:
     path: ../
   pedantic: ^1.10.0
-  test: ^1.16.0

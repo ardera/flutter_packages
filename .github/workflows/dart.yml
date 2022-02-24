@@ -19,28 +19,22 @@ jobs:
              
       - name: Setup melos
         run: dart pub global activate melos
-        
-      - name: Melos bootstrap
+      
+      - name: flutter precache
+        run: flutter precache
+
+      - name: melos bootstrap
         run: dart pub global run melos bootstrap
         
-      - name: Check formatting (dart)
-        run: dart pub global run melos exec --no-flutter -- dart format --output=none --set-exit-if-changed .
+      - name: flutter format
+        run: dart pub global run melos exec flutter format --output=none --set-exit-if-changed .
         
-      - name: Analyze project source (dart)
-        run: dart pub global run melos exec --no-flutter -- dart analyze --fatal-infos
+      - name: flutter analyze
+        run: dart pub global run melos exec flutter analyze --fatal-infos
         
-      - name: Run general tests (dart)
-        run: dart pub global run melos exec --no-flutter -- dart test
+      - name: melos test
+        run: dart pub global run melos test
         
-      - name: Check formatting (flutter)
-        run: dart pub global run melos exec --no-flutter -- flutter format --output=none --set-exit-if-changed .
-        
-      - name: Analyze project source (flutter)
-        run: dart pub global run melos exec --no-flutter -- flutter analyze --fatal-infos
-        
-      - name: Run general tests (flutter)
-        run: dart pub global run melos exec --no-flutter -- flutter test
-
-      - name: Run flutter_gpiod_test_app on ODROID C4
+      - name: run flutter_gpiod_test_app on ODROID C4
         working-directory: packages/flutter_gpiod_test_app
         run: flutter test -d "ODROID C4" -t odroidc4 integration_test/gpio_test.dart
