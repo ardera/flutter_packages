@@ -38,15 +38,15 @@ scripts:
     description: Run all Dart & Flutter tests in this project.
 
   test:dart:
-    run: melos exec  -c 1 --fail-fast -- "\$MELOS_ROOT_PATH/scripts/coverage.sh"
-    description: Run Dart tests for a specific package in this project.
+    run: melos exec -c 1 --fail-fast -- dart test
+    description: Run `dart test` in all pure-dart packages with a `test` folder.
     select-package:
       flutter: false
       dir-exists: test
 
   test:flutter:
-    run: melos exec --dir-exists="test" -c 1 --fail-fast -- "flutter test --coverage"
-    description: Run Flutter tests for a specific package in this project.
+    run: melos exec -c 1 --fail-fast -- flutter test
+    description: Run `flutter test` in all flutter packages with a `test` folder.
     select-package:
       flutter: true
       dir-exists: test
