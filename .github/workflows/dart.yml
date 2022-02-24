@@ -10,7 +10,9 @@ on:
 jobs:
   build:
     runs-on: panda
-
+    env:
+      ANDROID_PLATFORM_TOOLS_PATH: /home/hannes/devel/android-sdk/platform-tools
+      
     steps:
       - uses: actions/checkout@v2
 
@@ -34,6 +36,11 @@ jobs:
         
       - name: melos test
         run: dart pub global run melos test
+        
+      - name: make ODROID C4 gpio chips accessible
+        run: |
+          $ANDROID_PLATFORM_TOOLS_PATH/adb shell chmod 0777 /dev/gpiochip0
+          $ANDROID_PLATFORM_TOOLS_PATH/adb shell chmod 0777 /dev/gpiochip1
         
       - name: run flutter_gpiod_test_app on ODROID C4
         working-directory: packages/flutter_gpiod_test_app
