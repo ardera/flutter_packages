@@ -26,11 +26,11 @@ jobs:
       - name: melos bootstrap
         run: dart pub global run melos bootstrap
         
-      - name: flutter format
-        run: dart pub global run melos exec flutter format --output=none --set-exit-if-changed .
+      - name: melos checkformat
+        run: dart pub global run melos run checkformat
         
-      - name: flutter analyze
-        run: dart pub global run melos exec flutter analyze --fatal-infos
+      - name: melos analyze
+        run: dart pub global run melos run analyze
         
       - name: melos test
         run: dart pub global run melos test
