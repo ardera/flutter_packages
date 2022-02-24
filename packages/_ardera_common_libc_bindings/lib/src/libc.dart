@@ -78,8 +78,7 @@ class LibC {
   final ffi.Pointer<T> Function<T extends ffi.NativeType>(String) _lookup;
   final dynamic _backend;
 
-  factory LibC.fromLookup(
-      ffi.Pointer<T> Function<T extends ffi.NativeType>(String) lookup) {
+  factory LibC.fromLookup(ffi.Pointer<T> Function<T extends ffi.NativeType>(String) lookup) {
     if (Arch.isArm) {
       final _libcArm = arm.LibCPlatformBackend.fromLookup(lookup);
       return LibC._internal(
@@ -113,21 +112,13 @@ class LibC {
     return LibC.fromLookup(dylib.lookup);
   }
 
-  late final int Function(int, int, ffi.Pointer<ffi.Void>) ioctl_ptr =
-      Arch.isArm || Arch.isI386
-          ? (addresses.ioctl as ffi.Pointer)
-              .cast<
-                  ffi.NativeFunction<
-                      ffi.Int32 Function(
-                          ffi.Int32, ffi.Uint32, ffi.Pointer<ffi.Void>)>>()
-              .asFunction<int Function(int, int, ffi.Pointer<ffi.Void>)>(
-                  isLeaf: true)
-          : (addresses.ioctl as ffi.Pointer)
-              .cast<
-                  ffi.NativeFunction<
-                      ffi.Int32 Function(
-                          ffi.Int32, ffi.Uint64, ffi.Pointer<ffi.Void>)>>()
-              .asFunction<int Function(int, int, ffi.Pointer<ffi.Void>)>(isLeaf: true);
+  late final int Function(int, int, ffi.Pointer<ffi.Void>) ioctl_ptr = Arch.isArm || Arch.isI386
+      ? (addresses.ioctl as ffi.Pointer)
+          .cast<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Uint32, ffi.Pointer<ffi.Void>)>>()
+          .asFunction<int Function(int, int, ffi.Pointer<ffi.Void>)>(isLeaf: true)
+      : (addresses.ioctl as ffi.Pointer)
+          .cast<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Uint64, ffi.Pointer<ffi.Void>)>>()
+          .asFunction<int Function(int, int, ffi.Pointer<ffi.Void>)>(isLeaf: true);
   late final int Function(int, int) ioctl = _backend.ioctl;
   late final int Function(int) epoll_create = _backend.epoll_create;
   late final int Function(int) epoll_create1 = _backend.epoll_create1;
@@ -136,16 +127,12 @@ class LibC {
     return _backend.epoll_ctl(__epfd, __op, __fd, __event.nativeBacking);
   }
 
-  int epoll_wait(
-      int __epfd, epoll_event_ptr __events, int __maxevents, int __timeout) {
-    return _backend.epoll_wait(
-        __epfd, __events.nativeBacking, __maxevents, __timeout);
+  int epoll_wait(int __epfd, epoll_event_ptr __events, int __maxevents, int __timeout) {
+    return _backend.epoll_wait(__epfd, __events.nativeBacking, __maxevents, __timeout);
   }
 
   late final int Function(ffi.Pointer<ffi.Int8>, int) open =
-      Arch.isArm || Arch.isArm64
-          ? (file, oflag) => _backend.open(file.cast<ffi.Uint8>(), oflag)
-          : _backend.open;
+      Arch.isArm || Arch.isArm64 ? (file, oflag) => _backend.open(file.cast<ffi.Uint8>(), oflag) : _backend.open;
 
   late final int Function(int) close = _backend.close;
   late final int Function(int, ffi.Pointer<ffi.Void>, int) read = _backend.read;
@@ -174,30 +161,24 @@ class LibC {
     return _backend.tcsetattr(__fd, __optional_actions, __termios_p.backing);
   }
 
-  late final int Function(int __fd, int __duration) tcsendbreak =
-      _backend.tcsendbreak;
+  late final int Function(int __fd, int __duration) tcsendbreak = _backend.tcsendbreak;
   late final int Function(int __fd) tcdrain = _backend.tcdrain;
-  late final int Function(int __fd, int __queue_selector) tcflush =
-      _backend.tcflush;
+  late final int Function(int __fd, int __queue_selector) tcflush = _backend.tcflush;
   late final int Function(int __fd, int __action) tcflow = _backend.tcflow;
   late final int Function(int __fd) tcgetsid = _backend.tcgetsid;
 
   late final addresses = _backend.addresses;
 
-  late final ffi.Pointer<ffi.NativeFunction<ffi.Pointer<ffi.Int32> Function()>>
-      errno_location_symbol_address = (() {
-    ffi.Pointer<ffi.NativeFunction<ffi.Pointer<ffi.Int32> Function()>>?
-        tryLookup(String name) {
+  late final ffi.Pointer<ffi.NativeFunction<ffi.Pointer<ffi.Int32> Function()>> errno_location_symbol_address = (() {
+    ffi.Pointer<ffi.NativeFunction<ffi.Pointer<ffi.Int32> Function()>>? tryLookup(String name) {
       try {
-        return _lookup<ffi.NativeFunction<ffi.Pointer<ffi.Int32> Function()>>(
-            name);
+        return _lookup<ffi.NativeFunction<ffi.Pointer<ffi.Int32> Function()>>(name);
       } on ArgumentError {
         return null;
       }
     }
 
-    ffi.Pointer<ffi.NativeFunction<ffi.Pointer<ffi.Int32> Function()>>
-        throwStateError() {
+    ffi.Pointer<ffi.NativeFunction<ffi.Pointer<ffi.Int32> Function()>> throwStateError() {
       throw StateError('Couldn\'t resolve the errno location function.');
     }
 
@@ -208,8 +189,8 @@ class LibC {
         tryLookup('__libc_errno') ??
         throwStateError();
   })();
-  ffi.Pointer<ffi.Int32> get errno_location => errno_location_symbol_address
-      .asFunction<ffi.Pointer<ffi.Int32> Function()>()();
+  ffi.Pointer<ffi.Int32> get errno_location =>
+      errno_location_symbol_address.asFunction<ffi.Pointer<ffi.Int32> Function()>()();
   int get errno => errno_location.value;
 }
 

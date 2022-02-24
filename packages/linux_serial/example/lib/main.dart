@@ -5,8 +5,7 @@ import 'package:linux_serial/linux_serial.dart';
 void main() async {
   print("ports: ${SerialPorts.ports}");
 
-  final port =
-      SerialPorts.ports.singleWhere((element) => element.name == "ttyS0");
+  final port = SerialPorts.ports.singleWhere((element) => element.name == "ttyS0");
 
   final handle = port.open(baudrate: Baudrate.b9600);
 

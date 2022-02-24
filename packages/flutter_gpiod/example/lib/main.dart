@@ -52,11 +52,9 @@ void main() async {
 
   /// Now we're listening for falling and rising edge events
   /// on BCM 23 and BCM 24.
-  line1.requestInput(
-      consumer: "test 1", triggers: {SignalEdge.falling, SignalEdge.rising});
+  line1.requestInput(consumer: "test 1", triggers: {SignalEdge.falling, SignalEdge.rising});
 
-  line2.requestInput(
-      consumer: "test 2", triggers: {SignalEdge.falling, SignalEdge.rising});
+  line2.requestInput(consumer: "test 2", triggers: {SignalEdge.falling, SignalEdge.rising});
 
   print("line value: ${line1.getValue()}");
 
@@ -110,14 +108,12 @@ void main() async {
   /// memory will fill up with buffered signal events.
 
   /// `SingleSubscriptionTransformer` is contained in the `async` package btw.
-  final bufferingStream = line1.onEvent
-      .transform(SingleSubscriptionTransformer<SignalEvent, SignalEvent>());
+  final bufferingStream = line1.onEvent.transform(SingleSubscriptionTransformer<SignalEvent, SignalEvent>());
 
   // Let's say, if we pulse line 2 (BCM 24) some device connected
   // to it will pulse line 1 (BCM 23) as an interrupt.
   line2.release();
-  line2.requestOutput(
-      consumer: 'some device that has interrupts', initialValue: false);
+  line2.requestOutput(consumer: 'some device that has interrupts', initialValue: false);
   line2.setValue(true);
   await Future.delayed(Duration(milliseconds: 500));
   line2.setValue(false);

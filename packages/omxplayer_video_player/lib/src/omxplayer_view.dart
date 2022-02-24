@@ -13,8 +13,7 @@ class OmxplayerView extends StatelessWidget {
     return PlatformViewLink(
       viewType: 'omxplayer',
       onCreatePlatformView: _createOmxPlayerView,
-      surfaceFactory:
-          (BuildContext context, PlatformViewController controller) {
+      surfaceFactory: (BuildContext context, PlatformViewController controller) {
         return PlatformViewSurface(
           controller: controller,
           gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
@@ -24,10 +23,8 @@ class OmxplayerView extends StatelessWidget {
     );
   }
 
-  _OmxPlayerViewController _createOmxPlayerView(
-      PlatformViewCreationParams params) {
-    final _OmxPlayerViewController controller =
-        _OmxPlayerViewController(params.id, playerId);
+  _OmxPlayerViewController _createOmxPlayerView(PlatformViewCreationParams params) {
+    final _OmxPlayerViewController controller = _OmxPlayerViewController(params.id, playerId);
 
     controller._initialize().then((_) {
       params.onPlatformViewCreated(params.id);

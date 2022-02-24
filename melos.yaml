@@ -20,13 +20,6 @@ scripts:
         flutter pub get
     description:
       Run `flutter pub get` in all packages.
-
-  analyze:
-    run: |
-      melos exec -c 1 -- \
-        flutter analyze .
-    description:
-      Run `dart analyze` in all packages.
   
   generate:
     run: melos run generate:dart && melos run generate:flutter
@@ -58,6 +51,14 @@ scripts:
       flutter: true
       dir-exists: test
 
+  checkformat:
+    run: melos exec -c 1 "flutter format --line-length=120 --output=none --set-exit-if-changed ."
+    description: Check all packages are formatted.
+
   format:
-    run: melos exec -c 1 "flutter format ."
-    description: Format all packages using flutter format
+    run: melos exec -c 1 "flutter format --line-length=120 ."
+    description: Format all packages.
+
+  analyze:
+    run: melos exec -c 1 "flutter analyze --fatal-infos ."
+    description: Run `flutter analyze --fatal-infos` in all packages.

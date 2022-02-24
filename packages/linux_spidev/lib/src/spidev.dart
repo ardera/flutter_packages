@@ -49,12 +49,9 @@ class SpiTransfer<T extends SpiTransferData> {
 abstract class SpiTransferData {
   SpiTransferData();
 
-  factory SpiTransferData.fromNativeMem(
-      {ffi.Pointer? txPointer, ffi.Pointer? rxPointer, required int length}) {
+  factory SpiTransferData.fromNativeMem({ffi.Pointer? txPointer, ffi.Pointer? rxPointer, required int length}) {
     return NativeMemSpiTransferData._private(
-        txPointer: txPointer ?? ffi.nullptr,
-        rxPointer: rxPointer ?? ffi.nullptr,
-        length: length);
+        txPointer: txPointer ?? ffi.nullptr, rxPointer: rxPointer ?? ffi.nullptr, length: length);
   }
 
   factory SpiTransferData.fromTypedData({Uint8List? txBuf, Uint8List? rxBuf}) {
@@ -74,8 +71,7 @@ class NativeMemSpiTransferData extends SpiTransferData {
   final ffi.Pointer rxPointer;
   final int length;
 
-  NativeMemSpiTransferData._private(
-      {required this.txPointer, required this.rxPointer, required this.length})
+  NativeMemSpiTransferData._private({required this.txPointer, required this.rxPointer, required this.length})
       : assert(txPointer != ffi.nullptr || rxPointer != ffi.nullptr);
 
   @override
@@ -100,11 +96,9 @@ class TypedDataSpiTransferData extends SpiTransferData {
 
   TypedDataSpiTransferData._private({this.txBuf, this.rxBuf})
       : assert(txBuf != null || rxBuf != null),
-        assert(
-            (txBuf == null || rxBuf == null) || (txBuf.length == rxBuf.length));
+        assert((txBuf == null || rxBuf == null) || (txBuf.length == rxBuf.length));
 
-  Tuple2<Map<Uint8List, ffi.Pointer>, Set<ffi.Pointer>>
-      nativeMemFromOverlappingData(Set<Uint8List> data) {
+  Tuple2<Map<Uint8List, ffi.Pointer>, Set<ffi.Pointer>> nativeMemFromOverlappingData(Set<Uint8List> data) {
     final start = data.map((v) => v.offsetInBytes).reduce(min);
 
     final end = data.map((v) => v.offsetInBytes + v.lengthInBytes).reduce(max);
@@ -126,14 +120,11 @@ class TypedDataSpiTransferData extends SpiTransferData {
 
   bool overlaps(Uint8List a, Uint8List b) {
     return (a.buffer == b.buffer) &&
-        (((a.offsetInBytes >= b.offsetInBytes) &&
-                (a.offsetInBytes <= b.offsetInBytes + b.lengthInBytes)) ||
-            ((b.offsetInBytes >= a.offsetInBytes) &&
-                (b.offsetInBytes <= a.offsetInBytes + a.lengthInBytes)));
+        (((a.offsetInBytes >= b.offsetInBytes) && (a.offsetInBytes <= b.offsetInBytes + b.lengthInBytes)) ||
+            ((b.offsetInBytes >= a.offsetInBytes) && (b.offsetInBytes <= a.offsetInBytes + a.lengthInBytes)));
   }
 
-  Tuple2<Map<Uint8List /*!*/, ffi.Pointer>, Set<ffi.Pointer>>
-      nativeMemFromByteDataOfSameBuffer(Set<Uint8List> data) {
+  Tuple2<Map<Uint8List /*!*/, ffi.Pointer>, Set<ffi.Pointer>> nativeMemFromByteDataOfSameBuffer(Set<Uint8List> data) {
     final nodes = Set.of(data);
     final edges = <Tuple2<Uint8List, Uint8List>>{};
 
@@ -173,8 +164,7 @@ class TypedDataSpiTransferData extends SpiTransferData {
           break;
         } else {
           group.add(other);
-          edges.removeWhere(
-              (element) => element.item1 == other || element.item2 == other);
+          edges.removeWhere((element) => element.item1 == other || element.item2 == other);
         }
       }
 
@@ -187,8 +177,7 @@ class TypedDataSpiTransferData extends SpiTransferData {
     return result;
   }
 
-  Tuple2<Map<Uint8List, ffi.Pointer>, Set<ffi.Pointer>> nativeMemFromByteData(
-      Set<Uint8List> data) {
+  Tuple2<Map<Uint8List, ffi.Pointer>, Set<ffi.Pointer>> nativeMemFromByteData(Set<Uint8List> data) {
     final dataWithSameBuffer = <ByteBuffer, Set<Uint8List>>{};
 
     data.forEach((element) {
@@ -215,19 +204,15 @@ class TypedDataSpiTransferData extends SpiTransferData {
       assert(rxBuf!.length == txBuf!.length);
     }
 
-    final nativeMem = nativeMemFromByteData(
-        {if (rxBuf != null) rxBuf!, if (txBuf != null) txBuf!});
+    final nativeMem = nativeMemFromByteData({if (rxBuf != null) rxBuf!, if (txBuf != null) txBuf!});
 
     ffi.Pointer txPtr = ffi.nullptr;
     ffi.Pointer rxPtr = ffi.nullptr;
 
     if (txBuf != null) {
-      txPtr = nativeMem.item1.entries
-          .singleWhere((element) => element.key == txBuf)
-          .value;
+      txPtr = nativeMem.item1.entries.singleWhere((element) => element.key == txBuf).value;
 
-      final txPtrAsBuf =
-          txPtr.cast<ffi.Uint8>().asTypedList(txBuf!.lengthInBytes);
+      final txPtrAsBuf = txPtr.cast<ffi.Uint8>().asTypedList(txBuf!.lengthInBytes);
 
       for (var i = 0; i < txPtrAsBuf.length; i++) {
         txPtrAsBuf[i] = txBuf![i];
@@ -235,15 +220,12 @@ class TypedDataSpiTransferData extends SpiTransferData {
     }
 
     if (rxBuf != null) {
-      rxPtr = nativeMem.item1.entries
-          .singleWhere((element) => element.key == rxBuf)
-          .value;
+      rxPtr = nativeMem.item1.entries.singleWhere((element) => element.key == rxBuf).value;
     }
 
     final postTransfer = () {
       if (rxBuf != null) {
-        final rxPtrAsBuf =
-            rxPtr.cast<ffi.Uint8>().asTypedList(rxBuf!.lengthInBytes);
+        final rxPtrAsBuf = rxPtr.cast<ffi.Uint8>().asTypedList(rxBuf!.lengthInBytes);
 
         for (var i = 0; i < rxPtrAsBuf.length; i++) {
           rxBuf![i] = rxPtrAsBuf[i];
@@ -253,10 +235,8 @@ class TypedDataSpiTransferData extends SpiTransferData {
       nativeMem.item2.forEach((pointer) => ffi.malloc.free(pointer));
     };
 
-    final raw = SpiTransferData.fromNativeMem(
-        txPointer: txPtr,
-        rxPointer: rxPtr,
-        length: txBuf?.length ?? rxBuf!.length);
+    final raw =
+        SpiTransferData.fromNativeMem(txPointer: txPtr, rxPointer: rxPtr, length: txBuf?.length ?? rxBuf!.length);
 
     return Tuple2(raw as NativeMemSpiTransferData, postTransfer);
   }
@@ -272,8 +252,7 @@ class ByteListSpiTransferData extends SpiTransferData {
 
   ByteListSpiTransferData._private({required this.txBuf, required this.rxBuf})
       : assert(txBuf != null || rxBuf != null),
-        assert(
-            (txBuf == null || rxBuf == null) || (txBuf.length == rxBuf.length));
+        assert((txBuf == null || rxBuf == null) || (txBuf.length == rxBuf.length));
 
   @override
   Tuple2<NativeMemSpiTransferData, void Function()> _toNativeMemTransferData() {
@@ -282,8 +261,7 @@ class ByteListSpiTransferData extends SpiTransferData {
 
     if (txBuf != null) {
       txPointer = ffi.malloc.allocate<ffi.Uint8>(txBuf!.length);
-      final txPointerAsBuf =
-          txPointer.cast<ffi.Uint8>().asTypedList(txBuf!.length);
+      final txPointerAsBuf = txPointer.cast<ffi.Uint8>().asTypedList(txBuf!.length);
 
       txBuf!.asMap().forEach((key, value) {
         txPointerAsBuf[key] = value;
@@ -296,8 +274,7 @@ class ByteListSpiTransferData extends SpiTransferData {
 
     final postTransfer = () {
       if (rxBuf != null) {
-        final rxPtrAsBuf =
-            rxPointer.cast<ffi.Uint8>().asTypedList(rxBuf!.length);
+        final rxPtrAsBuf = rxPointer.cast<ffi.Uint8>().asTypedList(rxBuf!.length);
         rxPtrAsBuf.asMap().forEach((key, value) {
           rxBuf![key] = value;
         });
@@ -361,8 +338,7 @@ class SpiTransferProperties {
       : assert(speedHz == null || (speedHz >= 0 && speedHz <= 0xFFFFFFFF)),
         assert(delay.inMicroseconds >= 0 && delay.inMicroseconds <= 0xFFFF),
         assert(bitsPerWord == null || (bitsPerWord >= 0 && bitsPerWord <= 32)),
-        assert(
-            wordDelay.inMicroseconds >= 0 && wordDelay.inMicroseconds <= 0xFF);
+        assert(wordDelay.inMicroseconds >= 0 && wordDelay.inMicroseconds <= 0xFF);
 
   int nbitsFromTransferMode(SpiTransferMode? mode) {
     switch (mode) {
@@ -382,10 +358,8 @@ class SpiTransferProperties {
     struct.delay_usecs = delay.inMicroseconds;
     struct.bits_per_word = bitsPerWord ?? 0;
     struct.cs_change = doToggleCS ? 1 : 0;
-    struct.tx_nbits =
-        txTransferMode == null ? 0 : nbitsFromTransferMode(txTransferMode);
-    struct.rx_nbits =
-        rxTransferMode == null ? 0 : nbitsFromTransferMode(rxTransferMode);
+    struct.tx_nbits = txTransferMode == null ? 0 : nbitsFromTransferMode(txTransferMode);
+    struct.rx_nbits = rxTransferMode == null ? 0 : nbitsFromTransferMode(rxTransferMode);
     struct.word_delay_usecs = wordDelay.inMicroseconds;
   }
 }
@@ -414,20 +388,16 @@ void spiTransferExecutorEntry(Tuple2<int, SendPort> channel) async {
       try {
         final watch = Stopwatch()..start();
 
-        SpidevPlatformInterface._staticIoctl(
-            libc, fd, SPI_IOC_MESSAGE(nTransfers), pointer);
+        SpidevPlatformInterface._staticIoctl(libc, fd, SPI_IOC_MESSAGE(nTransfers), pointer);
 
         watch.stop();
 
-        sendPort
-            .send(Tuple3<int, dynamic, StackTrace?>(transferId, null, null));
+        sendPort.send(Tuple3<int, dynamic, StackTrace?>(transferId, null, null));
       } on OSError catch (e) {
-        sendPort.send(Tuple3<int, dynamic, StackTrace>(
-            transferId, e, StackTrace.current));
+        sendPort.send(Tuple3<int, dynamic, StackTrace>(transferId, e, StackTrace.current));
       }
     } else {
-      throw StateError(
-          "Invalid packet received from receivePort in SpiTransferExecutor isolate: $untypedTransfer");
+      throw StateError("Invalid packet received from receivePort in SpiTransferExecutor isolate: $untypedTransfer");
     }
   }
 }
@@ -514,11 +484,9 @@ class SpiTransferExecutor {
     assert(error[0] is String);
     assert(error[1] is String);
 
-    final constructedError =
-        RemoteError(error[0] as String, error[1] as String);
+    final constructedError = RemoteError(error[0] as String, error[1] as String);
 
-    _pendingTransfers.values
-        .forEach((value) => value.completeError(constructedError));
+    _pendingTransfers.values.forEach((value) => value.completeError(constructedError));
     _pendingTransfers.clear();
     _toExecutorCompleter.completeError(constructedError);
     _error = constructedError;
@@ -534,8 +502,8 @@ class SpiTransferExecutor {
   }
 
   void _onIsolateFinished(dynamic result) {
-    final error = StateError(
-        "SPI Transfer Executor Isolate finished prematurely. Transfer may or may not have been completed.");
+    final error =
+        StateError("SPI Transfer Executor Isolate finished prematurely. Transfer may or may not have been completed.");
 
     _pendingTransfers.values.forEach((transfer) {
       transfer.completeError(error);
@@ -554,8 +522,7 @@ class SpiTransferExecutor {
     final transferId = _nextTransferId++;
     final transferCompleter = Completer<void>();
 
-    final pointer = ffi.malloc.allocate<spi_ioc_transfer>(
-        ffi.sizeOf<spi_ioc_transfer>() * transfers.length);
+    final pointer = ffi.malloc.allocate<spi_ioc_transfer>(ffi.sizeOf<spi_ioc_transfer>() * transfers.length);
 
     transfers.asMap().forEach((key, value) {
       final struct = pointer.elementAt(key).ref;
@@ -565,8 +532,7 @@ class SpiTransferExecutor {
 
     _pendingTransfers[transferId] = transferCompleter;
 
-    final packet =
-        Tuple3<int, int, int>(transferId, transfers.length, pointer.address);
+    final packet = Tuple3<int, int, int>(transferId, transfers.length, pointer.address);
     if (_toExecutor != null) {
       _toExecutor!.send(packet);
     } else {
@@ -622,8 +588,7 @@ class SpidevPlatformInterface {
     return result;
   }
 
-  int _ioctl(int fd, int request, ffi.Pointer argp) =>
-      _staticIoctl(libc, fd, request, argp);
+  int _ioctl(int fd, int request, ffi.Pointer argp) => _staticIoctl(libc, fd, request, argp);
 
   int open(String path) {
     final nativePath = path.toNativeUtf8();
@@ -845,8 +810,7 @@ class SpidevPlatformInterface {
     return result;
   }
 
-  Future<void> transfer(
-      int fd, List<SpiTransfer<NativeMemSpiTransferData>> transfers) {
+  Future<void> transfer(int fd, List<SpiTransfer<NativeMemSpiTransferData>> transfers) {
     assert(_executorForFd.containsKey(fd));
 
     SpiTransferExecutor? executor;
@@ -971,8 +935,7 @@ class SpidevHandle {
     assert(isOpen);
 
     if (value != __modeAndFlags) {
-      SpidevPlatformInterface.instance
-          .setModeAndFlags(_fd, value.item1, value.item2);
+      SpidevPlatformInterface.instance.setModeAndFlags(_fd, value.item1, value.item2);
       __modeAndFlags = value;
     }
   }
@@ -1032,8 +995,7 @@ class SpidevHandle {
     return _maxSpeedHz!;
   }
 
-  Future<void> transferNativeMem(
-      List<SpiTransfer<NativeMemSpiTransferData>> transfers) {
+  Future<void> transferNativeMem(List<SpiTransfer<NativeMemSpiTransferData>> transfers) {
     assert(isOpen);
     return SpidevPlatformInterface.instance.transfer(_fd, transfers);
   }
@@ -1044,9 +1006,7 @@ class SpidevHandle {
       return Tuple3(t.item1, e.properties, t.item2);
     }).toList();
 
-    final rawTransfers = tuples
-        .map((e) => SpiTransfer(data: e.item1, properties: e.item2))
-        .toList();
+    final rawTransfers = tuples.map((e) => SpiTransfer(data: e.item1, properties: e.item2)).toList();
 
     return transferNativeMem(rawTransfers).whenComplete(() {
       // call the postTransform callbacks for all spi transfers
@@ -1055,45 +1015,33 @@ class SpidevHandle {
   }
 
   Future<void> transferSingleNativeMem(
-      {ffi.Pointer? txBuf,
-      ffi.Pointer? rxBuf,
-      required int length,
-      SpiTransferProperties? transferProperties}) {
+      {ffi.Pointer? txBuf, ffi.Pointer? rxBuf, required int length, SpiTransferProperties? transferProperties}) {
     return transferNativeMem([
       SpiTransfer(
-          data: SpiTransferData.fromNativeMem(
-              txPointer: txBuf,
-              rxPointer: rxBuf,
-              length: length) as NativeMemSpiTransferData,
-          properties:
-              transferProperties ?? SpiTransferProperties.defaultProperties)
+          data: SpiTransferData.fromNativeMem(txPointer: txBuf, rxPointer: rxBuf, length: length)
+              as NativeMemSpiTransferData,
+          properties: transferProperties ?? SpiTransferProperties.defaultProperties)
     ]);
   }
 
   Future<void> transferSingleTypedData(
-      {Uint8List? txBuf,
-      Uint8List? rxBuf,
-      SpiTransferProperties? transferProperties}) {
+      {Uint8List? txBuf, Uint8List? rxBuf, SpiTransferProperties? transferProperties}) {
     return transfer([
       SpiTransfer(
           data: SpiTransferData.fromTypedData(
             txBuf: txBuf,
             rxBuf: rxBuf,
           ),
-          properties:
-              transferProperties ?? SpiTransferProperties.defaultProperties)
+          properties: transferProperties ?? SpiTransferProperties.defaultProperties)
     ]);
   }
 
   Future<void> transferSingleByteLists(
-      {List<int>? txBuf,
-      List<int>? rxBuf,
-      SpiTransferProperties? transferProperties}) {
+      {List<int>? txBuf, List<int>? rxBuf, SpiTransferProperties? transferProperties}) {
     return transfer([
       SpiTransfer(
           data: SpiTransferData.fromByteLists(txBuf: txBuf, rxBuf: rxBuf),
-          properties:
-              transferProperties ?? SpiTransferProperties.defaultProperties)
+          properties: transferProperties ?? SpiTransferProperties.defaultProperties)
     ]);
   }
 

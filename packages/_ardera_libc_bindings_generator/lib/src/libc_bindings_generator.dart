@@ -96,8 +96,7 @@ class FrontendLibrary implements Spec {
 
     final classes = <LibCPlatformBackend, ClassElement>{};
     final structs = <String, Map<LibCPlatformBackend, ClassElement>>{};
-    final constants =
-        <String, Map<LibCPlatformBackend, TopLevelVariableElement>>{};
+    final constants = <String, Map<LibCPlatformBackend, TopLevelVariableElement>>{};
     final enums = <String, Map<LibCPlatformBackend, ClassElement>>{};
 
     for (final backend in backends) {
@@ -123,11 +122,10 @@ class FrontendLibrary implements Spec {
       }
     }
 
-    final firstBackendWithoutAnFfiClass =
-        backends.cast<LibCPlatformBackend?>().firstWhere(
-              (backend) => !classes.containsKey(backend),
-              orElse: () => null,
-            );
+    final firstBackendWithoutAnFfiClass = backends.cast<LibCPlatformBackend?>().firstWhere(
+          (backend) => !classes.containsKey(backend),
+          orElse: () => null,
+        );
 
     if (firstBackendWithoutAnFfiClass != null) {
       throw StateError(
@@ -138,8 +136,7 @@ class FrontendLibrary implements Spec {
     final firstStructWithoutAnElementForEachBackend = structs.entries
         .cast<MapEntry<String, Map<LibCPlatformBackend, ClassElement>>?>()
         .firstWhere(
-          (entry) =>
-              !backends.every((backend) => entry!.value.containsKey(backend)),
+          (entry) => !backends.every((backend) => entry!.value.containsKey(backend)),
           orElse: () => null,
         )
         ?.key;
@@ -151,12 +148,9 @@ class FrontendLibrary implements Spec {
     }
 
     final firstConstantWithoutAnElementForEachBackend = constants.entries
-        .cast<
-            MapEntry<String,
-                Map<LibCPlatformBackend, TopLevelVariableElement>>?>()
+        .cast<MapEntry<String, Map<LibCPlatformBackend, TopLevelVariableElement>>?>()
         .firstWhere(
-          (entry) =>
-              !backends.every((backend) => entry!.value.containsKey(backend)),
+          (entry) => !backends.every((backend) => entry!.value.containsKey(backend)),
           orElse: () => null,
         )
         ?.key;
@@ -170,8 +164,7 @@ class FrontendLibrary implements Spec {
     final firstEnumWithoutAnElementForEachBackend = enums.entries
         .cast<MapEntry<String, Map<LibCPlatformBackend, ClassElement>>?>()
         .firstWhere(
-          (entry) =>
-              !backends.every((backend) => entry!.value.containsKey(backend)),
+          (entry) => !backends.every((backend) => entry!.value.containsKey(backend)),
           orElse: () => null,
         )
         ?.key;
@@ -245,8 +238,7 @@ class LibCPlatformBackendGenerator extends Generator {
   final Logger _logger;
   final Map<String, dynamic> _options;
 
-  String get _sevenZipCommand =>
-      _options[_kSevenZipCommand] as String? ?? '7za';
+  String get _sevenZipCommand => _options[_kSevenZipCommand] as String? ?? '7za';
 
   String? get _windowsLlvmPath => _options[_kWindowsLlvmPath] as String?;
   String? get _linuxLlvmPath => _options[_kLinuxLlvmPath] as String?;
@@ -260,11 +252,9 @@ class LibCPlatformBackendGenerator extends Generator {
     }
   }
 
-  Map<String, dynamic>? get _ffigenOptions =>
-      (_options[_kFfigenOptions] as Map?)?.cast<String, dynamic>();
+  Map<String, dynamic>? get _ffigenOptions => (_options[_kFfigenOptions] as Map?)?.cast<String, dynamic>();
 
-  Future<LibCPlatformBackend> _ensureSysrootInstalled(
-      {required LibCPlatformBackend backend}) async {
+  Future<LibCPlatformBackend> _ensureSysrootInstalled({required LibCPlatformBackend backend}) async {
     final cacheDir = getApplicationSupportDirectory(_cacheDirName);
 
     if (!await cacheDir.exists()) {
@@ -334,8 +324,7 @@ class LibCPlatformBackendGenerator extends Generator {
 
     /// Somehow, ffigen sometimes fails when the paths use `\` seperators
     /// because the globbing library used internally won't accept `\` seperators.
-    final headerEntryPointsPosix =
-        headerEntryPoints.map((e) => e.replaceAll(r'\', '/')).toList();
+    final headerEntryPointsPosix = headerEntryPoints.map((e) => e.replaceAll(r'\', '/')).toList();
 
     final config = ffigen.Config.fromYaml(YamlMap.wrap({
       if (_llvmPath != null) ffigen.llvmPath: [_llvmPath],
@@ -343,8 +332,7 @@ class LibCPlatformBackendGenerator extends Generator {
       ffigen.headers: {
         ffigen.entryPoints: YamlList.wrap(headerEntryPointsPosix),
         if (ffigenOptions[ffigen.headers][ffigen.includeDirectives] != null)
-          ffigen.includeDirectives: ffigenOptions[ffigen.headers]
-              [ffigen.includeDirectives],
+          ffigen.includeDirectives: ffigenOptions[ffigen.headers][ffigen.includeDirectives],
       },
       ffigen.compilerOpts: YamlList.wrap([
         '--target=${arch.targetTriple}',
@@ -472,10 +460,7 @@ class LibCPlatformBackendGenerator extends Generator {
 
     var backend = LibCPlatformBackend(
       TargetArch.forNameOrAlias(
-        RegExp(r'_([a-zA-Z0-9]+)\.dart$')
-            .allMatches(buildStep.inputId.pathSegments.last)
-            .single
-            .group(1)!,
+        RegExp(r'_([a-zA-Z0-9]+)\.dart$').allMatches(buildStep.inputId.pathSegments.last).single.group(1)!,
       ),
       TargetPlatform.fromName(_options[_kTargetDistro] as String),
     );

@@ -1,8 +1,7 @@
 class TargetPlatform {
   const TargetPlatform(this.name);
 
-  factory TargetPlatform.fromName(String name) =>
-      values.singleWhere((platform) => platform.name == name);
+  factory TargetPlatform.fromName(String name) => values.singleWhere((platform) => platform.name == name);
 
   final String name;
 

@@ -1,2 +1,1 @@
-export 'src/linux_serial.dart'
-    show SerialPorts, SerialPort, SerialPortHandle, Baudrate;
+export 'src/linux_serial.dart' show SerialPorts, SerialPort, SerialPortHandle, Baudrate;

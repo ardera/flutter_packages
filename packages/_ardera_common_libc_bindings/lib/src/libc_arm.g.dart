@@ -14,17 +14,13 @@ import 'dart:ffi' as ffi;
 /// libc backend for arm
 class LibCPlatformBackend {
   /// Holds the symbol lookup function.
-  final ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
-      _lookup;
+  final ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName) _lookup;
 
   /// The symbols are looked up in [dynamicLibrary].
-  LibCPlatformBackend(ffi.DynamicLibrary dynamicLibrary)
-      : _lookup = dynamicLibrary.lookup;
+  LibCPlatformBackend(ffi.DynamicLibrary dynamicLibrary) : _lookup = dynamicLibrary.lookup;
 
   /// The symbols are looked up with [lookup].
-  LibCPlatformBackend.fromLookup(
-      ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
-          lookup)
+  LibCPlatformBackend.fromLookup(ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName) lookup)
       : _lookup = lookup;
 
   int ioctl(
@@ -37,11 +33,8 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _ioctlPtr =
-      _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Uint32)>>(
-          'ioctl');
-  late final _ioctl =
-      _ioctlPtr.asFunction<int Function(int, int)>(isLeaf: true);
+  late final _ioctlPtr = _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Uint32)>>('ioctl');
+  late final _ioctl = _ioctlPtr.asFunction<int Function(int, int)>(isLeaf: true);
 
   int epoll_create(
     int __size,
@@ -51,11 +44,8 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _epoll_createPtr =
-      _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32)>>(
-          'epoll_create');
-  late final _epoll_create =
-      _epoll_createPtr.asFunction<int Function(int)>(isLeaf: true);
+  late final _epoll_createPtr = _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32)>>('epoll_create');
+  late final _epoll_create = _epoll_createPtr.asFunction<int Function(int)>(isLeaf: true);
 
   int epoll_create1(
     int __flags,
@@ -65,11 +55,8 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _epoll_create1Ptr =
-      _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32)>>(
-          'epoll_create1');
-  late final _epoll_create1 =
-      _epoll_create1Ptr.asFunction<int Function(int)>(isLeaf: true);
+  late final _epoll_create1Ptr = _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32)>>('epoll_create1');
+  late final _epoll_create1 = _epoll_create1Ptr.asFunction<int Function(int)>(isLeaf: true);
 
   int epoll_ctl(
     int __epfd,
@@ -85,13 +72,10 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _epoll_ctlPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Int32 Function(ffi.Int32, ffi.Int32, ffi.Int32,
-              ffi.Pointer<epoll_event>)>>('epoll_ctl');
-  late final _epoll_ctl = _epoll_ctlPtr
-      .asFunction<int Function(int, int, int, ffi.Pointer<epoll_event>)>(
-          isLeaf: true);
+  late final _epoll_ctlPtr =
+      _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Int32, ffi.Int32, ffi.Pointer<epoll_event>)>>(
+          'epoll_ctl');
+  late final _epoll_ctl = _epoll_ctlPtr.asFunction<int Function(int, int, int, ffi.Pointer<epoll_event>)>(isLeaf: true);
 
   int epoll_wait(
     int __epfd,
@@ -107,23 +91,18 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _epoll_waitPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Int32 Function(ffi.Int32, ffi.Pointer<epoll_event>, ffi.Int32,
-              ffi.Int32)>>('epoll_wait');
-  late final _epoll_wait = _epoll_waitPtr
-      .asFunction<int Function(int, ffi.Pointer<epoll_event>, int, int)>(
-          isLeaf: true);
+  late final _epoll_waitPtr =
+      _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Pointer<epoll_event>, ffi.Int32, ffi.Int32)>>(
+          'epoll_wait');
+  late final _epoll_wait =
+      _epoll_waitPtr.asFunction<int Function(int, ffi.Pointer<epoll_event>, int, int)>(isLeaf: true);
 
   ffi.Pointer<ffi.Int32> errno_location() {
     return _errno_location();
   }
 
-  late final _errno_locationPtr =
-      _lookup<ffi.NativeFunction<ffi.Pointer<ffi.Int32> Function()>>(
-          '__errno_location');
-  late final _errno_location = _errno_locationPtr
-      .asFunction<ffi.Pointer<ffi.Int32> Function()>(isLeaf: true);
+  late final _errno_locationPtr = _lookup<ffi.NativeFunction<ffi.Pointer<ffi.Int32> Function()>>('__errno_location');
+  late final _errno_location = _errno_locationPtr.asFunction<ffi.Pointer<ffi.Int32> Function()>(isLeaf: true);
 
   int open(
     ffi.Pointer<ffi.Uint8> __file,
@@ -135,11 +114,8 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _openPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Int32 Function(ffi.Pointer<ffi.Uint8>, ffi.Int32)>>('open');
-  late final _open = _openPtr
-      .asFunction<int Function(ffi.Pointer<ffi.Uint8>, int)>(isLeaf: true);
+  late final _openPtr = _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Pointer<ffi.Uint8>, ffi.Int32)>>('open');
+  late final _open = _openPtr.asFunction<int Function(ffi.Pointer<ffi.Uint8>, int)>(isLeaf: true);
 
   int close(
     int __fd,
@@ -149,8 +125,7 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _closePtr =
-      _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32)>>('close');
+  late final _closePtr = _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32)>>('close');
   late final _close = _closePtr.asFunction<int Function(int)>(isLeaf: true);
 
   int read(
@@ -165,12 +140,9 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _readPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Int32 Function(
-              ffi.Int32, ffi.Pointer<ffi.Void>, ffi.Uint32)>>('read');
-  late final _read = _readPtr
-      .asFunction<int Function(int, ffi.Pointer<ffi.Void>, int)>(isLeaf: true);
+  late final _readPtr =
+      _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Pointer<ffi.Void>, ffi.Uint32)>>('read');
+  late final _read = _readPtr.asFunction<int Function(int, ffi.Pointer<ffi.Void>, int)>(isLeaf: true);
 
   int cfgetospeed(
     ffi.Pointer<termios> __termios_p,
@@ -180,11 +152,8 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _cfgetospeedPtr =
-      _lookup<ffi.NativeFunction<ffi.Uint32 Function(ffi.Pointer<termios>)>>(
-          'cfgetospeed');
-  late final _cfgetospeed = _cfgetospeedPtr
-      .asFunction<int Function(ffi.Pointer<termios>)>(isLeaf: true);
+  late final _cfgetospeedPtr = _lookup<ffi.NativeFunction<ffi.Uint32 Function(ffi.Pointer<termios>)>>('cfgetospeed');
+  late final _cfgetospeed = _cfgetospeedPtr.asFunction<int Function(ffi.Pointer<termios>)>(isLeaf: true);
 
   int cfgetispeed(
     ffi.Pointer<termios> __termios_p,
@@ -194,11 +163,8 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _cfgetispeedPtr =
-      _lookup<ffi.NativeFunction<ffi.Uint32 Function(ffi.Pointer<termios>)>>(
-          'cfgetispeed');
-  late final _cfgetispeed = _cfgetispeedPtr
-      .asFunction<int Function(ffi.Pointer<termios>)>(isLeaf: true);
+  late final _cfgetispeedPtr = _lookup<ffi.NativeFunction<ffi.Uint32 Function(ffi.Pointer<termios>)>>('cfgetispeed');
+  late final _cfgetispeed = _cfgetispeedPtr.asFunction<int Function(ffi.Pointer<termios>)>(isLeaf: true);
 
   int cfsetospeed(
     ffi.Pointer<termios> __termios_p,
@@ -210,11 +176,9 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _cfsetospeedPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Int32 Function(ffi.Pointer<termios>, ffi.Uint32)>>('cfsetospeed');
-  late final _cfsetospeed = _cfsetospeedPtr
-      .asFunction<int Function(ffi.Pointer<termios>, int)>(isLeaf: true);
+  late final _cfsetospeedPtr =
+      _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Pointer<termios>, ffi.Uint32)>>('cfsetospeed');
+  late final _cfsetospeed = _cfsetospeedPtr.asFunction<int Function(ffi.Pointer<termios>, int)>(isLeaf: true);
 
   int cfsetispeed(
     ffi.Pointer<termios> __termios_p,
@@ -226,11 +190,9 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _cfsetispeedPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Int32 Function(ffi.Pointer<termios>, ffi.Uint32)>>('cfsetispeed');
-  late final _cfsetispeed = _cfsetispeedPtr
-      .asFunction<int Function(ffi.Pointer<termios>, int)>(isLeaf: true);
+  late final _cfsetispeedPtr =
+      _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Pointer<termios>, ffi.Uint32)>>('cfsetispeed');
+  late final _cfsetispeed = _cfsetispeedPtr.asFunction<int Function(ffi.Pointer<termios>, int)>(isLeaf: true);
 
   int tcgetattr(
     int __fd,
@@ -242,11 +204,9 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _tcgetattrPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Int32 Function(ffi.Int32, ffi.Pointer<termios>)>>('tcgetattr');
-  late final _tcgetattr = _tcgetattrPtr
-      .asFunction<int Function(int, ffi.Pointer<termios>)>(isLeaf: true);
+  late final _tcgetattrPtr =
+      _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Pointer<termios>)>>('tcgetattr');
+  late final _tcgetattr = _tcgetattrPtr.asFunction<int Function(int, ffi.Pointer<termios>)>(isLeaf: true);
 
   int tcsetattr(
     int __fd,
@@ -260,12 +220,9 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _tcsetattrPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Int32 Function(
-              ffi.Int32, ffi.Int32, ffi.Pointer<termios>)>>('tcsetattr');
-  late final _tcsetattr = _tcsetattrPtr
-      .asFunction<int Function(int, int, ffi.Pointer<termios>)>(isLeaf: true);
+  late final _tcsetattrPtr =
+      _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Int32, ffi.Pointer<termios>)>>('tcsetattr');
+  late final _tcsetattr = _tcsetattrPtr.asFunction<int Function(int, int, ffi.Pointer<termios>)>(isLeaf: true);
 
   int tcsendbreak(
     int __fd,
@@ -277,11 +234,8 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _tcsendbreakPtr =
-      _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Int32)>>(
-          'tcsendbreak');
-  late final _tcsendbreak =
-      _tcsendbreakPtr.asFunction<int Function(int, int)>(isLeaf: true);
+  late final _tcsendbreakPtr = _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Int32)>>('tcsendbreak');
+  late final _tcsendbreak = _tcsendbreakPtr.asFunction<int Function(int, int)>(isLeaf: true);
 
   int tcdrain(
     int __fd,
@@ -291,8 +245,7 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _tcdrainPtr =
-      _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32)>>('tcdrain');
+  late final _tcdrainPtr = _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32)>>('tcdrain');
   late final _tcdrain = _tcdrainPtr.asFunction<int Function(int)>(isLeaf: true);
 
   int tcflush(
@@ -305,11 +258,8 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _tcflushPtr =
-      _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Int32)>>(
-          'tcflush');
-  late final _tcflush =
-      _tcflushPtr.asFunction<int Function(int, int)>(isLeaf: true);
+  late final _tcflushPtr = _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Int32)>>('tcflush');
+  late final _tcflush = _tcflushPtr.asFunction<int Function(int, int)>(isLeaf: true);
 
   int tcflow(
     int __fd,
@@ -321,11 +271,8 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _tcflowPtr =
-      _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Int32)>>(
-          'tcflow');
-  late final _tcflow =
-      _tcflowPtr.asFunction<int Function(int, int)>(isLeaf: true);
+  late final _tcflowPtr = _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Int32)>>('tcflow');
+  late final _tcflow = _tcflowPtr.asFunction<int Function(int, int)>(isLeaf: true);
 
   int tcgetsid(
     int __fd,
@@ -335,10 +282,8 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _tcgetsidPtr =
-      _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32)>>('tcgetsid');
-  late final _tcgetsid =
-      _tcgetsidPtr.asFunction<int Function(int)>(isLeaf: true);
+  late final _tcgetsidPtr = _lookup<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32)>>('tcgetsid');
+  late final _tcgetsid = _tcgetsidPtr.asFunction<int Function(int)>(isLeaf: true);
 
   late final addresses = _SymbolAddresses(this);
 }
@@ -346,24 +291,14 @@ class LibCPlatformBackend {
 class _SymbolAddresses {
   final LibCPlatformBackend _library;
   _SymbolAddresses(this._library);
-  ffi.Pointer<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Uint32)>>
-      get ioctl => _library._ioctlPtr;
-  ffi.Pointer<
-          ffi.NativeFunction<
-              ffi.Int32 Function(
-                  ffi.Int32, ffi.Int32, ffi.Int32, ffi.Pointer<epoll_event>)>>
+  ffi.Pointer<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Uint32)>> get ioctl => _library._ioctlPtr;
+  ffi.Pointer<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Int32, ffi.Int32, ffi.Pointer<epoll_event>)>>
       get epoll_ctl => _library._epoll_ctlPtr;
-  ffi.Pointer<
-          ffi.NativeFunction<
-              ffi.Int32 Function(
-                  ffi.Int32, ffi.Pointer<epoll_event>, ffi.Int32, ffi.Int32)>>
+  ffi.Pointer<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Pointer<epoll_event>, ffi.Int32, ffi.Int32)>>
       get epoll_wait => _library._epoll_waitPtr;
-  ffi.Pointer<ffi.NativeFunction<ffi.Pointer<ffi.Int32> Function()>>
-      get errno_location => _library._errno_locationPtr;
-  ffi.Pointer<
-          ffi.NativeFunction<
-              ffi.Int32 Function(ffi.Int32, ffi.Pointer<ffi.Void>, ffi.Uint32)>>
-      get read => _library._readPtr;
+  ffi.Pointer<ffi.NativeFunction<ffi.Pointer<ffi.Int32> Function()>> get errno_location => _library._errno_locationPtr;
+  ffi.Pointer<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Pointer<ffi.Void>, ffi.Uint32)>> get read =>
+      _library._readPtr;
 }
 
 abstract class EPOLL_EVENTS {

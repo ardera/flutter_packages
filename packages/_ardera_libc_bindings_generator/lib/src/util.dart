@@ -15,12 +15,10 @@ import 'package:xdg_directories/xdg_directories.dart' as xdg;
 
 Stream<List<int>> httpGetByteStream(Uri uri) {
   final client = HttpClient();
-  return StreamCompleter.fromFuture(
-      client.getUrl(uri).then((value) => value.close()));
+  return StreamCompleter.fromFuture(client.getUrl(uri).then((value) => value.close()));
 }
 
-Future<String> httpGetString(Uri uri,
-    {Encoding encoding = utf8, bool base64 = false}) async {
+Future<String> httpGetString(Uri uri, {Encoding encoding = utf8, bool base64 = false}) async {
   final string = await encoding.decodeStream(httpGetByteStream(uri));
 
   if (base64) {
@@ -72,14 +70,12 @@ Future<void> dartFormat({
   required FileSystemEntity target,
   required Logger logger,
 }) async {
-  final result =
-      await Process.run('dart', ['format', '-l', '200', target.path]);
+  final result = await Process.run('dart', ['format', '-l', '200', target.path]);
   if (result.exitCode == 0) {
     logger.fine(result.stdout);
     logger.fine(result.stderr);
   } else {
-    logger.warning(
-        'Couldn\'t format bindings: ${result.stdout}, ${result.stderr}');
+    logger.warning('Couldn\'t format bindings: ${result.stdout}, ${result.stderr}');
   }
 }
 
@@ -99,8 +95,7 @@ Future<bool> invoke7Zip({
 
   final exitCode = await process.exitCode;
   if (exitCode != 0) {
-    logger.severe(
-        'Couldn\'t extract file \"$src\" using 7zip. exit code: $exitCode');
+    logger.severe('Couldn\'t extract file \"$src\" using 7zip. exit code: $exitCode');
     return false;
   }
 
@@ -120,8 +115,7 @@ Future<bool> tryExtractUsingTar({
 
   final exitCode = await process.exitCode;
   if (exitCode != 0) {
-    logger.severe(
-        'Couldn\'t extract file \"$tarball\" using tar. exit code: $exitCode');
+    logger.severe('Couldn\'t extract file \"$tarball\" using tar. exit code: $exitCode');
     return false;
   }
 
@@ -139,8 +133,7 @@ class DartWriter implements StringSink {
   void write(Object? object) => buffer.write(object);
 
   @override
-  void writeAll(Iterable objects, [String separator = ""]) =>
-      buffer.writeAll(objects, separator);
+  void writeAll(Iterable objects, [String separator = ""]) => buffer.writeAll(objects, separator);
 
   @override
   void writeCharCode(int charCode) => buffer.writeCharCode(charCode);
@@ -149,10 +142,7 @@ class DartWriter implements StringSink {
   void writeln([Object? object]) => buffer.writeln(object);
 
   void writeComment(String text, {bool doc = false}) {
-    LineSplitter()
-        .convert(text)
-        .map((l) => '//${doc ? '/' : ''} $l')
-        .forEach(writeln);
+    LineSplitter().convert(text).map((l) => '//${doc ? '/' : ''} $l').forEach(writeln);
   }
 
   void writeImport(AssetId assetId, {String? importPrefix}) {
@@ -201,10 +191,8 @@ Directory getApplicationSupportDirectory(String applicationIdentifier) {
         }
       }
 
-      var sanitized = applicationIdentifier
-          .replaceAll(RegExp(r'[<>:"/\\|?*]'), '_')
-          .trimRight()
-          .replaceAll(RegExp(r'[.]+$'), '');
+      var sanitized =
+          applicationIdentifier.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_').trimRight().replaceAll(RegExp(r'[.]+$'), '');
 
       const int kMaxComponentLength = 255;
       if (sanitized.length > kMaxComponentLength) {
@@ -219,8 +207,7 @@ Directory getApplicationSupportDirectory(String applicationIdentifier) {
   } else if (Platform.isLinux) {
     return xdg.dataHome.childDir(applicationIdentifier);
   } else {
-    throw UnsupportedError(
-        'Platform ${Platform.operatingSystem} is not supported.');
+    throw UnsupportedError('Platform ${Platform.operatingSystem} is not supported.');
   }
 }
 
@@ -243,8 +230,7 @@ Future<bool> tryExtractUsing7Zip({
     return false;
   }
 
-  final extractedTarFile =
-      temp.childFile(pathlib.basenameWithoutExtension(tarball.path));
+  final extractedTarFile = temp.childFile(pathlib.basenameWithoutExtension(tarball.path));
   if (extractedTarFile.existsSync()) {
     success = await invoke7Zip(
       src: extractedTarFile,
@@ -280,16 +266,12 @@ Future<void> extractTarball({
   }
 
   logger.info('Trying to extract using 7zip...');
-  bool success = await tryExtractUsing7Zip(
-      tarball: tarball,
-      dest: dest,
-      sevenZipCommand: sevenZipCommand,
-      logger: logger);
+  bool success =
+      await tryExtractUsing7Zip(tarball: tarball, dest: dest, sevenZipCommand: sevenZipCommand, logger: logger);
 
   if (success == false) {
     logger.info('Trying to extract using tar...');
-    success =
-        await tryExtractUsingTar(tarball: tarball, dest: dest, logger: logger);
+    success = await tryExtractUsingTar(tarball: tarball, dest: dest, logger: logger);
   }
 
   if (success == false) {

@@ -29,15 +29,13 @@ class SysrootDict {
   );
 
   Future<Map<String, dynamic>> get _json async {
-    final chromiumJsonString =
-        await httpGetString(_chromiumSysrootDictUri, base64: true);
+    final chromiumJsonString = await httpGetString(_chromiumSysrootDictUri, base64: true);
     final dartJsonString = await httpGetString(_dartSysrootDictUri);
 
     final chromiumJson = jsonDecode(chromiumJsonString);
     final dartJson = jsonDecode(dartJsonString);
 
-    return Map<String, dynamic>.from(chromiumJson as Map)
-      ..addAll((dartJson as Map).cast<String, dynamic>());
+    return Map<String, dynamic>.from(chromiumJson as Map)..addAll((dartJson as Map).cast<String, dynamic>());
   }
 
   Future<SysrootDictEntry> lookupForTarget({
