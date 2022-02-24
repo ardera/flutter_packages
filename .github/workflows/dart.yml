@@ -1,0 +1,45 @@
+name: Dart
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: panda
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup flutter SDK
+        uses: subosito/flutter-action@v2.3.0
+             
+      - name: Setup melos
+        run: dart pub global activate melos
+        
+      - name: Melos bootstrap
+        run: dart pub global run melos bootstrap
+        
+      - name: Check formatting (dart)
+        run: dart pub global run melos exec --no-flutter -- dart format --output=none --set-exit-if-changed .
+        
+      - name: Analyze project source (dart)
+        run: dart pub global run melos exec --no-flutter -- dart analyze --fatal-infos
+        
+      - name: Run general tests (dart)
+        run: dart pub global run melos exec --no-flutter -- dart test
+        
+      - name: Check formatting (flutter)
+        run: dart pub global run melos exec --no-flutter -- flutter format --output=none --set-exit-if-changed .
+        
+      - name: Analyze project source (flutter)
+        run: dart pub global run melos exec --no-flutter -- flutter analyze --fatal-infos
+        
+      - name: Run general tests (flutter)
+        run: dart pub global run melos exec --no-flutter -- flutter test
+
+      - name: Run flutter_gpiod_test_app on ODROID C4
+        working-directory: packages/flutter_gpiod_test_app
+        run: flutter test -d "ODROID C4" -t odroidc4 integration_test/gpio_test.dart
