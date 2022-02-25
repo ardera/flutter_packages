@@ -372,6 +372,8 @@ void main() {
           activeState: activeState,
           initialValue: initialValue,
         );
+
+        requestedLines.add(line);
       }
 
       void release(GpioLine line) {

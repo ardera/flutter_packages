@@ -52,13 +52,25 @@ scripts:
       dir-exists: test
 
   checkformat:
-    run: melos exec -c 1 "flutter format --line-length=120 --output=none --set-exit-if-changed ."
+    run: melos exec -c 1 "dart format --line-length=120 --output=none --set-exit-if-changed ."
     description: Check all packages are formatted.
 
   format:
-    run: melos exec -c 1 "flutter format --line-length=120 ."
+    run: melos exec -c 1 "dart format --line-length=120 ."
     description: Format all packages.
 
   analyze:
+    run: melos run analyze:dart --no-select && melos run analyze:flutter --no-select
+    description: Analyze all flutter and dart packages.
+
+  analyze:dart:
+    run: melos exec -c 1 "dart analyze --fatal-infos ."
+    description: Run `dart analyze --fatal-infos` in all pure-dart packages.
+    select-package:
+      flutter: false
+
+  analyze:flutter:
     run: melos exec -c 1 "flutter analyze --fatal-infos ."
-    description: Run `flutter analyze --fatal-infos` in all packages.
+    description: Run `flutter analyze --fatal-infos` in all flutter packages.
+    select-package:
+      flutter: true
