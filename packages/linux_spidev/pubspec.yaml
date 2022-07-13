@@ -12,4 +12,8 @@ dependencies:
   meta: ^1.1.8
   tuple: ^2.0.0
   path: ^1.7.0
-  _ardera_common_libc_bindings: ^0.0.1
+  _ardera_common_libc_bindings: #^0.0.1
+    git:
+      url: https://github.com/InvisibleWrench/flutter_packages.git
+      path: packages/_ardera_common_libc_bindings
+#    path: ./../_ardera_common_libc_bindings
