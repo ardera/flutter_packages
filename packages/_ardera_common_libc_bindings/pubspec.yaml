@@ -16,5 +16,5 @@ dev_dependencies:
     
 dependencies: 
   build_runner: ^2.1.7
-  ffi: ^1.1.2
+  ffi: ^2.0.1
   meta: ^1.7.0
