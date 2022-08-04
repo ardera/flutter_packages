@@ -593,7 +593,7 @@ class SpidevPlatformInterface {
   int open(String path) {
     final nativePath = path.toNativeUtf8();
 
-    final result = libc.open(nativePath.cast<ffi.Int8>(), O_RDWR | O_CLOEXEC);
+    final result = libc.open(nativePath.cast<ffi.Char>(), O_RDWR | O_CLOEXEC);
 
     ffi.malloc.free(nativePath);
 

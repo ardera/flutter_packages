@@ -272,7 +272,7 @@ class PlatformInterface {
     for (var i = 0; i < numChips; i++) {
       final pathPtr = '/dev/gpiochip$i'.toNativeUtf8();
 
-      final fd = libc.open(pathPtr.cast<ffi.Int8>(), O_RDWR | O_CLOEXEC);
+      final fd = libc.open(pathPtr.cast<ffi.Char>(), O_RDWR | O_CLOEXEC);
 
       ffi.malloc.free(pathPtr);
 
