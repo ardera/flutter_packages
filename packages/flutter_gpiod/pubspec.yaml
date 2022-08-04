@@ -11,7 +11,7 @@ environment:
 
 dependencies:
   meta: ^1.3.0
-  ffi: ^1.0.0
+  ffi: ^2.0.0
   tuple: ^2.0.0
   path: ^1.8.0
   _ardera_common_libc_bindings: ^0.0.1
