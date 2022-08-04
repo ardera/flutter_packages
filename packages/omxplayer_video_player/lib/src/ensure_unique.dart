@@ -18,7 +18,7 @@ class UniqueRegistry implements ValueListenable<_EnsureUniqueState?> {
   }
 
   void _callDeferred(void fn()) {
-    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) => fn());
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) => fn());
   }
 
   @override

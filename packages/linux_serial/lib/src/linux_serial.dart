@@ -127,7 +127,7 @@ void epollerEntry(Tuple2<SendPort, int> arg) {
 }
 
 class SynchronousComputer implements Computer {
-  var _computer = Computer();
+  var _computer = Computer.create();
   bool _isRunning = false;
   Future<void>? _onTurnedOn;
 
@@ -153,13 +153,13 @@ class SynchronousComputer implements Computer {
     final onTurnedOn = this._onTurnedOn;
 
     if (_isRunning) {
-      _computer = Computer();
+      _computer = Computer.create();
       _isRunning = false;
       _onTurnedOn = null;
 
       return computer.turnOff();
     } else if (_onTurnedOn != null) {
-      _computer = Computer();
+      _computer = Computer.create();
       _isRunning = false;
       _onTurnedOn = null;
 
