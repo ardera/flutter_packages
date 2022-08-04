@@ -434,6 +434,51 @@ class LibCPlatformBackendGenerator extends Generator {
 //      ffigen.ULongLong: arch.unsignedLongLongSize,
 //      ffigen.Enum: arch.enumSize,
 //    }),
+      ffigen.useSupportedTypedefs: true,
+      ffigen.typeMap: YamlMap.wrap({
+        ffigen.typeMapTypedefs: YamlMap.wrap({
+          '__u8': YamlMap.wrap({
+            ffigen.lib: 'ffi',
+            ffigen.cType: 'Uint8',
+            ffigen.dartType: 'int',
+          }),
+          '__u16': YamlMap.wrap({
+            ffigen.lib: 'ffi',
+            ffigen.cType: 'Uint16',
+            ffigen.dartType: 'int',
+          }),
+          '__u32': YamlMap.wrap({
+            ffigen.lib: 'ffi',
+            ffigen.cType: 'Uint32',
+            ffigen.dartType: 'int',
+          }),
+          '__u64': YamlMap.wrap({
+            ffigen.lib: 'ffi',
+            ffigen.cType: 'Uint64',
+            ffigen.dartType: 'int',
+          }),
+          '__s8': YamlMap.wrap({
+            ffigen.lib: 'ffi',
+            ffigen.cType: 'Int8',
+            ffigen.dartType: 'int',
+          }),
+          '__s16': YamlMap.wrap({
+            ffigen.lib: 'ffi',
+            ffigen.cType: 'Int16',
+            ffigen.dartType: 'int',
+          }),
+          '__s32': YamlMap.wrap({
+            ffigen.lib: 'ffi',
+            ffigen.cType: 'Int32',
+            ffigen.dartType: 'int',
+          }),
+          '__s64': YamlMap.wrap({
+            ffigen.lib: 'ffi',
+            ffigen.cType: 'Int64',
+            ffigen.dartType: 'int',
+          }),
+        }),
+      }),
 //    ffigen.typedefmap: {},
       ffigen.sort: false,
 //    ffigen.useSupportedTypedefs: true,
