@@ -213,4 +213,10 @@ const macroIncludes = [
   */
 ];
 
+const macroExcludes = [
+  // somehow these have different values depending on ABI.
+  'O_NOFOLLOW',
+  'O_DIRECTORY'
+];
+
 const typedefIncludes = [];

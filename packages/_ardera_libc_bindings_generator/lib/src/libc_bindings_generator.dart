@@ -435,6 +435,9 @@ class LibCPlatformBackendGenerator extends Generator {
 //      ffigen.Enum: arch.enumSize,
 //    }),
       ffigen.useSupportedTypedefs: true,
+      ffigen.libraryImports: YamlMap.wrap({
+        'pkg_ssizet': 'ssize_t.dart',
+      }),
       ffigen.typeMap: YamlMap.wrap({
         ffigen.typeMapTypedefs: YamlMap.wrap({
           '__u8': YamlMap.wrap({
@@ -475,6 +478,11 @@ class LibCPlatformBackendGenerator extends Generator {
           '__s64': YamlMap.wrap({
             ffigen.lib: 'ffi',
             ffigen.cType: 'Int64',
+            ffigen.dartType: 'int',
+          }),
+          'ssize_t': YamlMap.wrap({
+            ffigen.lib: 'pkg_ssizet',
+            ffigen.cType: 'SSize',
             ffigen.dartType: 'int',
           }),
         }),
