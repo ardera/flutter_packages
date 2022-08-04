@@ -676,9 +676,7 @@ void main() {
         // wait for some time so the edge event arrives
 
         //await tester.pump(const Duration(seconds: 5));
-        (TestWidgetsFlutterBinding.ensureInitialized() as TestWidgetsFlutterBinding)
-            .delayed(const Duration(seconds: 5))
-            .then((value) {
+        TestWidgetsFlutterBinding.ensureInitialized().delayed(const Duration(seconds: 5)).then((value) {
           if (!completer.isCompleted) {
             completer.completeError(TimeoutException('Waiting for signal edge timed out.', const Duration(seconds: 5)));
           }

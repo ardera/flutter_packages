@@ -11,7 +11,7 @@ import 'libc_amd64.dart' as amd64;
 
 export 'libc_arm.dart';
 
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, camel_case_types, unnecessary_brace_in_string_interps
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, camel_case_types, unnecessary_brace_in_string_interps, no_leading_underscores_for_local_identifiers
 class Arch {
   const Arch(this.name);
 
