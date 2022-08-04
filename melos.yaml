@@ -12,6 +12,8 @@ command:
     branch: main
     # Additionally build a changelog at the root of the workspace.
     workspaceChangelog: true
+  bootstrap:
+    usePubspecOverrides: true
 
 scripts:
   pubget:
