@@ -71,94 +71,68 @@ class Arch {
 class LibC {
   LibC._internal({
     required ffi.Pointer<T> Function<T extends ffi.NativeType>(String) lookup,
-    required dynamic backend,
+    required arm.LibCPlatformBackend backend,
   })  : _lookup = lookup,
         _backend = backend;
 
   final ffi.Pointer<T> Function<T extends ffi.NativeType>(String) _lookup;
-  final dynamic _backend;
+  final arm.LibCPlatformBackend _backend;
 
   factory LibC.fromLookup(ffi.Pointer<T> Function<T extends ffi.NativeType>(String) lookup) {
-    if (Arch.isArm) {
-      final _libcArm = arm.LibCPlatformBackend.fromLookup(lookup);
-      return LibC._internal(
-        lookup: lookup,
-        backend: _libcArm,
-      );
-    } else if (Arch.isArm64) {
-      final _libcArm64 = arm64.LibCPlatformBackend.fromLookup(lookup);
-      return LibC._internal(
-        lookup: lookup,
-        backend: _libcArm64,
-      );
-    } else if (Arch.isI386) {
-      final _libcI386 = i386.LibCPlatformBackend.fromLookup(lookup);
-      return LibC._internal(
-        lookup: lookup,
-        backend: _libcI386,
-      );
-    } else if (Arch.isAmd64) {
-      final _libcAmd64 = amd64.LibCPlatformBackend.fromLookup(lookup);
-      return LibC._internal(
-        lookup: lookup,
-        backend: _libcAmd64,
-      );
-    } else {
-      throw FallThroughError();
-    }
+    final _libcArm = arm.LibCPlatformBackend.fromLookup(lookup);
+    return LibC._internal(
+      lookup: lookup,
+      backend: _libcArm,
+    );
   }
 
   factory LibC(ffi.DynamicLibrary dylib) {
     return LibC.fromLookup(dylib.lookup);
   }
 
-  late final int Function(int, int, ffi.Pointer<ffi.Void>) ioctl_ptr = Arch.isArm || Arch.isI386
-      ? (addresses.ioctl as ffi.Pointer)
-          .cast<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Uint32, ffi.Pointer<ffi.Void>)>>()
-          .asFunction<int Function(int, int, ffi.Pointer<ffi.Void>)>(isLeaf: true)
-      : (addresses.ioctl as ffi.Pointer)
-          .cast<ffi.NativeFunction<ffi.Int32 Function(ffi.Int32, ffi.Uint64, ffi.Pointer<ffi.Void>)>>()
-          .asFunction<int Function(int, int, ffi.Pointer<ffi.Void>)>(isLeaf: true);
+  late final int Function(int, int, ffi.Pointer<ffi.Void>) ioctl_ptr = addresses.ioctl
+      .cast<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Size, ffi.Pointer<ffi.Void>)>>()
+      .asFunction<int Function(int, int, ffi.Pointer<ffi.Void>)>(isLeaf: true);
   late final int Function(int, int) ioctl = _backend.ioctl;
   late final int Function(int) epoll_create = _backend.epoll_create;
   late final int Function(int) epoll_create1 = _backend.epoll_create1;
 
   int epoll_ctl(int __epfd, int __op, int __fd, epoll_event_ptr __event) {
-    return _backend.epoll_ctl(__epfd, __op, __fd, __event.nativeBacking);
+    return _backend.epoll_ctl(__epfd, __op, __fd, __event.nativeBacking.cast<arm.epoll_event>());
   }
 
   int epoll_wait(int __epfd, epoll_event_ptr __events, int __maxevents, int __timeout) {
-    return _backend.epoll_wait(__epfd, __events.nativeBacking, __maxevents, __timeout);
+    return _backend.epoll_wait(__epfd, __events.nativeBacking.cast<arm.epoll_event>(), __maxevents, __timeout);
   }
 
-  late final int Function(ffi.Pointer<ffi.Int8>, int) open =
-      Arch.isArm || Arch.isArm64 ? (file, oflag) => _backend.open(file.cast<ffi.Uint8>(), oflag) : _backend.open;
+  late final int Function(ffi.Pointer<ffi.Char>, int) open =
+      Arch.isArm || Arch.isArm64 ? (file, oflag) => _backend.open(file.cast<ffi.Char>(), oflag) : _backend.open;
 
   late final int Function(int) close = _backend.close;
   late final int Function(int, ffi.Pointer<ffi.Void>, int) read = _backend.read;
 
   int cfgetospeed(termios_ptr __termios_p) {
-    return _backend.cfgetospeed(__termios_p.backing);
+    return _backend.cfgetospeed(__termios_p.backing.cast<arm.termios>());
   }
 
   int cfgetispeed(termios_ptr __termios_p) {
-    return _backend.cfgetispeed(__termios_p.backing);
+    return _backend.cfgetispeed(__termios_p.backing.cast<arm.termios>());
   }
 
   int cfsetospeed(termios_ptr __termios_p, int __speed) {
-    return _backend.cfsetospeed(__termios_p.backing, __speed);
+    return _backend.cfsetospeed(__termios_p.backing.cast<arm.termios>(), __speed);
   }
 
   int cfsetispeed(termios_ptr __termios_p, int __speed) {
-    return _backend.cfsetispeed(__termios_p.backing, __speed);
+    return _backend.cfsetispeed(__termios_p.backing.cast<arm.termios>(), __speed);
   }
 
   int tcgetattr(int __fd, termios_ptr __termios_p) {
-    return _backend.tcgetattr(__fd, __termios_p.backing);
+    return _backend.tcgetattr(__fd, __termios_p.backing.cast<arm.termios>());
   }
 
   int tcsetattr(int __fd, int __optional_actions, termios_ptr __termios_p) {
-    return _backend.tcsetattr(__fd, __optional_actions, __termios_p.backing);
+    return _backend.tcsetattr(__fd, __optional_actions, __termios_p.backing.cast<arm.termios>());
   }
 
   late final int Function(int __fd, int __duration) tcsendbreak = _backend.tcsendbreak;
