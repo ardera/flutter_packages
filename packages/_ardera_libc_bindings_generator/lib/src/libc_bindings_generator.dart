@@ -421,19 +421,19 @@ class LibCPlatformBackendGenerator extends Generator {
 //      ffigen.memberRename: {},
 //      ffigen.symbolAddress: {},
 //    },
-      ffigen.sizemap: YamlMap.wrap({
-        ffigen.SChar: arch.charSize,
-        ffigen.UChar: arch.unsignedCharSize,
-        ffigen.Short: arch.shortSize,
-        ffigen.UShort: arch.unsignedShortSize,
-        ffigen.Int: arch.intSize,
-        ffigen.UInt: arch.unsignedIntSize,
-        ffigen.Long: arch.longSize,
-        ffigen.ULong: arch.unsignedLongSize,
-        ffigen.LongLong: arch.longLongSize,
-        ffigen.ULongLong: arch.unsignedLongLongSize,
-        ffigen.Enum: arch.enumSize,
-      }),
+//    ffigen.sizemap_native_mapping: YamlMap.wrap({
+//      ffigen.SChar: arch.charSize,
+//      ffigen.UChar: arch.unsignedCharSize,
+//      ffigen.Short: arch.shortSize,
+//      ffigen.UShort: arch.unsignedShortSize,
+//      ffigen.Int: arch.intSize,
+//      ffigen.UInt: arch.unsignedIntSize,
+//      ffigen.Long: arch.longSize,
+//      ffigen.ULong: arch.unsignedLongSize,
+//      ffigen.LongLong: arch.longLongSize,
+//      ffigen.ULongLong: arch.unsignedLongLongSize,
+//      ffigen.Enum: arch.enumSize,
+//    }),
 //    ffigen.typedefmap: {},
       ffigen.sort: false,
 //    ffigen.useSupportedTypedefs: true,
@@ -442,7 +442,7 @@ class LibCPlatformBackendGenerator extends Generator {
       ffigen.name: classname,
       ffigen.description: 'libc backend for ${arch.name}',
       ffigen.preamble:
-          '// ignore_for_file: constant_identifier_names, non_constant_identifier_names, camel_case_types, unnecessary_brace_in_string_interps, unused_element\n'
+          '// ignore_for_file: constant_identifier_names, non_constant_identifier_names, camel_case_types, unnecessary_brace_in_string_interps, unused_element, no_leading_underscores_for_local_identifiers\n'
 //    ffigen.useDartHandle: true,
     }));
 
