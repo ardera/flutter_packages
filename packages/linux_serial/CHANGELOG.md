@@ -1,3 +1,7 @@
+## 0.2.0
+
+ - upgrade deps (ffi to 2.0.0)
+
 ## [0.1.0]
 
 * migrate to common bindings

@@ -1,6 +1,6 @@
 name: _ardera_libc_bindings_generator
 description: A dart:ffi bindings generator for libc.
-version: 0.0.1
+version: 0.1.0
 repository: https://github.com/ardera/flutter_packages
 
 dependencies:

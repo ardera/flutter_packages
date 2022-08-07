@@ -1,3 +1,7 @@
+## 0.5.0
+
+ - upgrade ffi to 2.0.0
+
 ## [0.4.0]
 
 * fix some smaller issues

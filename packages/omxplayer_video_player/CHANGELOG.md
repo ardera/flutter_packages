@@ -1,3 +1,7 @@
+## 2.1.0
+
+ - upgrade deps
+
 ## [2.0.0+2] - 23.02.2021
 * clarify relation to video_player package in readme
 
