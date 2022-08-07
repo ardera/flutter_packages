@@ -76,12 +76,6 @@ Matcher isOwnedInputLine(Object? name, Object? consumer, {Object? bias, Object? 
 }
 
 void main() {
-  TestWidgetsFlutterBinding binding = TestWidgetsFlutterBinding.ensureInitialized();
-  if (binding is LiveTestWidgetsFlutterBinding) {
-    // don't schedule frames
-    binding.framePolicy = LiveTestWidgetsFlutterBindingFramePolicy.benchmark;
-  }
-
   group('test gpio on pi 4', () {
     testWidgets('test pi 4 general gpio', (_) async {
       final gpio = FlutterGpiod.instance;
