@@ -58,26 +58,32 @@ extension FlutterpiVideoPlayerControllerAdvancedControls on VideoPlayerControlle
 }
 
 class FlutterpiVideoPlayerController extends VideoPlayerController {
-  FlutterpiVideoPlayerController._contentUri(
-    super.contentUri, {
+  FlutterpiVideoPlayerController._network(
+    super.dataSource, {
+    super.formatHint,
     super.closedCaptionFile,
     super.videoPlayerOptions,
-  }) : super.contentUri();
+    super.httpHeaders,
+  }) : super.network();
 
   factory FlutterpiVideoPlayerController.withGstreamerPipeline(
     String pipeline, {
+    VideoFormat? formatHint,
     Future<ClosedCaptionFile>? closedCaptionFile,
     VideoPlayerOptions? videoPlayerOptions,
+    Map<String, String> httpHeaders = const <String, String>{},
   }) {
     _checkPlatform();
 
-    return FlutterpiVideoPlayerController._contentUri(
+    return FlutterpiVideoPlayerController._network(
       Uri(
         scheme: FlutterpiVideoPlayer.pipelineUrlScheme,
         path: FlutterpiVideoPlayer.pipelineUrlCodec.encode(pipeline),
-      ),
+      ).toString(),
+      formatHint: formatHint,
       closedCaptionFile: closedCaptionFile,
       videoPlayerOptions: videoPlayerOptions,
+      httpHeaders: httpHeaders,
     );
   }
 }

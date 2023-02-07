@@ -55,24 +55,23 @@ class FlutterpiVideoPlayer extends VideoPlayerPlatform {
         packageName = dataSource.package;
         break;
       case DataSourceType.network:
-        uri = dataSource.uri;
-        formatHint = _videoFormatStringMap[dataSource.formatHint];
-        httpHeaders = dataSource.httpHeaders.isNotEmpty ? dataSource.httpHeaders : null;
+        final parsed = Uri.parse(dataSource.uri!);
+        if (parsed.isScheme(pipelineUrlScheme)) {
+          // We do the decoding here instead of in flutter-pi because this is one line in dart, in C it's probably 50.
+          gstreamerPipeline = pipelineUrlCodec.decode(parsed.path);
+          formatHint = _videoFormatStringMap[dataSource.formatHint];
+          httpHeaders = dataSource.httpHeaders.isNotEmpty ? dataSource.httpHeaders : null;
+        } else {
+          uri = dataSource.uri!;
+          formatHint = _videoFormatStringMap[dataSource.formatHint];
+          httpHeaders = dataSource.httpHeaders.isNotEmpty ? dataSource.httpHeaders : null;
+        }
         break;
       case DataSourceType.file:
         uri = dataSource.uri;
         break;
       case DataSourceType.contentUri:
-        // gstreamerPipeline://... URLs are special, they instruct is to instead create the video player using
-        // a raw gstreamer pipeline, with the pipeline description being the base64url and then utf8 decoded URL path.
-        final parsed = Uri.parse(dataSource.uri!);
-        if (parsed.isScheme(pipelineUrlScheme)) {
-          // We do the decoding here instead of in flutter-pi because this is one line in dart, in C it's probably 50.
-          gstreamerPipeline = pipelineUrlCodec.decode(parsed.path);
-        } else {
-          uri = dataSource.uri!;
-        }
-
+        assert(false);
         break;
     }
 
