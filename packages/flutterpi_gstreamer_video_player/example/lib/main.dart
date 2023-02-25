@@ -15,24 +15,24 @@ void main() {
   runApp(const _VideoApp());
 }
 
-class _VideoApp extends StatefulWidget {
-  const _VideoApp({Key? key}) : super(key: key);
+class ExampleVideoPage extends StatefulWidget {
+  const ExampleVideoPage({super.key});
 
   @override
-  _VideoAppState createState() => _VideoAppState();
+  State<ExampleVideoPage> createState() => _ExampleVideoPageState();
 }
 
-class _VideoAppState extends State<_VideoApp> {
+class _ExampleVideoPageState extends State<ExampleVideoPage> {
   late VideoPlayerController _controller;
   late ChewieController _chewieController;
 
   @override
   void initState() {
     super.initState();
-    _controller = FlutterpiVideoPlayerController.withGstreamerPipeline(
-      'videotestsrc ! video/x-raw,width=1280,height=720 ! appsink name="sink"',
+    _controller = VideoPlayerController.network(
+      'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
     );
-    //_controller = VideoPlayerController.network('https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4');
+
     _chewieController = ChewieController(
       videoPlayerController: _controller,
       autoInitialize: true,
@@ -54,19 +54,12 @@ class _VideoAppState extends State<_VideoApp> {
             iconData: Icons.arrow_left,
             title: 'Step Backward',
           ),
-          OptionItem(onTap: () {}, iconData: Icons.fast_forward_outlined, title: 'Fast Seek'),
+          OptionItem(
+              onTap: () {},
+              iconData: Icons.fast_forward_outlined,
+              title: 'Fast Seek'),
         ];
       },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Video Demo',
-      home: Scaffold(
-        body: Chewie(controller: _chewieController),
-      ),
     );
   }
 
@@ -75,5 +68,86 @@ class _VideoAppState extends State<_VideoApp> {
     _controller.dispose();
     _chewieController.dispose();
     super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Chewie(controller: _chewieController);
+  }
+}
+
+class CameraViewPage extends StatefulWidget {
+  const CameraViewPage({super.key});
+
+  @override
+  State<CameraViewPage> createState() => _CameraViewPageState();
+}
+
+class _CameraViewPageState extends State<CameraViewPage> {
+  late VideoPlayerController _controller;
+  late ChewieController _chewieController;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = FlutterpiVideoPlayerController.withGstreamerPipeline(
+      'libcamerasrc ! queue ! appsink name="sink"',
+    );
+
+    _chewieController = ChewieController(
+      videoPlayerController: _controller,
+      autoInitialize: true,
+      autoPlay: true,
+      looping: true,
+      isLive: true,
+    );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
+    _chewieController.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Chewie(controller: _chewieController);
+  }
+}
+
+class _VideoApp extends StatefulWidget {
+  const _VideoApp({Key? key}) : super(key: key);
+
+  @override
+  _VideoAppState createState() => _VideoAppState();
+}
+
+class _VideoAppState extends State<_VideoApp> {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Video Demo',
+      home: DefaultTabController(
+        length: 2,
+        child: Scaffold(
+          appBar: AppBar(
+            bottom: const TabBar(
+              tabs: [
+                Tab(text: 'Example Video'),
+                Tab(text: 'Camera'),
+              ],
+            ),
+          ),
+          body: const TabBarView(
+            children: [
+              ExampleVideoPage(),
+              CameraViewPage(),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
