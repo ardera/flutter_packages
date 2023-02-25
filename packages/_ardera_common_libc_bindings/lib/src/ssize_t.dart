@@ -1,8 +1,8 @@
 import 'dart:ffi';
 
-/// The C `size_t` type.
+/// The C `ssize_t` type.
 ///
-/// The [Size] type is a native type, and should not be constructed in
+/// The [SSize] type is a native type, and should not be constructed in
 /// Dart code.
 /// It occurs only in native type signatures and as annotation on [Struct] and
 /// [Union] fields.
