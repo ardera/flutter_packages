@@ -9,21 +9,19 @@ on:
 
 jobs:
   test:
-    runs-on: panda
-    env:
-      ANDROID_PLATFORM_TOOLS_PATH: /home/hannes/devel/android-sdk/platform-tools
-      
+    runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Setup flutter SDK
         uses: subosito/flutter-action@v2
         with:
           cache: true
-             
+      
       - name: Setup melos
         run: dart pub global activate melos
-
+      
       - run: flutter doctor -v
       
       - run: flutter precache
@@ -39,6 +37,26 @@ jobs:
         
       - name: melos test
         run: dart pub global run melos test
+
+  integration-test:
+    runs-on: panda
+    env:
+      ANDROID_PLATFORM_TOOLS_PATH: /home/hannes/devel/android-sdk/platform-tools
+      
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          cache: true
+             
+      - name: Setup melos
+        run: dart pub global activate melos
+
+      - run: flutter doctor -v
+      
+      - run: flutter precache
         
       - name: make ODROID C4 gpio chips accessible
         run: |
