@@ -96,12 +96,12 @@ class LibCPlatformBackend {
   late final _epoll_wait =
       _epoll_waitPtr.asFunction<int Function(int, ffi.Pointer<epoll_event>, int, int)>(isLeaf: true);
 
-  ffi.Pointer<ffi.Int> errno_location() {
-    return _errno_location();
+  ffi.Pointer<ffi.Int> raw_errno_location() {
+    return _raw_errno_location();
   }
 
-  late final _errno_locationPtr = _lookup<ffi.NativeFunction<ffi.Pointer<ffi.Int> Function()>>('__errno_location');
-  late final _errno_location = _errno_locationPtr.asFunction<ffi.Pointer<ffi.Int> Function()>(isLeaf: true);
+  late final _raw_errno_locationPtr = _lookup<ffi.NativeFunction<ffi.Pointer<ffi.Int> Function()>>('__errno_location');
+  late final _raw_errno_location = _raw_errno_locationPtr.asFunction<ffi.Pointer<ffi.Int> Function()>(isLeaf: true);
 
   int open(
     ffi.Pointer<ffi.Char> __file,
@@ -151,8 +151,7 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _cfgetospeedPtr =
-      _lookup<ffi.NativeFunction<ffi.UnsignedInt Function(ffi.Pointer<termios>)>>('cfgetospeed');
+  late final _cfgetospeedPtr = _lookup<ffi.NativeFunction<speed_t Function(ffi.Pointer<termios>)>>('cfgetospeed');
   late final _cfgetospeed = _cfgetospeedPtr.asFunction<int Function(ffi.Pointer<termios>)>(isLeaf: true);
 
   int cfgetispeed(
@@ -163,8 +162,7 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _cfgetispeedPtr =
-      _lookup<ffi.NativeFunction<ffi.UnsignedInt Function(ffi.Pointer<termios>)>>('cfgetispeed');
+  late final _cfgetispeedPtr = _lookup<ffi.NativeFunction<speed_t Function(ffi.Pointer<termios>)>>('cfgetispeed');
   late final _cfgetispeed = _cfgetispeedPtr.asFunction<int Function(ffi.Pointer<termios>)>(isLeaf: true);
 
   int cfsetospeed(
@@ -178,7 +176,7 @@ class LibCPlatformBackend {
   }
 
   late final _cfsetospeedPtr =
-      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Pointer<termios>, ffi.UnsignedInt)>>('cfsetospeed');
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Pointer<termios>, speed_t)>>('cfsetospeed');
   late final _cfsetospeed = _cfsetospeedPtr.asFunction<int Function(ffi.Pointer<termios>, int)>(isLeaf: true);
 
   int cfsetispeed(
@@ -192,7 +190,7 @@ class LibCPlatformBackend {
   }
 
   late final _cfsetispeedPtr =
-      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Pointer<termios>, ffi.UnsignedInt)>>('cfsetispeed');
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Pointer<termios>, speed_t)>>('cfsetispeed');
   late final _cfsetispeed = _cfsetispeedPtr.asFunction<int Function(ffi.Pointer<termios>, int)>(isLeaf: true);
 
   int tcgetattr(
@@ -282,7 +280,7 @@ class LibCPlatformBackend {
     );
   }
 
-  late final _tcgetsidPtr = _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int)>>('tcgetsid');
+  late final _tcgetsidPtr = _lookup<ffi.NativeFunction<__pid_t Function(ffi.Int)>>('tcgetsid');
   late final _tcgetsid = _tcgetsidPtr.asFunction<int Function(int)>(isLeaf: true);
 
   late final addresses = _SymbolAddresses(this);
@@ -296,7 +294,8 @@ class _SymbolAddresses {
       get epoll_ctl => _library._epoll_ctlPtr;
   ffi.Pointer<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Pointer<epoll_event>, ffi.Int, ffi.Int)>>
       get epoll_wait => _library._epoll_waitPtr;
-  ffi.Pointer<ffi.NativeFunction<ffi.Pointer<ffi.Int> Function()>> get errno_location => _library._errno_locationPtr;
+  ffi.Pointer<ffi.NativeFunction<ffi.Pointer<ffi.Int> Function()>> get raw_errno_location =>
+      _library._raw_errno_locationPtr;
   ffi.Pointer<ffi.NativeFunction<pkg_ssizet.SSize Function(ffi.Int, ffi.Pointer<ffi.Void>, ffi.Size)>> get read =>
       _library._readPtr;
 }
@@ -332,7 +331,14 @@ class epoll_data extends ffi.Union {
   external int u64;
 }
 
-class epoll_event extends ffi.Opaque {}
+class epoll_event extends ffi.Struct {
+  @ffi.Uint32()
+  external int events;
+
+  external epoll_data_t data;
+}
+
+typedef epoll_data_t = epoll_data;
 
 /// struct gpiochip_info - Information about a certain GPIO chip
 /// @name: the Linux kernel name of this GPIO chip
@@ -716,30 +722,35 @@ class gpioevent_data extends ffi.Struct {
 }
 
 class termios extends ffi.Struct {
-  @ffi.UnsignedInt()
+  @tcflag_t()
   external int c_iflag;
 
-  @ffi.UnsignedInt()
+  @tcflag_t()
   external int c_oflag;
 
-  @ffi.UnsignedInt()
+  @tcflag_t()
   external int c_cflag;
 
-  @ffi.UnsignedInt()
+  @tcflag_t()
   external int c_lflag;
 
-  @ffi.UnsignedChar()
+  @cc_t()
   external int c_line;
 
   @ffi.Array.multi([32])
-  external ffi.Array<ffi.UnsignedChar> c_cc;
+  external ffi.Array<cc_t> c_cc;
 
-  @ffi.UnsignedInt()
+  @speed_t()
   external int c_ispeed;
 
-  @ffi.UnsignedInt()
+  @speed_t()
   external int c_ospeed;
 }
+
+typedef tcflag_t = ffi.UnsignedInt;
+typedef cc_t = ffi.UnsignedChar;
+typedef speed_t = ffi.UnsignedInt;
+typedef __pid_t = ffi.Int;
 
 /// struct spi_ioc_transfer - describes a single SPI transfer
 /// @tx_buf: Holds pointer to userspace buffer with transmit data, or null.
