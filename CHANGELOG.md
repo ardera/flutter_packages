@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2023-02-26
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`linux_serial` - `v0.2.1`](#linux_serial---v021)
+
+---
+
+#### `linux_serial` - `v0.2.1`
+
+ - **REFACTOR**: fix analyzer warnings. ([9e652157](https://github.com/ardera/flutter_packages/commit/9e652157b62b64c080f492715fda83e9b63533bd))
+
+
 ## 2022-08-07
 
 ### Changes
