@@ -11,6 +11,28 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 Packages with breaking changes:
 
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`linux_serial` - `v0.2.2`](#linux_serial---v022)
+
+---
+
+#### `linux_serial` - `v0.2.2`
+
+ - **REFACTOR**: fix analyzer warnings. ([9e652157](https://github.com/ardera/flutter_packages/commit/9e652157b62b64c080f492715fda83e9b63533bd))
+ - **FEAT**: make linux_serial work with new libc bindings. ([b5074fbd](https://github.com/ardera/flutter_packages/commit/b5074fbd24e7e04f408a1c13b7c8e5cba7735ec7))
+
+
+## 2023-02-27
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
  - [`_ardera_common_libc_bindings` - `v0.2.0`](#_ardera_common_libc_bindings---v020)
 
 Packages with other changes:

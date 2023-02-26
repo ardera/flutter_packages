@@ -1,3 +1,8 @@
+## 0.2.2
+
+ - **REFACTOR**: fix analyzer warnings. ([9e652157](https://github.com/ardera/flutter_packages/commit/9e652157b62b64c080f492715fda83e9b63533bd))
+ - **FEAT**: make linux_serial work with new libc bindings. ([b5074fbd](https://github.com/ardera/flutter_packages/commit/b5074fbd24e7e04f408a1c13b7c8e5cba7735ec7))
+
 ## 0.2.1+1
 
  - Update a dependency to the latest release.
