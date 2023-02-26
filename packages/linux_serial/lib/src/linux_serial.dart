@@ -107,7 +107,7 @@ void epollerEntry(Tuple2<SendPort, int> arg) {
   final epollFd = arg.item2;
 
   final nEpollEvents = 64;
-  final epollEventsPtr = epoll_event_ptr.allocate(count: nEpollEvents);
+  final epollEventsPtr = ffi.calloc.allocate<epoll_event>(nEpollEvents * ffi.sizeOf<epoll_event>());
 
   while (true) {
     final result = libc.epoll_wait(epollFd, epollEventsPtr, nEpollEvents, -1);
@@ -118,7 +118,7 @@ void epollerEntry(Tuple2<SendPort, int> arg) {
 
       for (var i = 0; i < result; i++) {
         final epollEvent = epollEventsPtr.elementAt(i);
-        collected.add(epollEvent.u64);
+        collected.add(epollEvent.ref.data.u64);
       }
 
       sendPort.send(collected);
@@ -239,7 +239,7 @@ class PlatformInterface {
   final LibC libc;
   final int epollFd;
   final Stream<List<int>> onFdReady;
-  final Map<int, epoll_event_ptr?> _epollEventForFd = <int, epoll_event_ptr>{};
+  final Map<int, ffi.Pointer<epoll_event>?> _epollEventForFd = <int, ffi.Pointer<epoll_event>>{};
   final Map<int, Computer?> _computerForFd = <int, Computer>{};
 
   static PlatformInterface? _instance;
@@ -250,60 +250,60 @@ class PlatformInterface {
   }
 
   void makeRaw(int fd) {
-    final ptr = termios_ptr.allocate();
+    final ptr = ffi.calloc.allocate<termios>(ffi.sizeOf<termios>());
 
     libc.tcgetattr(fd, ptr);
 
-    ptr.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
-    ptr.c_oflag &= ~OPOST;
-    ptr.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
-    ptr.c_cflag &= ~(CSIZE | PARENB);
-    ptr.c_cflag |= CS8;
-    ptr.c_cc[VMIN] = 0;
-    ptr.c_cc[VTIME] = 0;
+    ptr.ref.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
+    ptr.ref.c_oflag &= ~OPOST;
+    ptr.ref.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
+    ptr.ref.c_cflag &= ~(CSIZE | PARENB);
+    ptr.ref.c_cflag |= CS8;
+    ptr.ref.c_cc[VMIN] = 0;
+    ptr.ref.c_cc[VTIME] = 0;
 
     libc.tcsetattr(fd, TCSANOW, ptr);
 
-    ptr.free();
+    ffi.calloc.free(ptr);
   }
 
   void makeRawAndSetBaudrate(int fd, Baudrate baudrate) {
-    final ptr = termios_ptr.allocate();
+    final ptr = ffi.calloc.allocate<termios>(ffi.sizeOf<termios>());
     int result;
 
     result = libc.tcgetattr(fd, ptr);
     if (result < 0) {
-      ptr.free();
+      ffi.calloc.free(ptr);
       throw OSError("Could not get termios state for serial port. (tcgetattr)");
     }
 
-    ptr.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
-    ptr.c_oflag &= ~OPOST;
-    ptr.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
-    ptr.c_cflag &= ~(CSIZE | PARENB);
-    ptr.c_cflag |= CS8;
-    ptr.c_cc[VMIN] = 1;
-    ptr.c_cc[VTIME] = 100;
+    ptr.ref.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
+    ptr.ref.c_oflag &= ~OPOST;
+    ptr.ref.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
+    ptr.ref.c_cflag &= ~(CSIZE | PARENB);
+    ptr.ref.c_cflag |= CS8;
+    ptr.ref.c_cc[VMIN] = 1;
+    ptr.ref.c_cc[VTIME] = 100;
 
     result = libc.cfsetispeed(ptr, baudrate.asLinuxValue);
     if (result < 0) {
-      ptr.free();
+      ffi.calloc.free(ptr);
       throw OSError("Could not set input speed for serial port. (cfsetispeed)");
     }
 
     result = libc.cfsetospeed(ptr, baudrate.asLinuxValue);
     if (result < 0) {
-      ptr.free();
+      ffi.calloc.free(ptr);
       throw OSError("Could not set output speed for serial port. (cfsetospeed)");
     }
 
     result = libc.tcsetattr(fd, TCSANOW, ptr);
     if (result < 0) {
-      ptr.free();
+      ffi.calloc.free(ptr);
       throw OSError("Could not set termios state for serial port. (tcsetattr)");
     }
 
-    ptr.free();
+    ffi.calloc.free(ptr);
   }
 
   int open(String path, {Baudrate? baudrate}) {
@@ -330,15 +330,15 @@ class PlatformInterface {
       rethrow;
     }
 
-    final epollEvent = epoll_event_ptr.allocate(allocator: ffi.calloc);
+    final epollEvent = ffi.calloc.allocate<epoll_event>(ffi.sizeOf<epoll_event>());
 
-    epollEvent.events = EPOLL_EVENTS.EPOLLIN | EPOLL_EVENTS.EPOLLPRI | EPOLL_EVENTS.EPOLLONESHOT;
-    epollEvent.u64 = fd;
+    epollEvent.ref.events = EPOLL_EVENTS.EPOLLIN | EPOLL_EVENTS.EPOLLPRI | EPOLL_EVENTS.EPOLLONESHOT;
+    epollEvent.ref.data.u64 = fd;
 
     result = libc.epoll_ctl(epollFd, EPOLL_CTL_ADD, fd, epollEvent);
 
     if (result < 0) {
-      epollEvent.free();
+      ffi.calloc.free(epollEvent);
       libc.close(fd);
       throw OSError("Could not add serial port fd to epoll instance");
     }
@@ -351,7 +351,7 @@ class PlatformInterface {
   }
 
   void setBaudrate(int fd, Baudrate baudrate) {
-    final ptr = termios_ptr.allocate();
+    final ptr = ffi.calloc.allocate<termios>(ffi.sizeOf<termios>());
 
     libc.tcgetattr(fd, ptr);
 
@@ -360,18 +360,18 @@ class PlatformInterface {
 
     libc.tcsetattr(fd, TCSANOW, ptr);
 
-    ptr.free();
+    ffi.calloc.free(ptr);
   }
 
   Baudrate getBaudrate(int fd) {
-    final ptr = termios_ptr.allocate();
+    final ptr = ffi.calloc.allocate<termios>(ffi.sizeOf<termios>());
 
     libc.tcgetattr(fd, ptr);
 
     final inputSpeedAsLinuxValue = libc.cfgetispeed(ptr);
     final outputSpeedAsLinuxValue = libc.cfgetospeed(ptr);
 
-    ptr.free();
+    ffi.calloc.free(ptr);
 
     final inputBaudrate = Baudrate.values.singleWhere((element) => element.asLinuxValue == inputSpeedAsLinuxValue);
     final outputBaudrate = Baudrate.values.singleWhere((element) => element.asLinuxValue == outputSpeedAsLinuxValue);
@@ -435,7 +435,7 @@ class PlatformInterface {
       throw OSError("Could not close serial port fd. (close)");
     }
 
-    _epollEventForFd[fd]!.free();
+    ffi.calloc.free(_epollEventForFd[fd]!);
     _epollEventForFd[fd] = null;
   }
 }
