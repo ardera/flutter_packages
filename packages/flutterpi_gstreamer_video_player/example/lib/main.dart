@@ -55,9 +55,10 @@ class _ExampleVideoPageState extends State<ExampleVideoPage> {
             title: 'Step Backward',
           ),
           OptionItem(
-              onTap: () {},
-              iconData: Icons.fast_forward_outlined,
-              title: 'Fast Seek'),
+            onTap: () {},
+            iconData: Icons.fast_forward_outlined,
+            title: 'Fast Seek',
+          ),
         ];
       },
     );
