@@ -57,6 +57,9 @@ jobs:
       - run: flutter doctor -v
       
       - run: flutter precache
+
+      - name: melos bootstrap
+        run: dart pub global run melos bootstrap
         
       - name: make ODROID C4 gpio chips accessible
         run: |
