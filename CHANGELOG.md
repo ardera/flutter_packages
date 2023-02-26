@@ -3,6 +3,48 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2023-02-27
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`_ardera_common_libc_bindings` - `v0.2.0`](#_ardera_common_libc_bindings---v020)
+
+Packages with other changes:
+
+ - [`flutter_gpiod` - `v0.5.1`](#flutter_gpiod---v051)
+ - [`flutterpi_gstreamer_video_player` - `v0.1.0+1`](#flutterpi_gstreamer_video_player---v0101)
+ - [`linux_spidev` - `v0.2.1`](#linux_spidev---v021)
+ - [`linux_serial` - `v0.2.1+1`](#linux_serial---v0211)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `linux_serial` - `v0.2.1+1`
+
+---
+
+#### `_ardera_common_libc_bindings` - `v0.2.0`
+
+ - **BREAKING** **FEAT**: migrate to cross-ABI bindings. ([9dcd4507](https://github.com/ardera/flutter_packages/commit/9dcd450738c418be34aa8bb9f2aac3794b256469))
+
+#### `flutter_gpiod` - `v0.5.1`
+
+ - **FEAT**: use newly generated libc bindings in dependants. ([14972b55](https://github.com/ardera/flutter_packages/commit/14972b5560d1e6e0cfd748cb47936e6696577c0e))
+
+#### `flutterpi_gstreamer_video_player` - `v0.1.0+1`
+
+ - **FIX**: formatting in video player example. ([19e2a8a9](https://github.com/ardera/flutter_packages/commit/19e2a8a908b5d37f5c632482bceca1cc876ae41a))
+
+#### `linux_spidev` - `v0.2.1`
+
+ - **FEAT**: use newly generated libc bindings in dependants. ([14972b55](https://github.com/ardera/flutter_packages/commit/14972b5560d1e6e0cfd748cb47936e6696577c0e))
+
+
 ## 2023-02-26
 
 ### Changes

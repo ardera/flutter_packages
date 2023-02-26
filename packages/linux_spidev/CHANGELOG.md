@@ -1,3 +1,7 @@
+## 0.2.1
+
+ - **FEAT**: use newly generated libc bindings in dependants. ([14972b55](https://github.com/ardera/flutter_packages/commit/14972b5560d1e6e0cfd748cb47936e6696577c0e))
+
 ## 0.2.0
 
  - upgrade deps (ffi to 2.0.0)
