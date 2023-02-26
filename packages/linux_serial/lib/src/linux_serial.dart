@@ -646,7 +646,7 @@ class SerialPort {
 }
 
 abstract class StringReader {
-  factory StringReader(Stream<int> source, {Encoding encoding: utf8}) {
+  factory StringReader(Stream<int> source, {Encoding encoding = utf8}) {
     return _StringReaderImpl(source, encoding: encoding);
   }
 

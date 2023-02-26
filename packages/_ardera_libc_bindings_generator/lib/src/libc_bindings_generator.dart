@@ -109,7 +109,7 @@ class LibCPlatformBackendGenerator extends Generator {
     } else if (Platform.isLinux) {
       return _linuxLlvmPath;
     } else {
-      throw FallThroughError();
+      throw UnsupportedError('Unsupported platform');
     }
   }
 

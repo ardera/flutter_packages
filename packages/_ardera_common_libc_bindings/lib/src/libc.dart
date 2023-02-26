@@ -184,7 +184,7 @@ class epoll_event_ptr {
     } else if (Arch.isAmd64) {
       return backing.cast<amd64.epoll_event>();
     } else {
-      throw FallThroughError();
+      throw UnsupportedError('Unsupported Architecture');
     }
   }
 
@@ -216,7 +216,7 @@ class epoll_event_ptr {
     } else if (Arch.isAmd64) {
       ptr = backing.cast<amd64.epoll_event_real>().elementAt(index);
     } else {
-      throw FallThroughError();
+      throw UnsupportedError('Unsupported Architecture');
     }
     return epoll_event_ptr(allocator, ptr);
   }
@@ -233,7 +233,7 @@ class epoll_event_ptr {
     } else if (Arch.isAmd64) {
       return backing.cast<amd64.epoll_event_real>().ref;
     } else {
-      throw FallThroughError();
+      throw UnsupportedError('Unsupported Architecture');
     }
   }
 
@@ -262,7 +262,7 @@ class epoll_event_ptr {
     } else if (Arch.isAmd64) {
       return ffi.sizeOf<amd64.epoll_event_real>();
     } else {
-      throw FallThroughError();
+      throw UnsupportedError('Unsupported Architecture');
     }
   }
 
@@ -346,7 +346,7 @@ class termios_ptr {
     } else if (Arch.isAmd64) {
       return i386.NCCS;
     } else {
-      throw FallThroughError();
+      throw UnsupportedError('Unsupported Architecture');
     }
   }
 
@@ -361,7 +361,7 @@ class termios_ptr {
     } else if (Arch.isAmd64) {
       ptr = backing.cast<i386.termios>().elementAt(index);
     } else {
-      throw FallThroughError();
+      throw UnsupportedError('Unsupported Architecture');
     }
     return termios_ptr(allocator, ptr);
   }
@@ -376,7 +376,7 @@ class termios_ptr {
     } else if (Arch.isAmd64) {
       return backing.cast<i386.termios>().ref;
     } else {
-      throw FallThroughError();
+      throw UnsupportedError('Unsupported Architecture');
     }
   }
 
@@ -404,7 +404,7 @@ class termios_ptr {
     } else if (Arch.isAmd64) {
       return ffi.sizeOf<amd64.termios>();
     } else {
-      throw FallThroughError();
+      throw UnsupportedError('Unsupported Architecture');
     }
   }
 
