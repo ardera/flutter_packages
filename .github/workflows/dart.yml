@@ -98,13 +98,14 @@ jobs:
             --output ./sshkey \
             ./sshkey.gpg
       
-      - name: Setup usb forwarding
+      - name: Setup adb forward
         run: |
-          sudo modprobe vhci-hcd
-          ssh -L 127.0.0.1:3240:127.0.0.1:3240 -p 23 -i ./sshkey ci@md.ardera.dev
-          usbip list -r "127.0.0.1"
-          sudo usbip attach -r "127.0.0.1" -b "1-3.2"
-
+          ssh -L 127.0.0.1:5555:odroid-c4:5555 -p 23 -i ./sshkey ci@md.ardera.dev &
+      
+      - name: List adb devices
+        run: |
+          adb devices -l
+      
       - name: Setup flutter SDK
         uses: subosito/flutter-action@v2
         with:
