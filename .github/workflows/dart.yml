@@ -52,6 +52,8 @@ jobs:
           echo expiry-time='"'$(date --date=+1hour +%Y%m%d%H%M)'"' $(cat /tmp/sshkey.pub) > ~/.ssh/authorized_keys
           
       - name: Encrypt private key for uploading
+        env:
+          AES_KEY: ${{ secrets.AES_KEY }}
         run: |
           gpg \
             --batch --yes \
@@ -82,6 +84,8 @@ jobs:
           path: sshkey.gpg
       
       - name: Decrypt ssh-key
+        env:
+          AES_KEY: ${{ secrets.AES_KEY }}
         run: |
           gpg \
             --batch --yes \
