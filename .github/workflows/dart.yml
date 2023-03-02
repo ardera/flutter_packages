@@ -105,6 +105,8 @@ jobs:
       - name: List adb devices
         run: |
           adb devices -l
+          adb connect 127.0.0.1:5555
+          adb devices -l
       
       - name: Setup flutter SDK
         uses: subosito/flutter-action@v2
