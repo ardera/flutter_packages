@@ -94,6 +94,7 @@ jobs:
             --passphrase="$AES_KEY" \
             --output ./sshkey \
             ./sshkey.gpg
+          chmod 0600 ./sshkey
       
       - name: Setup adb forward
         run: |
