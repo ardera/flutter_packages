@@ -75,9 +75,6 @@ jobs:
     concurrency: panda-temp-key
     steps:
       - uses: actions/checkout@v3
-      
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
             
       - name: Download ssh-key
         uses: actions/download-artifact@v3
@@ -98,7 +95,7 @@ jobs:
       
       - name: Setup adb forward
         run: |
-          ssh -L 127.0.0.1:5555:odroid-c4:5555 -p 23 -i ./sshkey ci@md.ardera.dev &
+          ssh -vvv -L 127.0.0.1:5555:odroid-c4:5555 -p 23 -i ./sshkey ci@md.ardera.dev &
           sleep 5
       
       - name: List adb devices
@@ -107,11 +104,14 @@ jobs:
           adb connect 127.0.0.1:5555
           adb devices -l
       
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+      
       - name: Setup flutter SDK
         uses: subosito/flutter-action@v2
         with:
           cache: true
-             
+     
       - name: Setup melos
         run: dart pub global activate melos
 
