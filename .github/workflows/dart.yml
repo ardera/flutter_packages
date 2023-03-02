@@ -77,6 +77,10 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
       
+      - name: Install extra linux modules
+        run: |
+          sudo apt-get -y install linux-modules-extra-azure
+      
       - name: Download ssh-key
         uses: actions/download-artifact@v3
         with:
