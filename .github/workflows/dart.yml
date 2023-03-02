@@ -50,7 +50,7 @@ jobs:
       
       - name: Add public key to authorized_keys
         run: |
-          echo expiry-time='"'$(date --date=+1hour +%Y%m%d%H%M)'"' $(cat /tmp/sshkey.pub) > ~/.ssh/authorized_keys
+          echo expiry-time='"'$(date --date=+1hour +%Y%m%d%H%M)'"' $(cat ./sshkey.pub) > ~/.ssh/authorized_keys
           
       - name: Encrypt private key for uploading
         env:
@@ -63,11 +63,13 @@ jobs:
             --output ./sshkey.gpg \
             sshkey
 
-      - name: Upload encrypted private key
+      - name: Upload keypair
         uses: actions/upload-artifact@v3
         with:
-          name: private-key
-          path: sshkey.gpg
+          name: keypair
+          path: |
+            sshkey.gpg
+            sshkey.pub
   
   integration-test:
     runs-on: ubuntu-latest
@@ -76,13 +78,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
             
-      - name: Download ssh-key
+      - name: Download keypair
         uses: actions/download-artifact@v3
         with:
-          name: private-key
+          name: keypair
           path: .
       
-      - name: Decrypt ssh-key
+      - name: Decrypt private key
         env:
           AES_KEY: ${{ secrets.AES_KEY }}
         run: |
