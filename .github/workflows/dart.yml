@@ -100,17 +100,17 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           echo "[md.ardera.dev]:23 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBC41DBiTm+uvaeZqUp4LcUck99c7+vIv/nS4rH4rt/rmSs5KAlJrz7TwicgDYobAdDL8Nnfyz0F2CG88uCNRea0=" >> ~/.ssh/known_hosts
-          ssh -vvv -o BatchMode=yes -L 127.0.0.1:5555:odroid-c4:5555 -p 23 -i ./sshkey ci@md.ardera.dev &
+          ssh -v -o ExitOnForwardFailure=yes -o BatchMode=yes -L 127.0.0.1:5555:odroid-c4:5555 -p 23 -i ./sshkey ci@md.ardera.dev read &
           sleep 5
+      
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
       
       - name: List adb devices
         run: |
           adb devices -l
           adb connect 127.0.0.1:5555
           adb devices -l
-      
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
       
       - name: Setup flutter SDK
         uses: subosito/flutter-action@v2
