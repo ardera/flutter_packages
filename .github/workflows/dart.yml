@@ -129,8 +129,8 @@ jobs:
         
       - name: make ODROID C4 gpio chips accessible
         run: |
-          adb -e shell chmod 0777 /dev/gpiochip0
-          adb -e shell chmod 0777 /dev/gpiochip1
+          adb -t 2 shell chmod 0777 /dev/gpiochip0
+          adb -t 2 shell chmod 0777 /dev/gpiochip1
         
       - name: run flutter_gpiod_test_app on ODROID C4
         working-directory: packages/flutter_gpiod_test_app
