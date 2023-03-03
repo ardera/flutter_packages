@@ -129,12 +129,12 @@ jobs:
         
       - name: make ODROID C4 gpio chips accessible
         run: |
-          adb shell chmod 0777 /dev/gpiochip0
-          adb shell chmod 0777 /dev/gpiochip1
+          adb -e shell chmod 0777 /dev/gpiochip0
+          adb -e shell chmod 0777 /dev/gpiochip1
         
       - name: run flutter_gpiod_test_app on ODROID C4
         working-directory: packages/flutter_gpiod_test_app
-        run: flutter test -d "ODROID C4" -t odroidc4 integration_test/gpio_test.dart
+        run: flutter test -d "127.0.0.1:5555" -t odroidc4 integration_test/gpio_test.dart
     
   delete-temp-key:
     runs-on: panda
