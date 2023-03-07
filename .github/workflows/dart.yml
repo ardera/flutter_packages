@@ -38,7 +38,8 @@ jobs:
       - name: melos test
         run: dart pub global run melos test
   
-  create-temp-key:
+  create-panda-temp-key:
+    name: Create temporary SSH key
     runs-on: panda
     concurrency: panda-temp-key
     steps:
@@ -73,7 +74,7 @@ jobs:
   
   integration-test:
     runs-on: ubuntu-latest
-    needs: create-temp-key
+    needs: create-panda-temp-key
     concurrency: panda-temp-key
     steps:
       - uses: actions/checkout@v3
@@ -136,7 +137,8 @@ jobs:
         working-directory: packages/flutter_gpiod_test_app
         run: flutter test -d "127.0.0.1:5555" -t odroidc4 integration_test/gpio_test.dart
     
-  delete-temp-key:
+  delete-panda-temp-key:
+    name: Delete temporary SSH key
     runs-on: panda
     needs: integration-test
     concurrency: panda-temp-key
@@ -145,7 +147,19 @@ jobs:
     if: ${{ always() }}
     steps:
       - uses: actions/checkout@v3
+      
+      - name: Download keypair
+        uses: actions/download-artifact@v3
+        with:
+          name: keypair
+          path: .
 
-      - name: Delete authorized_keys file
+      - name: Remove key from authorized_keys file
         run: |
-          rm ~/.ssh/authorized_keys
+          echo "::group::List authorized keys"
+          echo "::debug::$(cat ~/.ssh/authorized_keys)"
+          echo "::endgroup::"
+          grep -v "$(cat sshkey.pub)" ~/.ssh/authorized_keys | sponge ~/.ssh/authorized_keys
+          echo "::group::List authorized keys"
+          echo "::debug::$(cat ~/.ssh/authorized_keys)"
+          echo "::endgroup::"
