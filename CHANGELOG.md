@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2023-04-04
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`linux_serial` - `v0.2.3`](#linux_serial---v023)
+
+---
+
+#### `linux_serial` - `v0.2.3`
+
+ - **FIX**: remove logging, increase dart SDK min to 2.16. ([7e4a0058](https://github.com/ardera/flutter_packages/commit/7e4a0058ba8e58b2715d54a6cf62179467a7b4e0))
+
+
 ## 2023-02-27
 
 ### Changes

@@ -1,3 +1,7 @@
+## 0.2.3
+
+ - **FIX**: remove logging, increase dart SDK min to 2.16. ([7e4a0058](https://github.com/ardera/flutter_packages/commit/7e4a0058ba8e58b2715d54a6cf62179467a7b4e0))
+
 ## 0.2.2
 
  - **REFACTOR**: fix analyzer warnings. ([9e652157](https://github.com/ardera/flutter_packages/commit/9e652157b62b64c080f492715fda83e9b63533bd))
