@@ -201,17 +201,7 @@ int executeWrite(Tuple4<int, int, int, int> param) {
       .asFunction<int Function(int, ffi.Pointer<ffi.Void>, int)>();
 
   final buffer = ffi.Pointer<ffi.Uint8>.fromAddress(bufferAddr);
-
-  print("writing ${buffer.asTypedList(length)} to fd $fd...");
-
-  final watch = Stopwatch()..start();
-
   final result = write(fd, buffer.cast<ffi.Void>(), length);
-
-  watch.stop();
-
-  print("done after ${watch.elapsedMicroseconds}µs.");
-
   return result;
 }
 
@@ -414,8 +404,15 @@ class PlatformInterface {
     assert(_computerForFd[fd] != null);
 
     return _computerForFd[fd]!
-        .compute<Tuple4<int, int, int, int>, int>(executeWrite,
-            param: Tuple4<int, int, int, int>(fd, dylib.lookup("write").address, buffer.address, bufferSize))
+        .compute<Tuple4<int, int, int, int>, int>(
+      executeWrite,
+      param: Tuple4<int, int, int, int>(
+        fd,
+        dylib.lookup("write").address,
+        buffer.address,
+        bufferSize,
+      ),
+    )
         .then((result) {
       if (result < 0) {
         throw OSError("Could not write to serial port. (write)");
