@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter_gpiod/flutter_gpiod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -76,6 +77,43 @@ Matcher isOwnedInputLine(Object? name, Object? consumer, {Object? bias, Object? 
 }
 
 void main() {
+  // In some cases when running on ODROID C4, the display doesn't initialize correctly
+  // and the window.physicalSize is zero.
+  //
+  // That'll cause this error later on:
+  //  ══╡ EXCEPTION CAUGHT BY SCHEDULER LIBRARY ╞═════════════════════════════════════════════════════════
+  //  The following assertion was thrown during a scheduler callback:
+  //  Matrix4 entries must be finite.
+  //  'dart:ui/painting.dart':
+  //  Failed assertion: line 46 pos 10: '<optimized out>'
+  //
+  //  Either the assertion indicates an error in the framework itself, or we should provide substantially
+  //  more information in this error message to help you determine and fix the underlying cause.
+  //  In either case, please report this assertion by filing a bug on GitHub:
+  //    https://github.com/flutter/flutter/issues/new?template=2_bug.md
+  //
+  //  When the exception was thrown, this was the stack:
+  //  #2      _matrix4IsValid (dart:ui/painting.dart:46:10)
+  //  #3      SceneBuilder.pushTransform (dart:ui/compositing.dart:326:12)
+  //  #4      TransformLayer.addToScene (package:flutter/src/rendering/layer.dart:1909:27)
+  //  #5      ContainerLayer.buildScene (package:flutter/src/rendering/layer.dart:1094:5)
+  //  #6      RenderView.compositeFrame (package:flutter/src/rendering/view.dart:236:37)
+  //  #7      RendererBinding.drawFrame (package:flutter/src/rendering/binding.dart:520:18)
+  //  #8      WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:865:13)
+  //  #9      RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:381:5)
+  //  #10     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1289:15)
+  //  #11     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1218:9)
+  //  #12     LiveTestWidgetsFlutterBinding.handleDrawFrame (package:flutter_test/src/binding.dart:1710:13)
+  //  #13     SchedulerBinding.scheduleWarmUpFrame.<anonymous closure> (package:flutter/src/scheduler/binding.dart:942:7)
+  //  #28     _RawReceivePort._handleMessage (dart:isolate-patch/isolate_patch.dart:192:26)
+  //  (elided 16 frames from class _AssertionError, class _Timer, dart:async, dart:async-patch, and package:stack_trace)
+  //  ════════════════════════════════════════════════════════════════════════════════════════════════════
+  //
+  // We can't override the widgets binding so we can't really do anything about it. Maybe we can fix it
+  // in the android subproject.
+  // assert here so we at least fail early.
+  assert(window.physicalSize != Size.zero);
+
   group('test gpio on pi 4', () {
     testWidgets('test pi 4 general gpio', (_) async {
       final gpio = FlutterGpiod.instance;
