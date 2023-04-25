@@ -10,9 +10,8 @@ environment:
 
 dev_dependencies:
   lints: ^2.0.0
-  _ardera_libc_bindings_generator:
-    path: ../_ardera_libc_bindings_generator
   test: ^1.20.1
+  ffigen: ^7.2.10
 
 dependencies:
   build_runner: ^2.1.7
