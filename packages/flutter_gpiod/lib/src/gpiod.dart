@@ -171,7 +171,7 @@ void _eventIsolateEntry2(List args) {
 
   while (true) {
     ok = _syscall4(
-      libc.errno_location,
+      libc.errno_location(),
       libc.epoll_wait,
       epollFd,
       epollEvents,
@@ -190,7 +190,7 @@ void _eventIsolateEntry2(List args) {
       final epollEvent = epollEvents.elementAt(i);
       if (epollEvent.ref.events != 0) {
         ok = _syscall3(
-          libc.errno_location,
+          libc.errno_location(),
           libc.read,
           epollEvent.ref.data.u64,
           events.cast<ffi.Void>(),
