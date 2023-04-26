@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi';
 
@@ -5,6 +6,7 @@ import 'package:ffi/ffi.dart';
 
 import 'package:_ardera_common_libc_bindings/_ardera_common_libc_bindings.dart';
 import 'package:_ardera_common_libc_bindings/linux_error.dart';
+import 'package:_ardera_common_libc_bindings/epoll_event_loop.dart';
 
 /// A linux network interface.
 ///
@@ -154,7 +156,7 @@ enum CanModeFlag {
 
   /// CAN transceiver automatically calculates TDCV
   ///
-  /// (TDC = CAN FD Transmitter Delay Compensation)
+  /// (TDC = CAN FD Transmission Delay Compensation)
   ///
   /// ref:
   ///   https://elixir.bootlin.com/linux/v6.3/source/include/uapi/linux/can/netlink.h#L104
@@ -162,7 +164,7 @@ enum CanModeFlag {
 
   /// TDCV is manually set up by user
   ///
-  /// (TDC = CAN FD Transmitter Delay Compensation)
+  /// (TDC = CAN FD Transmission Delay Compensation)
   ///
   /// ref:
   ///   https://elixir.bootlin.com/linux/v6.3/source/include/uapi/linux/can/netlink.h#L105
@@ -268,6 +270,122 @@ class CanDeviceStats {
 
   /// CAN controller re-starts
   final int restarts;
+}
+
+/// CAN FD Transmission Delay Compensation parameters
+///
+/// At high bit rates, the propagation delay from the TX pin to the RX
+/// pin of the transceiver causes measurement errors: the sample point
+/// on the RX pin might occur on the previous bit.
+///
+/// To solve this issue, ISO 11898-1 introduces in section 11.3.3
+/// "Transmitter delay compensation" a SSP (Secondary Sample Point)
+/// equal to the distance from the start of the bit time on the TX pin
+/// to the actual measurement on the RX pin.
+///
+/// This structure contains the parameters to calculate that SSP.
+///
+/// -+----------- one bit ----------+-- TX pin
+///  |<--- Sample Point --->|
+///
+///                         --+----------- one bit ----------+-- RX pin
+///  |<-------- TDCV -------->|
+///                           |<------- TDCO ------->|
+///  |<----------- Secondary Sample Point ---------->|
+///
+/// To increase precision, contrary to the other bittiming parameters
+/// which are measured in time quanta, the TDC parameters are measured
+/// in clock periods (also referred as "minimum time quantum" in ISO
+/// 11898-1).
+///
+/// See:
+///   https://elixir.bootlin.com/linux/v6.3/source/include/linux/can/bittiming.h#L20
+class CanTransmissionDelayCompensation {
+  const CanTransmissionDelayCompensation({
+    required this.value,
+    required this.offset,
+    required this.window,
+  });
+
+  /// Transmission Delay Compensation Value.
+  ///
+  /// The time needed for the signal to propagate, i.e. the distance,
+  /// in clock periods, from the start of the bit on the TX pin to
+  /// when it is received on the RX pin.
+  ///
+  /// [value] depends on the controller mode:
+  ///   - If [CanModeFlag.tdcAuto] is set:
+  ///     The transceiver dynamically measures [value] for each
+  ///     transmitteed CAN FD frame and the value provided here
+  ///     should be ignored.
+  ///
+  ///   - If [CanModeFlag.tdcManual] is set:
+  ///     Use the fixed provided value.
+  final int value;
+
+  /// Transmission Delay Compensation Offset.
+  ///
+  /// Offset value, in clock periods, defining the distance between
+  /// the start of the bit reception on the RX pin of the transceiver
+  /// and the SSP position such that SSP = @tdcv + @tdco.
+  final int offset;
+
+  /// Transmission Delay Compensation Filter window.
+  ///
+  /// Defines the minimum value for the SSP position in clock periods.
+  ///
+  /// If the SSP position is less than [window], then no delay
+  /// compensations occur and the normal sampling point is used instead.
+  ///
+  /// The features is enabled if and only if [value] is set to zero
+  /// (automatic mode) and [window] is configured to a value
+  /// greater than [offset].
+  final int window;
+}
+
+/// CAN hardware-dependent constants for Transmission Delay Compensation.
+///
+/// See:
+///   https://elixir.bootlin.com/linux/v6.3/source/include/linux/can/bittiming.h#L84
+class CanTransmissionDelayCompensationLimits {
+  CanTransmissionDelayCompensationLimits({
+    required this.valueMin,
+    required this.valueMax,
+    required this.offsetMin,
+    required this.offsetMax,
+    required this.windowMin,
+    required this.windowMax,
+  });
+
+  /// [CanTransmissionDelayCompensation.value] minimum value.
+  ///
+  /// If the controller does not support manual mode ([CanModeFlag.tdcManual]),
+  /// then this value is ignored.
+  final int valueMin;
+
+  /// [CanTransmissionDelayCompensation.value] maximum value.
+  ///
+  /// If the controller does not support manual mode ([CanModeFlag.tdcManual]),
+  /// then this value is ignored.
+  final int valueMax;
+
+  /// [CanTransmissionDelayCompensation.offset] minimum value.
+  final int offsetMin;
+
+  /// [CanTransmissionDelayCompensation.offset] maximum value.
+  ///
+  /// Should not be zero.
+  final int offsetMax;
+
+  /// [CanTransmissionDelayCompensation.window] minimum value.
+  ///
+  /// If [windowMax] is zero, this value should be ignored.
+  final int windowMin;
+
+  /// [CanTransmissionDelayCompensation.window] maximum value.
+  ///
+  /// Should be set to zero if the controller does not support this feature.
+  final int windowMax;
 }
 
 /// CAN device
@@ -554,6 +672,9 @@ class CanSocket {
   final NetworkInterface netInterface;
   var _open = true;
 
+  var _listening = false;
+  FdListener? _fdListener;
+
   void write(CanFrame frame) {
     assert(_open);
     platformInterface.write(fd, frame);
@@ -563,6 +684,38 @@ class CanSocket {
     assert(_open);
     platformInterface.close(fd);
     _open = false;
+  }
+
+  Future<void> _listenForFrameAvailable(void Function() callback) async {
+    assert(!_listening);
+
+    _fdListener = await platformInterface.eventListener.add(
+      fd: fd,
+      events: {EpollFlag.inReady},
+      callback: (flags) {
+        callback();
+      },
+    );
+
+    _listening = true;
+  }
+
+  Stream<CanFrame>? _frames;
+  Stream<CanFrame> get frames {
+    if (_frames == null) {
+      late StreamController<CanFrame> controller;
+
+      controller = StreamController.broadcast(
+        onListen: () {
+          _listenForFrameAvailable(() {});
+        },
+        onCancel: () {},
+      );
+
+      _frames = controller.stream;
+    }
+
+    return _frames!;
   }
 }
 
@@ -618,6 +771,11 @@ class PlatformInterface {
     fd: openRtNetlinkSocket(),
     platformInterface: this,
   );
+
+  late final eventListener = EpollEventLoop(libc);
+
+  static const _bufferSize = 16384;
+  final _buffer = calloc.allocate<Void>(_bufferSize);
 
   PlatformInterface() : libc = LibC(DynamicLibrary.open('libc.so.6'));
 
@@ -721,7 +879,10 @@ class PlatformInterface {
   }
 
   void close(int fd) {
-    libc.close(fd);
+    final ok = libc.close(fd);
+    if (ok < 0) {
+      throw LinuxError('Could not close CAN socket fd.', 'close', libc.errno);
+    }
   }
 
   void write(int fd, CanFrame frame) {
@@ -764,6 +925,13 @@ class PlatformInterface {
     } else if (ok != CAN_MTU) {
       throw LinuxError('Incomplete write.', 'write');
     }
+  }
+
+  CanFrame? read(int fd) {
+    /// TODO: Implement
+    throw UnimplementedError();
+
+    // libc.read(fd, _buffer, _bufferSize);
   }
 
   /// Opens an rtnetlink socket for kernel network interface manipulation.

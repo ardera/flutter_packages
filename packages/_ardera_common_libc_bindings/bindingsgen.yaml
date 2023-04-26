@@ -8,6 +8,7 @@ ffigen-options:
       - 'sys/types.h'
       - 'sys/stat.h'
       - 'sys/epoll.h'
+      - 'sys/eventfd.h'
 
       # flutter_gpiod
       - 'linux/gpio.h'
@@ -39,6 +40,7 @@ ffigen-options:
       - open
       - close
       - read
+      - eventfd
 
       # linux_serial
       - cfgetispeed
@@ -166,8 +168,14 @@ ffigen-options:
     include:
       # open flags
       - 'O_.*'
-      # errno error codes & EPOLL operations
-      - 'E.*'
+      # errno error codes
+      - 'E[^_]*'
+      # epoll operations
+      - 'EPOLL_.*'
+      # epoll flags
+      - 'EPOLL[^_]*'
+      # eventfd flags
+      - 'EFD_.*'
 
       # flutter_gpiod
       - 'GPIO.*'

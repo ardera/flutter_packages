@@ -185,6 +185,22 @@ class LibCArm64 {
       .asFunction<int Function(int, ffi.Pointer<epoll_event>, int, int)>(
           isLeaf: true);
 
+  int eventfd(
+    int __count,
+    int __flags,
+  ) {
+    return _eventfd(
+      __count,
+      __flags,
+    );
+  }
+
+  late final _eventfdPtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.UnsignedInt, ffi.Int)>>(
+          'eventfd');
+  late final _eventfd =
+      _eventfdPtr.asFunction<int Function(int, int)>(isLeaf: true);
+
   int cfgetospeed(
     ffi.Pointer<termios> __termios_p,
   ) {
@@ -2916,6 +2932,12 @@ const int EPOLL_CTL_ADD = 1;
 const int EPOLL_CTL_DEL = 2;
 
 const int EPOLL_CTL_MOD = 3;
+
+const int EFD_SEMAPHORE = 1;
+
+const int EFD_CLOEXEC = 524288;
+
+const int EFD_NONBLOCK = 2048;
 
 const int GPIO_MAX_NAME_SIZE = 32;
 
