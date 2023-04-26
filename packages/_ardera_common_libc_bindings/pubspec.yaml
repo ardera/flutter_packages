@@ -17,3 +17,4 @@ dependencies:
   build_runner: ^2.1.7
   ffi: ^2.0.1
   meta: ^1.7.0
+  tuple: ^2.0.1

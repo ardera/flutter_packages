@@ -411,6 +411,66 @@ class LibCArm64 {
       int Function(int, ffi.Pointer<sockaddr>,
           ffi.Pointer<ffi.UnsignedInt>)>(isLeaf: true);
 
+  int send(
+    int __fd,
+    ffi.Pointer<ffi.Void> __buf,
+    int __n,
+    int __flags,
+  ) {
+    return _send(
+      __fd,
+      __buf,
+      __n,
+      __flags,
+    );
+  }
+
+  late final _sendPtr = _lookup<
+      ffi.NativeFunction<
+          pkg_ssizet.SSize Function(
+              ffi.Int, ffi.Pointer<ffi.Void>, ffi.Int, ffi.Int)>>('send');
+  late final _send =
+      _sendPtr.asFunction<int Function(int, ffi.Pointer<ffi.Void>, int, int)>(
+          isLeaf: true);
+
+  int sendmsg(
+    int __fd,
+    ffi.Pointer<msghdr> __message,
+    int __flags,
+  ) {
+    return _sendmsg(
+      __fd,
+      __message,
+      __flags,
+    );
+  }
+
+  late final _sendmsgPtr = _lookup<
+      ffi.NativeFunction<
+          pkg_ssizet.SSize Function(
+              ffi.Int, ffi.Pointer<msghdr>, ffi.Int)>>('sendmsg');
+  late final _sendmsg = _sendmsgPtr
+      .asFunction<int Function(int, ffi.Pointer<msghdr>, int)>(isLeaf: true);
+
+  int recvmsg(
+    int __fd,
+    ffi.Pointer<msghdr> __message,
+    int __flags,
+  ) {
+    return _recvmsg(
+      __fd,
+      __message,
+      __flags,
+    );
+  }
+
+  late final _recvmsgPtr = _lookup<
+      ffi.NativeFunction<
+          pkg_ssizet.SSize Function(
+              ffi.Int, ffi.Pointer<msghdr>, ffi.Int)>>('recvmsg');
+  late final _recvmsg = _recvmsgPtr
+      .asFunction<int Function(int, ffi.Pointer<msghdr>, int)>(isLeaf: true);
+
   int setsockopt(
     int __fd,
     int __level,
@@ -1049,12 +1109,39 @@ class spi_ioc_transfer extends ffi.Struct {
   external int pad;
 }
 
+class iovec extends ffi.Struct {
+  external ffi.Pointer<ffi.Void> iov_base;
+
+  @ffi.Int()
+  external int iov_len;
+}
+
 class sockaddr extends ffi.Struct {
   @ffi.UnsignedShort()
   external int sa_family;
 
   @ffi.Array.multi([14])
   external ffi.Array<ffi.Char> sa_data;
+}
+
+class msghdr extends ffi.Struct {
+  external ffi.Pointer<ffi.Void> msg_name;
+
+  @ffi.UnsignedInt()
+  external int msg_namelen;
+
+  external ffi.Pointer<iovec> msg_iov;
+
+  @ffi.Int()
+  external int msg_iovlen;
+
+  external ffi.Pointer<ffi.Void> msg_control;
+
+  @ffi.Int()
+  external int msg_controllen;
+
+  @ffi.Int()
+  external int msg_flags;
 }
 
 class if_nameindex extends ffi.Struct {
@@ -1286,6 +1373,51 @@ class nlmsghdr extends ffi.Struct {
   external int nlmsg_pid;
 }
 
+class nlmsgerr extends ffi.Struct {
+  @ffi.Int()
+  external int error;
+
+  external nlmsghdr msg;
+}
+
+class rtattr extends ffi.Struct {
+  @ffi.UnsignedShort()
+  external int rta_len;
+
+  @ffi.UnsignedShort()
+  external int rta_type;
+}
+
+/// Definitions used in routing table administration.
+class rtmsg extends ffi.Struct {
+  @ffi.UnsignedChar()
+  external int rtm_family;
+
+  @ffi.UnsignedChar()
+  external int rtm_dst_len;
+
+  @ffi.UnsignedChar()
+  external int rtm_src_len;
+
+  @ffi.UnsignedChar()
+  external int rtm_tos;
+
+  @ffi.UnsignedChar()
+  external int rtm_table;
+
+  @ffi.UnsignedChar()
+  external int rtm_protocol;
+
+  @ffi.UnsignedChar()
+  external int rtm_scope;
+
+  @ffi.UnsignedChar()
+  external int rtm_type;
+
+  @ffi.UnsignedInt()
+  external int rtm_flags;
+}
+
 /// Link layer specific messages.
 class ifinfomsg extends ffi.Struct {
   @ffi.UnsignedChar()
@@ -1420,6 +1552,858 @@ const int GPIOLINE_CHANGED_REQUESTED = 1;
 const int GPIOLINE_CHANGED_RELEASED = 2;
 
 const int GPIOLINE_CHANGED_CONFIG = 3;
+
+const int IFLA_UNSPEC = 0;
+
+const int IFLA_ADDRESS = 1;
+
+const int IFLA_BROADCAST = 2;
+
+const int IFLA_IFNAME = 3;
+
+const int IFLA_MTU = 4;
+
+const int IFLA_LINK = 5;
+
+const int IFLA_QDISC = 6;
+
+const int IFLA_STATS = 7;
+
+const int IFLA_COST = 8;
+
+const int IFLA_PRIORITY = 9;
+
+const int IFLA_MASTER = 10;
+
+const int IFLA_WIRELESS = 11;
+
+const int IFLA_PROTINFO = 12;
+
+const int IFLA_TXQLEN = 13;
+
+const int IFLA_MAP = 14;
+
+const int IFLA_WEIGHT = 15;
+
+const int IFLA_OPERSTATE = 16;
+
+const int IFLA_LINKMODE = 17;
+
+const int IFLA_LINKINFO = 18;
+
+const int IFLA_NET_NS_PID = 19;
+
+const int IFLA_IFALIAS = 20;
+
+const int IFLA_NUM_VF = 21;
+
+const int IFLA_VFINFO_LIST = 22;
+
+const int IFLA_STATS64 = 23;
+
+const int IFLA_VF_PORTS = 24;
+
+const int IFLA_PORT_SELF = 25;
+
+const int IFLA_AF_SPEC = 26;
+
+const int IFLA_GROUP = 27;
+
+const int IFLA_NET_NS_FD = 28;
+
+const int IFLA_EXT_MASK = 29;
+
+const int IFLA_PROMISCUITY = 30;
+
+const int IFLA_NUM_TX_QUEUES = 31;
+
+const int IFLA_NUM_RX_QUEUES = 32;
+
+const int IFLA_CARRIER = 33;
+
+const int IFLA_PHYS_PORT_ID = 34;
+
+const int IFLA_CARRIER_CHANGES = 35;
+
+const int IFLA_PHYS_SWITCH_ID = 36;
+
+const int IFLA_LINK_NETNSID = 37;
+
+const int IFLA_PHYS_PORT_NAME = 38;
+
+const int IFLA_PROTO_DOWN = 39;
+
+const int IFLA_GSO_MAX_SEGS = 40;
+
+const int IFLA_GSO_MAX_SIZE = 41;
+
+const int IFLA_PAD = 42;
+
+const int IFLA_XDP = 43;
+
+const int IFLA_EVENT = 44;
+
+const int IFLA_NEW_NETNSID = 45;
+
+const int IFLA_IF_NETNSID = 46;
+
+const int IFLA_TARGET_NETNSID = 46;
+
+const int IFLA_CARRIER_UP_COUNT = 47;
+
+const int IFLA_CARRIER_DOWN_COUNT = 48;
+
+const int IFLA_NEW_IFINDEX = 49;
+
+const int IFLA_MIN_MTU = 50;
+
+const int IFLA_MAX_MTU = 51;
+
+const int IFLA_PROP_LIST = 52;
+
+const int IFLA_ALT_IFNAME = 53;
+
+const int IFLA_PERM_ADDRESS = 54;
+
+const int IFLA_PROTO_DOWN_REASON = 55;
+
+const int IFLA_PARENT_DEV_NAME = 56;
+
+const int IFLA_PARENT_DEV_BUS_NAME = 57;
+
+const int IFLA_GRO_MAX_SIZE = 58;
+
+const int IFLA_TSO_MAX_SIZE = 59;
+
+const int IFLA_TSO_MAX_SEGS = 60;
+
+const int IFLA_ALLMULTI = 61;
+
+const int IFLA_PROTO_DOWN_REASON_UNSPEC = 0;
+
+const int IFLA_PROTO_DOWN_REASON_MASK = 1;
+
+const int IFLA_PROTO_DOWN_REASON_VALUE = 2;
+
+const int IFLA_PROTO_DOWN_REASON_MAX = 2;
+
+const int IFLA_INET_UNSPEC = 0;
+
+const int IFLA_INET_CONF = 1;
+
+const int IFLA_INET6_UNSPEC = 0;
+
+const int IFLA_INET6_FLAGS = 1;
+
+const int IFLA_INET6_CONF = 2;
+
+const int IFLA_INET6_STATS = 3;
+
+const int IFLA_INET6_MCAST = 4;
+
+const int IFLA_INET6_CACHEINFO = 5;
+
+const int IFLA_INET6_ICMP6STATS = 6;
+
+const int IFLA_INET6_TOKEN = 7;
+
+const int IFLA_INET6_ADDR_GEN_MODE = 8;
+
+const int IFLA_INET6_RA_MTU = 9;
+
+const int IFLA_BR_UNSPEC = 0;
+
+const int IFLA_BR_FORWARD_DELAY = 1;
+
+const int IFLA_BR_HELLO_TIME = 2;
+
+const int IFLA_BR_MAX_AGE = 3;
+
+const int IFLA_BR_AGEING_TIME = 4;
+
+const int IFLA_BR_STP_STATE = 5;
+
+const int IFLA_BR_PRIORITY = 6;
+
+const int IFLA_BR_VLAN_FILTERING = 7;
+
+const int IFLA_BR_VLAN_PROTOCOL = 8;
+
+const int IFLA_BR_GROUP_FWD_MASK = 9;
+
+const int IFLA_BR_ROOT_ID = 10;
+
+const int IFLA_BR_BRIDGE_ID = 11;
+
+const int IFLA_BR_ROOT_PORT = 12;
+
+const int IFLA_BR_ROOT_PATH_COST = 13;
+
+const int IFLA_BR_TOPOLOGY_CHANGE = 14;
+
+const int IFLA_BR_TOPOLOGY_CHANGE_DETECTED = 15;
+
+const int IFLA_BR_HELLO_TIMER = 16;
+
+const int IFLA_BR_TCN_TIMER = 17;
+
+const int IFLA_BR_TOPOLOGY_CHANGE_TIMER = 18;
+
+const int IFLA_BR_GC_TIMER = 19;
+
+const int IFLA_BR_GROUP_ADDR = 20;
+
+const int IFLA_BR_FDB_FLUSH = 21;
+
+const int IFLA_BR_MCAST_ROUTER = 22;
+
+const int IFLA_BR_MCAST_SNOOPING = 23;
+
+const int IFLA_BR_MCAST_QUERY_USE_IFADDR = 24;
+
+const int IFLA_BR_MCAST_QUERIER = 25;
+
+const int IFLA_BR_MCAST_HASH_ELASTICITY = 26;
+
+const int IFLA_BR_MCAST_HASH_MAX = 27;
+
+const int IFLA_BR_MCAST_LAST_MEMBER_CNT = 28;
+
+const int IFLA_BR_MCAST_STARTUP_QUERY_CNT = 29;
+
+const int IFLA_BR_MCAST_LAST_MEMBER_INTVL = 30;
+
+const int IFLA_BR_MCAST_MEMBERSHIP_INTVL = 31;
+
+const int IFLA_BR_MCAST_QUERIER_INTVL = 32;
+
+const int IFLA_BR_MCAST_QUERY_INTVL = 33;
+
+const int IFLA_BR_MCAST_QUERY_RESPONSE_INTVL = 34;
+
+const int IFLA_BR_MCAST_STARTUP_QUERY_INTVL = 35;
+
+const int IFLA_BR_NF_CALL_IPTABLES = 36;
+
+const int IFLA_BR_NF_CALL_IP6TABLES = 37;
+
+const int IFLA_BR_NF_CALL_ARPTABLES = 38;
+
+const int IFLA_BR_VLAN_DEFAULT_PVID = 39;
+
+const int IFLA_BR_PAD = 40;
+
+const int IFLA_BR_VLAN_STATS_ENABLED = 41;
+
+const int IFLA_BR_MCAST_STATS_ENABLED = 42;
+
+const int IFLA_BR_MCAST_IGMP_VERSION = 43;
+
+const int IFLA_BR_MCAST_MLD_VERSION = 44;
+
+const int IFLA_BR_VLAN_STATS_PER_PORT = 45;
+
+const int IFLA_BR_MULTI_BOOLOPT = 46;
+
+const int IFLA_BR_MCAST_QUERIER_STATE = 47;
+
+const int IFLA_BRPORT_UNSPEC = 0;
+
+const int IFLA_BRPORT_STATE = 1;
+
+const int IFLA_BRPORT_PRIORITY = 2;
+
+const int IFLA_BRPORT_COST = 3;
+
+const int IFLA_BRPORT_MODE = 4;
+
+const int IFLA_BRPORT_GUARD = 5;
+
+const int IFLA_BRPORT_PROTECT = 6;
+
+const int IFLA_BRPORT_FAST_LEAVE = 7;
+
+const int IFLA_BRPORT_LEARNING = 8;
+
+const int IFLA_BRPORT_UNICAST_FLOOD = 9;
+
+const int IFLA_BRPORT_PROXYARP = 10;
+
+const int IFLA_BRPORT_LEARNING_SYNC = 11;
+
+const int IFLA_BRPORT_PROXYARP_WIFI = 12;
+
+const int IFLA_BRPORT_ROOT_ID = 13;
+
+const int IFLA_BRPORT_BRIDGE_ID = 14;
+
+const int IFLA_BRPORT_DESIGNATED_PORT = 15;
+
+const int IFLA_BRPORT_DESIGNATED_COST = 16;
+
+const int IFLA_BRPORT_ID = 17;
+
+const int IFLA_BRPORT_NO = 18;
+
+const int IFLA_BRPORT_TOPOLOGY_CHANGE_ACK = 19;
+
+const int IFLA_BRPORT_CONFIG_PENDING = 20;
+
+const int IFLA_BRPORT_MESSAGE_AGE_TIMER = 21;
+
+const int IFLA_BRPORT_FORWARD_DELAY_TIMER = 22;
+
+const int IFLA_BRPORT_HOLD_TIMER = 23;
+
+const int IFLA_BRPORT_FLUSH = 24;
+
+const int IFLA_BRPORT_MULTICAST_ROUTER = 25;
+
+const int IFLA_BRPORT_PAD = 26;
+
+const int IFLA_BRPORT_MCAST_FLOOD = 27;
+
+const int IFLA_BRPORT_MCAST_TO_UCAST = 28;
+
+const int IFLA_BRPORT_VLAN_TUNNEL = 29;
+
+const int IFLA_BRPORT_BCAST_FLOOD = 30;
+
+const int IFLA_BRPORT_GROUP_FWD_MASK = 31;
+
+const int IFLA_BRPORT_NEIGH_SUPPRESS = 32;
+
+const int IFLA_BRPORT_ISOLATED = 33;
+
+const int IFLA_BRPORT_BACKUP_PORT = 34;
+
+const int IFLA_BRPORT_MRP_RING_OPEN = 35;
+
+const int IFLA_BRPORT_MRP_IN_OPEN = 36;
+
+const int IFLA_BRPORT_MCAST_EHT_HOSTS_LIMIT = 37;
+
+const int IFLA_BRPORT_MCAST_EHT_HOSTS_CNT = 38;
+
+const int IFLA_BRPORT_LOCKED = 39;
+
+const int IFLA_INFO_UNSPEC = 0;
+
+const int IFLA_INFO_KIND = 1;
+
+const int IFLA_INFO_DATA = 2;
+
+const int IFLA_INFO_XSTATS = 3;
+
+const int IFLA_INFO_SLAVE_KIND = 4;
+
+const int IFLA_INFO_SLAVE_DATA = 5;
+
+const int IFLA_VLAN_UNSPEC = 0;
+
+const int IFLA_VLAN_ID = 1;
+
+const int IFLA_VLAN_FLAGS = 2;
+
+const int IFLA_VLAN_EGRESS_QOS = 3;
+
+const int IFLA_VLAN_INGRESS_QOS = 4;
+
+const int IFLA_VLAN_PROTOCOL = 5;
+
+const int IFLA_VLAN_QOS_UNSPEC = 0;
+
+const int IFLA_VLAN_QOS_MAPPING = 1;
+
+const int IFLA_MACVLAN_UNSPEC = 0;
+
+const int IFLA_MACVLAN_MODE = 1;
+
+const int IFLA_MACVLAN_FLAGS = 2;
+
+const int IFLA_MACVLAN_MACADDR_MODE = 3;
+
+const int IFLA_MACVLAN_MACADDR = 4;
+
+const int IFLA_MACVLAN_MACADDR_DATA = 5;
+
+const int IFLA_MACVLAN_MACADDR_COUNT = 6;
+
+const int IFLA_MACVLAN_BC_QUEUE_LEN = 7;
+
+const int IFLA_MACVLAN_BC_QUEUE_LEN_USED = 8;
+
+const int IFLA_VRF_UNSPEC = 0;
+
+const int IFLA_VRF_TABLE = 1;
+
+const int IFLA_VRF_PORT_UNSPEC = 0;
+
+const int IFLA_VRF_PORT_TABLE = 1;
+
+const int IFLA_MACSEC_UNSPEC = 0;
+
+const int IFLA_MACSEC_SCI = 1;
+
+const int IFLA_MACSEC_PORT = 2;
+
+const int IFLA_MACSEC_ICV_LEN = 3;
+
+const int IFLA_MACSEC_CIPHER_SUITE = 4;
+
+const int IFLA_MACSEC_WINDOW = 5;
+
+const int IFLA_MACSEC_ENCODING_SA = 6;
+
+const int IFLA_MACSEC_ENCRYPT = 7;
+
+const int IFLA_MACSEC_PROTECT = 8;
+
+const int IFLA_MACSEC_INC_SCI = 9;
+
+const int IFLA_MACSEC_ES = 10;
+
+const int IFLA_MACSEC_SCB = 11;
+
+const int IFLA_MACSEC_REPLAY_PROTECT = 12;
+
+const int IFLA_MACSEC_VALIDATION = 13;
+
+const int IFLA_MACSEC_PAD = 14;
+
+const int IFLA_MACSEC_OFFLOAD = 15;
+
+const int IFLA_XFRM_UNSPEC = 0;
+
+const int IFLA_XFRM_LINK = 1;
+
+const int IFLA_XFRM_IF_ID = 2;
+
+const int IFLA_XFRM_COLLECT_METADATA = 3;
+
+const int IFLA_IPVLAN_UNSPEC = 0;
+
+const int IFLA_IPVLAN_MODE = 1;
+
+const int IFLA_IPVLAN_FLAGS = 2;
+
+const int IFLA_VXLAN_UNSPEC = 0;
+
+const int IFLA_VXLAN_ID = 1;
+
+const int IFLA_VXLAN_GROUP = 2;
+
+const int IFLA_VXLAN_LINK = 3;
+
+const int IFLA_VXLAN_LOCAL = 4;
+
+const int IFLA_VXLAN_TTL = 5;
+
+const int IFLA_VXLAN_TOS = 6;
+
+const int IFLA_VXLAN_LEARNING = 7;
+
+const int IFLA_VXLAN_AGEING = 8;
+
+const int IFLA_VXLAN_LIMIT = 9;
+
+const int IFLA_VXLAN_PORT_RANGE = 10;
+
+const int IFLA_VXLAN_PROXY = 11;
+
+const int IFLA_VXLAN_RSC = 12;
+
+const int IFLA_VXLAN_L2MISS = 13;
+
+const int IFLA_VXLAN_L3MISS = 14;
+
+const int IFLA_VXLAN_PORT = 15;
+
+const int IFLA_VXLAN_GROUP6 = 16;
+
+const int IFLA_VXLAN_LOCAL6 = 17;
+
+const int IFLA_VXLAN_UDP_CSUM = 18;
+
+const int IFLA_VXLAN_UDP_ZERO_CSUM6_TX = 19;
+
+const int IFLA_VXLAN_UDP_ZERO_CSUM6_RX = 20;
+
+const int IFLA_VXLAN_REMCSUM_TX = 21;
+
+const int IFLA_VXLAN_REMCSUM_RX = 22;
+
+const int IFLA_VXLAN_GBP = 23;
+
+const int IFLA_VXLAN_REMCSUM_NOPARTIAL = 24;
+
+const int IFLA_VXLAN_COLLECT_METADATA = 25;
+
+const int IFLA_VXLAN_LABEL = 26;
+
+const int IFLA_VXLAN_GPE = 27;
+
+const int IFLA_VXLAN_TTL_INHERIT = 28;
+
+const int IFLA_VXLAN_DF = 29;
+
+const int IFLA_VXLAN_VNIFILTER = 30;
+
+const int IFLA_GENEVE_UNSPEC = 0;
+
+const int IFLA_GENEVE_ID = 1;
+
+const int IFLA_GENEVE_REMOTE = 2;
+
+const int IFLA_GENEVE_TTL = 3;
+
+const int IFLA_GENEVE_TOS = 4;
+
+const int IFLA_GENEVE_PORT = 5;
+
+const int IFLA_GENEVE_COLLECT_METADATA = 6;
+
+const int IFLA_GENEVE_REMOTE6 = 7;
+
+const int IFLA_GENEVE_UDP_CSUM = 8;
+
+const int IFLA_GENEVE_UDP_ZERO_CSUM6_TX = 9;
+
+const int IFLA_GENEVE_UDP_ZERO_CSUM6_RX = 10;
+
+const int IFLA_GENEVE_LABEL = 11;
+
+const int IFLA_GENEVE_TTL_INHERIT = 12;
+
+const int IFLA_GENEVE_DF = 13;
+
+const int IFLA_GENEVE_INNER_PROTO_INHERIT = 14;
+
+const int IFLA_BAREUDP_UNSPEC = 0;
+
+const int IFLA_BAREUDP_PORT = 1;
+
+const int IFLA_BAREUDP_ETHERTYPE = 2;
+
+const int IFLA_BAREUDP_SRCPORT_MIN = 3;
+
+const int IFLA_BAREUDP_MULTIPROTO_MODE = 4;
+
+const int IFLA_PPP_UNSPEC = 0;
+
+const int IFLA_PPP_DEV_FD = 1;
+
+const int IFLA_GTP_UNSPEC = 0;
+
+const int IFLA_GTP_FD0 = 1;
+
+const int IFLA_GTP_FD1 = 2;
+
+const int IFLA_GTP_PDP_HASHSIZE = 3;
+
+const int IFLA_GTP_ROLE = 4;
+
+const int IFLA_GTP_CREATE_SOCKETS = 5;
+
+const int IFLA_GTP_RESTART_COUNT = 6;
+
+const int IFLA_BOND_UNSPEC = 0;
+
+const int IFLA_BOND_MODE = 1;
+
+const int IFLA_BOND_ACTIVE_SLAVE = 2;
+
+const int IFLA_BOND_MIIMON = 3;
+
+const int IFLA_BOND_UPDELAY = 4;
+
+const int IFLA_BOND_DOWNDELAY = 5;
+
+const int IFLA_BOND_USE_CARRIER = 6;
+
+const int IFLA_BOND_ARP_INTERVAL = 7;
+
+const int IFLA_BOND_ARP_IP_TARGET = 8;
+
+const int IFLA_BOND_ARP_VALIDATE = 9;
+
+const int IFLA_BOND_ARP_ALL_TARGETS = 10;
+
+const int IFLA_BOND_PRIMARY = 11;
+
+const int IFLA_BOND_PRIMARY_RESELECT = 12;
+
+const int IFLA_BOND_FAIL_OVER_MAC = 13;
+
+const int IFLA_BOND_XMIT_HASH_POLICY = 14;
+
+const int IFLA_BOND_RESEND_IGMP = 15;
+
+const int IFLA_BOND_NUM_PEER_NOTIF = 16;
+
+const int IFLA_BOND_ALL_SLAVES_ACTIVE = 17;
+
+const int IFLA_BOND_MIN_LINKS = 18;
+
+const int IFLA_BOND_LP_INTERVAL = 19;
+
+const int IFLA_BOND_PACKETS_PER_SLAVE = 20;
+
+const int IFLA_BOND_AD_LACP_RATE = 21;
+
+const int IFLA_BOND_AD_SELECT = 22;
+
+const int IFLA_BOND_AD_INFO = 23;
+
+const int IFLA_BOND_AD_ACTOR_SYS_PRIO = 24;
+
+const int IFLA_BOND_AD_USER_PORT_KEY = 25;
+
+const int IFLA_BOND_AD_ACTOR_SYSTEM = 26;
+
+const int IFLA_BOND_TLB_DYNAMIC_LB = 27;
+
+const int IFLA_BOND_PEER_NOTIF_DELAY = 28;
+
+const int IFLA_BOND_AD_LACP_ACTIVE = 29;
+
+const int IFLA_BOND_MISSED_MAX = 30;
+
+const int IFLA_BOND_NS_IP6_TARGET = 31;
+
+const int IFLA_BOND_AD_INFO_UNSPEC = 0;
+
+const int IFLA_BOND_AD_INFO_AGGREGATOR = 1;
+
+const int IFLA_BOND_AD_INFO_NUM_PORTS = 2;
+
+const int IFLA_BOND_AD_INFO_ACTOR_KEY = 3;
+
+const int IFLA_BOND_AD_INFO_PARTNER_KEY = 4;
+
+const int IFLA_BOND_AD_INFO_PARTNER_MAC = 5;
+
+const int IFLA_BOND_SLAVE_UNSPEC = 0;
+
+const int IFLA_BOND_SLAVE_STATE = 1;
+
+const int IFLA_BOND_SLAVE_MII_STATUS = 2;
+
+const int IFLA_BOND_SLAVE_LINK_FAILURE_COUNT = 3;
+
+const int IFLA_BOND_SLAVE_PERM_HWADDR = 4;
+
+const int IFLA_BOND_SLAVE_QUEUE_ID = 5;
+
+const int IFLA_BOND_SLAVE_AD_AGGREGATOR_ID = 6;
+
+const int IFLA_BOND_SLAVE_AD_ACTOR_OPER_PORT_STATE = 7;
+
+const int IFLA_BOND_SLAVE_AD_PARTNER_OPER_PORT_STATE = 8;
+
+const int IFLA_BOND_SLAVE_PRIO = 9;
+
+const int IFLA_VF_INFO_UNSPEC = 0;
+
+const int IFLA_VF_INFO = 1;
+
+const int IFLA_VF_UNSPEC = 0;
+
+const int IFLA_VF_MAC = 1;
+
+const int IFLA_VF_VLAN = 2;
+
+const int IFLA_VF_TX_RATE = 3;
+
+const int IFLA_VF_SPOOFCHK = 4;
+
+const int IFLA_VF_LINK_STATE = 5;
+
+const int IFLA_VF_RATE = 6;
+
+const int IFLA_VF_RSS_QUERY_EN = 7;
+
+const int IFLA_VF_STATS = 8;
+
+const int IFLA_VF_TRUST = 9;
+
+const int IFLA_VF_IB_NODE_GUID = 10;
+
+const int IFLA_VF_IB_PORT_GUID = 11;
+
+const int IFLA_VF_VLAN_LIST = 12;
+
+const int IFLA_VF_BROADCAST = 13;
+
+const int IFLA_VF_VLAN_INFO_UNSPEC = 0;
+
+const int IFLA_VF_VLAN_INFO = 1;
+
+const int IFLA_VF_LINK_STATE_AUTO = 0;
+
+const int IFLA_VF_LINK_STATE_ENABLE = 1;
+
+const int IFLA_VF_LINK_STATE_DISABLE = 2;
+
+const int IFLA_VF_STATS_RX_PACKETS = 0;
+
+const int IFLA_VF_STATS_TX_PACKETS = 1;
+
+const int IFLA_VF_STATS_RX_BYTES = 2;
+
+const int IFLA_VF_STATS_TX_BYTES = 3;
+
+const int IFLA_VF_STATS_BROADCAST = 4;
+
+const int IFLA_VF_STATS_MULTICAST = 5;
+
+const int IFLA_VF_STATS_PAD = 6;
+
+const int IFLA_VF_STATS_RX_DROPPED = 7;
+
+const int IFLA_VF_STATS_TX_DROPPED = 8;
+
+const int IFLA_VF_PORT_UNSPEC = 0;
+
+const int IFLA_VF_PORT = 1;
+
+const int IFLA_PORT_UNSPEC = 0;
+
+const int IFLA_PORT_VF = 1;
+
+const int IFLA_PORT_PROFILE = 2;
+
+const int IFLA_PORT_VSI_TYPE = 3;
+
+const int IFLA_PORT_INSTANCE_UUID = 4;
+
+const int IFLA_PORT_HOST_UUID = 5;
+
+const int IFLA_PORT_REQUEST = 6;
+
+const int IFLA_PORT_RESPONSE = 7;
+
+const int IFLA_IPOIB_UNSPEC = 0;
+
+const int IFLA_IPOIB_PKEY = 1;
+
+const int IFLA_IPOIB_MODE = 2;
+
+const int IFLA_IPOIB_UMCAST = 3;
+
+const int IFLA_HSR_UNSPEC = 0;
+
+const int IFLA_HSR_SLAVE1 = 1;
+
+const int IFLA_HSR_SLAVE2 = 2;
+
+const int IFLA_HSR_MULTICAST_SPEC = 3;
+
+const int IFLA_HSR_SUPERVISION_ADDR = 4;
+
+const int IFLA_HSR_SEQ_NR = 5;
+
+const int IFLA_HSR_VERSION = 6;
+
+const int IFLA_HSR_PROTOCOL = 7;
+
+const int IFLA_STATS_UNSPEC = 0;
+
+const int IFLA_STATS_LINK_64 = 1;
+
+const int IFLA_STATS_LINK_XSTATS = 2;
+
+const int IFLA_STATS_LINK_XSTATS_SLAVE = 3;
+
+const int IFLA_STATS_LINK_OFFLOAD_XSTATS = 4;
+
+const int IFLA_STATS_AF_SPEC = 5;
+
+const int IFLA_STATS_GETSET_UNSPEC = 0;
+
+const int IFLA_STATS_GET_FILTERS = 1;
+
+const int IFLA_STATS_SET_OFFLOAD_XSTATS_L3_STATS = 2;
+
+const int IFLA_OFFLOAD_XSTATS_UNSPEC = 0;
+
+const int IFLA_OFFLOAD_XSTATS_CPU_HIT = 1;
+
+const int IFLA_OFFLOAD_XSTATS_HW_S_INFO = 2;
+
+const int IFLA_OFFLOAD_XSTATS_L3_STATS = 3;
+
+const int IFLA_OFFLOAD_XSTATS_HW_S_INFO_UNSPEC = 0;
+
+const int IFLA_OFFLOAD_XSTATS_HW_S_INFO_REQUEST = 1;
+
+const int IFLA_OFFLOAD_XSTATS_HW_S_INFO_USED = 2;
+
+const int IFLA_XDP_UNSPEC = 0;
+
+const int IFLA_XDP_FD = 1;
+
+const int IFLA_XDP_ATTACHED = 2;
+
+const int IFLA_XDP_FLAGS = 3;
+
+const int IFLA_XDP_PROG_ID = 4;
+
+const int IFLA_XDP_DRV_PROG_ID = 5;
+
+const int IFLA_XDP_SKB_PROG_ID = 6;
+
+const int IFLA_XDP_HW_PROG_ID = 7;
+
+const int IFLA_XDP_EXPECTED_FD = 8;
+
+const int IFLA_EVENT_NONE = 0;
+
+const int IFLA_EVENT_REBOOT = 1;
+
+const int IFLA_EVENT_FEATURES = 2;
+
+const int IFLA_EVENT_BONDING_FAILOVER = 3;
+
+const int IFLA_EVENT_NOTIFY_PEERS = 4;
+
+const int IFLA_EVENT_IGMP_RESEND = 5;
+
+const int IFLA_EVENT_BONDING_OPTIONS = 6;
+
+const int IFLA_TUN_UNSPEC = 0;
+
+const int IFLA_TUN_OWNER = 1;
+
+const int IFLA_TUN_GROUP = 2;
+
+const int IFLA_TUN_TYPE = 3;
+
+const int IFLA_TUN_PI = 4;
+
+const int IFLA_TUN_VNET_HDR = 5;
+
+const int IFLA_TUN_PERSIST = 6;
+
+const int IFLA_TUN_MULTI_QUEUE = 7;
+
+const int IFLA_TUN_NUM_QUEUES = 8;
+
+const int IFLA_TUN_NUM_DISABLED_QUEUES = 9;
+
+const int IFLA_RMNET_UNSPEC = 0;
+
+const int IFLA_RMNET_MUX_ID = 1;
+
+const int IFLA_RMNET_FLAGS = 2;
+
+const int IFLA_MCTP_UNSPEC = 0;
+
+const int IFLA_MCTP_NET = 1;
+
+const int IFLA_DSA_UNSPEC = 0;
+
+const int IFLA_DSA_MASTER = 1;
 
 const int IFLA_CAN_UNSPEC = 0;
 
@@ -2393,6 +3377,48 @@ const int SOL_MCTP = 285;
 
 const int SOL_SMC = 286;
 
+const int MSG_OOB = 1;
+
+const int MSG_PEEK = 2;
+
+const int MSG_DONTROUTE = 4;
+
+const int MSG_CTRUNC = 8;
+
+const int MSG_PROXY = 16;
+
+const int MSG_TRUNC = 32;
+
+const int MSG_DONTWAIT = 64;
+
+const int MSG_EOR = 128;
+
+const int MSG_WAITALL = 256;
+
+const int MSG_FIN = 512;
+
+const int MSG_SYN = 1024;
+
+const int MSG_CONFIRM = 2048;
+
+const int MSG_RST = 4096;
+
+const int MSG_ERRQUEUE = 8192;
+
+const int MSG_NOSIGNAL = 16384;
+
+const int MSG_MORE = 32768;
+
+const int MSG_WAITFORONE = 65536;
+
+const int MSG_BATCH = 262144;
+
+const int MSG_ZEROCOPY = 67108864;
+
+const int MSG_FASTOPEN = 536870912;
+
+const int MSG_CMSG_CLOEXEC = 1073741824;
+
 const int SIOCSPGRP = 35074;
 
 const int SIOCGPGRP = 35076;
@@ -2567,6 +3593,38 @@ const int SO_SNDTIMEO = 21;
 
 const int IF_NAMESIZE = 16;
 
+const int IFF_UP = 1;
+
+const int IFF_BROADCAST = 2;
+
+const int IFF_DEBUG = 4;
+
+const int IFF_LOOPBACK = 8;
+
+const int IFF_POINTOPOINT = 16;
+
+const int IFF_NOTRAILERS = 32;
+
+const int IFF_RUNNING = 64;
+
+const int IFF_NOARP = 128;
+
+const int IFF_PROMISC = 256;
+
+const int IFF_ALLMULTI = 512;
+
+const int IFF_MASTER = 1024;
+
+const int IFF_SLAVE = 2048;
+
+const int IFF_MULTICAST = 4096;
+
+const int IFF_PORTSEL = 8192;
+
+const int IFF_AUTOMEDIA = 16384;
+
+const int IFF_DYNAMIC = 32768;
+
 const int IFNAMSIZ = 16;
 
 const int SOCK_SNDBUF_LOCK = 1;
@@ -2723,6 +3781,20 @@ const int NLM_F_CAPPED = 256;
 
 const int NLM_F_ACK_TLVS = 512;
 
+const int NLMSG_ALIGNTO = 4;
+
+const int NLMSG_HDRLEN = 16;
+
+const int NLMSG_NOOP = 1;
+
+const int NLMSG_ERROR = 2;
+
+const int NLMSG_DONE = 3;
+
+const int NLMSG_OVERRUN = 4;
+
+const int NLMSG_MIN_TYPE = 16;
+
 const int NETLINK_ADD_MEMBERSHIP = 1;
 
 const int NETLINK_DROP_MEMBERSHIP = 2;
@@ -2747,7 +3819,273 @@ const int NETLINK_EXT_ACK = 11;
 
 const int NETLINK_GET_STRICT_CHK = 12;
 
+const int IFLA_COST1 = 8;
+
+const int IFLA_PRIORITY1 = 9;
+
+const int IFLA_MASTER1 = 10;
+
+const int IFLA_WIRELESS1 = 11;
+
+const int IFLA_PROTINFO1 = 12;
+
+const int IFLA_TXQLEN1 = 13;
+
+const int IFLA_MAP1 = 14;
+
+const int IFLA_WEIGHT1 = 15;
+
+const int IFLA_LINKINFO1 = 18;
+
+const int IFLA_PROMISCUITY1 = 30;
+
+const int IFLA_MAX = 61;
+
+const int IFLA_INET_MAX = 1;
+
+const int IFLA_INET6_MAX = 9;
+
+const int IFLA_BR_MAX = 47;
+
+const int IFLA_BRPORT_MAX = 39;
+
+const int IFLA_INFO_MAX = 5;
+
+const int IFLA_VLAN_MAX = 5;
+
+const int IFLA_VLAN_QOS_MAX = 1;
+
+const int IFLA_MACVLAN_MAX = 8;
+
+const int IFLA_VRF_MAX = 1;
+
+const int IFLA_VRF_PORT_MAX = 1;
+
+const int IFLA_MACSEC_MAX = 15;
+
+const int IFLA_XFRM_MAX = 3;
+
+const int IFLA_IPVLAN_MAX = 2;
+
+const int IFLA_VXLAN_MAX = 30;
+
+const int IFLA_GENEVE_MAX = 14;
+
+const int IFLA_BAREUDP_MAX = 4;
+
+const int IFLA_PPP_MAX = 1;
+
+const int IFLA_GTP_MAX = 6;
+
+const int IFLA_BOND_MAX = 31;
+
+const int IFLA_BOND_AD_INFO_MAX = 5;
+
+const int IFLA_BOND_SLAVE_MAX = 9;
+
+const int IFLA_VF_INFO_MAX = 1;
+
+const int IFLA_VF_MAX = 13;
+
+const int IFLA_VF_VLAN_INFO_MAX = 1;
+
+const int IFLA_VF_STATS_MAX = 8;
+
+const int IFLA_VF_PORT_MAX = 1;
+
+const int IFLA_PORT_MAX = 7;
+
+const int IFLA_IPOIB_MAX = 3;
+
+const int IFLA_HSR_MAX = 7;
+
+const int IFLA_STATS_MAX = 5;
+
+const int IFLA_STATS_GETSET_MAX = 2;
+
+const int IFLA_OFFLOAD_XSTATS_MAX = 3;
+
+const int IFLA_OFFLOAD_XSTATS_HW_S_INFO_MAX = 2;
+
+const int IFLA_XDP_MAX = 8;
+
+const int IFLA_TUN_MAX = 9;
+
+const int IFLA_RMNET_MAX = 2;
+
+const int IFLA_MCTP_MAX = 1;
+
+const int IFLA_DSA_MAX = 1;
+
+const int RTM_BASE = 16;
+
+const int RTM_NEWLINK = 16;
+
+const int RTM_DELLINK = 17;
+
+const int RTM_GETLINK = 18;
+
+const int RTM_SETLINK = 19;
+
+const int RTM_NEWADDR = 20;
+
+const int RTM_DELADDR = 21;
+
+const int RTM_GETADDR = 22;
+
+const int RTM_NEWROUTE = 24;
+
+const int RTM_DELROUTE = 25;
+
+const int RTM_GETROUTE = 26;
+
+const int RTM_NEWNEIGH = 28;
+
+const int RTM_DELNEIGH = 29;
+
+const int RTM_GETNEIGH = 30;
+
+const int RTM_NEWRULE = 32;
+
+const int RTM_DELRULE = 33;
+
+const int RTM_GETRULE = 34;
+
+const int RTM_NEWQDISC = 36;
+
+const int RTM_DELQDISC = 37;
+
+const int RTM_GETQDISC = 38;
+
+const int RTM_NEWTCLASS = 40;
+
+const int RTM_DELTCLASS = 41;
+
+const int RTM_GETTCLASS = 42;
+
+const int RTM_NEWTFILTER = 44;
+
+const int RTM_DELTFILTER = 45;
+
+const int RTM_GETTFILTER = 46;
+
+const int RTM_NEWACTION = 48;
+
+const int RTM_DELACTION = 49;
+
+const int RTM_GETACTION = 50;
+
+const int RTM_NEWPREFIX = 52;
+
+const int RTM_GETMULTICAST = 58;
+
+const int RTM_GETANYCAST = 62;
+
+const int RTM_NEWNEIGHTBL = 64;
+
+const int RTM_GETNEIGHTBL = 66;
+
+const int RTM_SETNEIGHTBL = 67;
+
+const int RTM_NEWNDUSEROPT = 68;
+
+const int RTM_NEWADDRLABEL = 72;
+
+const int RTM_DELADDRLABEL = 73;
+
+const int RTM_GETADDRLABEL = 74;
+
+const int RTM_GETDCB = 78;
+
+const int RTM_SETDCB = 79;
+
+const int RTM_NEWNETCONF = 80;
+
+const int RTM_DELNETCONF = 81;
+
+const int RTM_GETNETCONF = 82;
+
+const int RTM_NEWMDB = 84;
+
+const int RTM_DELMDB = 85;
+
+const int RTM_GETMDB = 86;
+
+const int RTM_NEWNSID = 88;
+
+const int RTM_DELNSID = 89;
+
+const int RTM_GETNSID = 90;
+
+const int RTM_NEWSTATS = 92;
+
+const int RTM_GETSTATS = 94;
+
+const int RTM_SETSTATS = 95;
+
+const int RTM_NEWCACHEREPORT = 96;
+
+const int RTM_NEWCHAIN = 100;
+
+const int RTM_DELCHAIN = 101;
+
+const int RTM_GETCHAIN = 102;
+
+const int RTM_NEWNEXTHOP = 104;
+
+const int RTM_DELNEXTHOP = 105;
+
+const int RTM_GETNEXTHOP = 106;
+
+const int RTM_NEWLINKPROP = 108;
+
+const int RTM_DELLINKPROP = 109;
+
+const int RTM_GETLINKPROP = 110;
+
+const int RTM_NEWNVLAN = 112;
+
+const int RTM_DELVLAN = 113;
+
+const int RTM_GETVLAN = 114;
+
+const int RTM_NEWNEXTHOPBUCKET = 116;
+
+const int RTM_DELNEXTHOPBUCKET = 117;
+
+const int RTM_GETNEXTHOPBUCKET = 118;
+
+const int RTM_NEWTUNNEL = 120;
+
+const int RTM_DELTUNNEL = 121;
+
+const int RTM_GETTUNNEL = 122;
+
+const int RTM_MAX = 123;
+
+const int RTM_NR_MSGTYPES = 108;
+
+const int RTM_NR_FAMILIES = 27;
+
 const int RTA_ALIGNTO = 4;
+
+const int RTM_F_NOTIFY = 256;
+
+const int RTM_F_CLONED = 512;
+
+const int RTM_F_EQUALIZE = 1024;
+
+const int RTM_F_PREFIX = 2048;
+
+const int RTM_F_LOOKUP_TABLE = 4096;
+
+const int RTM_F_FIB_MATCH = 8192;
+
+const int RTM_F_OFFLOAD = 16384;
+
+const int RTM_F_TRAP = 32768;
+
+const int RTM_F_OFFLOAD_FAILED = 536870912;
 
 const int RTA_MAX = 30;
 

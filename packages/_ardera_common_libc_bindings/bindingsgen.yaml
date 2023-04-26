@@ -58,6 +58,9 @@ ffigen-options:
       - setsockopt
       - getsockname
       - bind
+      - send
+      - sendmsg
+      - recvmsg
       - if_nametoindex
       - if_indextoname
       - if_nameindex
@@ -113,7 +116,12 @@ ffigen-options:
       - if_nameindex
       - sockaddr_nl
       - nlmsghdr
+      - nlmsgerr
       - ifinfomsg
+      - rtattr
+      - rtmsg
+      - iovec
+      - msghdr
       - can_.*
       - canfd_.*
       
@@ -147,6 +155,7 @@ ffigen-options:
       - 'EPOLL.*'
       - 'O_.*'
       - 'GPIO.*'
+      - 'IFLA_.*'
       - 'IFLA_CAN_.*'
   globals:
     exclude:
@@ -317,7 +326,12 @@ ffigen-options:
       - 'IF_NAMESIZE'
       - 'NETLINK_.*'
       - 'NLM_.*'
+      - 'NLMSG_.*'
+      - 'MSG_.*'
       - 'RTA_.*'
+      - 'RTM_.*'
+      - 'IFF_.*'
+      - 'IFLA_.*'
     exclude:
       # somehow these have different values depending on ABI.
       - 'O_NOFOLLOW'

@@ -3,6 +3,8 @@
 import 'dart:ffi' as ffi;
 
 import 'package:meta/meta.dart';
+import 'package:tuple/tuple.dart';
+
 import 'package:_ardera_common_libc_bindings/src/libc_arm.g.dart' as backend show LibCArm;
 import 'package:_ardera_common_libc_bindings/src/libc_arm.g.dart' as arm;
 import 'package:_ardera_common_libc_bindings/src/libc_arm64.g.dart' as backend show LibCArm64;
@@ -13,9 +15,10 @@ import 'package:_ardera_common_libc_bindings/src/libc_amd64.g.dart' as backend s
 import 'package:_ardera_common_libc_bindings/src/libc_amd64.g.dart' as amd64;
 
 import 'package:_ardera_common_libc_bindings/src/libc_arm.g.dart'
-    show termios, sockaddr, if_nameindex, ifreq, ifmap, can_frame;
+    show termios, sockaddr, if_nameindex, ifreq, ifmap, can_frame, msghdr, nlmsghdr, rtattr, NLMSG_ALIGNTO, RTA_ALIGNTO;
 
-export 'package:_ardera_common_libc_bindings/src/libc_arm.g.dart'
+// export structs
+export 'libc_arm.g.dart'
     show
         termios,
         spi_ioc_transfer,
@@ -40,7 +43,11 @@ export 'package:_ardera_common_libc_bindings/src/libc_arm.g.dart'
         sockaddr_can,
         sockaddr_nl,
         nlmsghdr,
+        nlmsgerr,
         ifinfomsg,
+        rtattr,
+        iovec,
+        msghdr,
         can_bittiming,
         can_bittiming_const,
         can_clock,
@@ -50,668 +57,10 @@ export 'package:_ardera_common_libc_bindings/src/libc_arm.g.dart'
         can_device_stats,
         can_frame,
         canfd_frame,
-        EPOLL_EVENTS,
-        EPOLL_CLOEXEC,
-        GPIOLINE_CHANGED_REQUESTED,
-        GPIOLINE_CHANGED_RELEASED,
-        GPIOLINE_CHANGED_CONFIG,
-        IFLA_CAN_UNSPEC,
-        IFLA_CAN_BITTIMING,
-        IFLA_CAN_BITTIMING_CONST,
-        IFLA_CAN_CLOCK,
-        IFLA_CAN_STATE,
-        IFLA_CAN_CTRLMODE,
-        IFLA_CAN_RESTART_MS,
-        IFLA_CAN_RESTART,
-        IFLA_CAN_BERR_COUNTER,
-        IFLA_CAN_DATA_BITTIMING,
-        IFLA_CAN_DATA_BITTIMING_CONST,
-        IFLA_CAN_TERMINATION,
-        IFLA_CAN_TERMINATION_CONST,
-        IFLA_CAN_BITRATE_CONST,
-        IFLA_CAN_DATA_BITRATE_CONST,
-        IFLA_CAN_BITRATE_MAX,
-        IFLA_CAN_TDC,
-        IFLA_CAN_CTRLMODE_EXT,
-        IFLA_CAN_MAX,
-        IFLA_CAN_TDC_UNSPEC,
-        IFLA_CAN_TDC_TDCV_MIN,
-        IFLA_CAN_TDC_TDCV_MAX,
-        IFLA_CAN_TDC_TDCO_MIN,
-        IFLA_CAN_TDC_TDCO_MAX,
-        IFLA_CAN_TDC_TDCF_MIN,
-        IFLA_CAN_TDC_TDCF_MAX,
-        IFLA_CAN_TDC_TDCV,
-        IFLA_CAN_TDC_TDCO,
-        IFLA_CAN_TDC_TDCF,
-        IFLA_CAN_TDC_MAX,
-        IFLA_CAN_CTRLMODE_UNSPEC,
-        IFLA_CAN_CTRLMODE_SUPPORTED,
-        IFLA_CAN_CTRLMODE_MAX,
-        EPERM,
-        ENOENT,
-        ESRCH,
-        EINTR,
-        EIO,
-        ENXIO,
-        E2BIG,
-        ENOEXEC,
-        EBADF,
-        ECHILD,
-        EAGAIN,
-        ENOMEM,
-        EACCES,
-        EFAULT,
-        ENOTBLK,
-        EBUSY,
-        EEXIST,
-        EXDEV,
-        ENODEV,
-        ENOTDIR,
-        EISDIR,
-        EINVAL,
-        ENFILE,
-        EMFILE,
-        ENOTTY,
-        ETXTBSY,
-        EFBIG,
-        ENOSPC,
-        ESPIPE,
-        EROFS,
-        EMLINK,
-        EPIPE,
-        EDOM,
-        ERANGE,
-        EDEADLK,
-        ENAMETOOLONG,
-        ENOLCK,
-        ENOSYS,
-        ENOTEMPTY,
-        ELOOP,
-        EWOULDBLOCK,
-        ENOMSG,
-        EIDRM,
-        ECHRNG,
-        EL2NSYNC,
-        EL3HLT,
-        EL3RST,
-        ELNRNG,
-        EUNATCH,
-        ENOCSI,
-        EL2HLT,
-        EBADE,
-        EBADR,
-        EXFULL,
-        ENOANO,
-        EBADRQC,
-        EBADSLT,
-        EDEADLOCK,
-        EBFONT,
-        ENOSTR,
-        ENODATA,
-        ETIME,
-        ENOSR,
-        ENONET,
-        ENOPKG,
-        EREMOTE,
-        ENOLINK,
-        EADV,
-        ESRMNT,
-        ECOMM,
-        EPROTO,
-        EMULTIHOP,
-        EDOTDOT,
-        EBADMSG,
-        EOVERFLOW,
-        ENOTUNIQ,
-        EBADFD,
-        EREMCHG,
-        ELIBACC,
-        ELIBBAD,
-        ELIBSCN,
-        ELIBMAX,
-        ELIBEXEC,
-        EILSEQ,
-        ERESTART,
-        ESTRPIPE,
-        EUSERS,
-        ENOTSOCK,
-        EDESTADDRREQ,
-        EMSGSIZE,
-        EPROTOTYPE,
-        ENOPROTOOPT,
-        EPROTONOSUPPORT,
-        ESOCKTNOSUPPORT,
-        EOPNOTSUPP,
-        EPFNOSUPPORT,
-        EAFNOSUPPORT,
-        EADDRINUSE,
-        EADDRNOTAVAIL,
-        ENETDOWN,
-        ENETUNREACH,
-        ENETRESET,
-        ECONNABORTED,
-        ECONNRESET,
-        ENOBUFS,
-        EISCONN,
-        ENOTCONN,
-        ESHUTDOWN,
-        ETOOMANYREFS,
-        ETIMEDOUT,
-        ECONNREFUSED,
-        EHOSTDOWN,
-        EHOSTUNREACH,
-        EALREADY,
-        EINPROGRESS,
-        ESTALE,
-        EUCLEAN,
-        ENOTNAM,
-        ENAVAIL,
-        EISNAM,
-        EREMOTEIO,
-        EDQUOT,
-        ENOMEDIUM,
-        EMEDIUMTYPE,
-        ECANCELED,
-        ENOKEY,
-        EKEYEXPIRED,
-        EKEYREVOKED,
-        EKEYREJECTED,
-        EOWNERDEAD,
-        ENOTRECOVERABLE,
-        ERFKILL,
-        EHWPOISON,
-        ENOTSUP,
-        O_ACCMODE,
-        O_RDONLY,
-        O_WRONLY,
-        O_RDWR,
-        O_CREAT,
-        O_EXCL,
-        O_NOCTTY,
-        O_TRUNC,
-        O_APPEND,
-        O_NONBLOCK,
-        O_NDELAY,
-        O_SYNC,
-        O_FSYNC,
-        O_ASYNC,
-        O_CLOEXEC,
-        O_DSYNC,
-        O_RSYNC,
-        SIOCADDRT,
-        SIOCDELRT,
-        SIOCRTMSG,
-        SIOCGIFNAME,
-        SIOCSIFLINK,
-        SIOCGIFCONF,
-        SIOCGIFFLAGS,
-        SIOCSIFFLAGS,
-        SIOCGIFADDR,
-        SIOCSIFADDR,
-        SIOCGIFDSTADDR,
-        SIOCSIFDSTADDR,
-        SIOCGIFBRDADDR,
-        SIOCSIFBRDADDR,
-        SIOCGIFNETMASK,
-        SIOCSIFNETMASK,
-        SIOCGIFMETRIC,
-        SIOCSIFMETRIC,
-        SIOCGIFMEM,
-        SIOCSIFMEM,
-        SIOCGIFMTU,
-        SIOCSIFMTU,
-        SIOCSIFNAME,
-        SIOCSIFHWADDR,
-        SIOCGIFENCAP,
-        SIOCSIFENCAP,
-        SIOCGIFHWADDR,
-        SIOCGIFSLAVE,
-        SIOCSIFSLAVE,
-        SIOCADDMULTI,
-        SIOCDELMULTI,
-        SIOCGIFINDEX,
-        SIOCSIFPFLAGS,
-        SIOCGIFPFLAGS,
-        SIOCDIFADDR,
-        SIOCSIFHWBROADCAST,
-        SIOCGIFCOUNT,
-        SIOCGIFBR,
-        SIOCSIFBR,
-        SIOCGIFTXQLEN,
-        SIOCSIFTXQLEN,
-        SIOCDARP,
-        SIOCGARP,
-        SIOCSARP,
-        SIOCDRARP,
-        SIOCGRARP,
-        SIOCSRARP,
-        SIOCGIFMAP,
-        SIOCSIFMAP,
-        SIOCADDDLCI,
-        SIOCDELDLCI,
-        SIOCDEVPRIVATE,
-        SIOCPROTOPRIVATE,
-        EPOLL_CLOEXEC1,
-        EPOLLIN,
-        EPOLLPRI,
-        EPOLLOUT,
-        EPOLLRDNORM,
-        EPOLLRDBAND,
-        EPOLLWRNORM,
-        EPOLLWRBAND,
-        EPOLLMSG,
-        EPOLLERR,
-        EPOLLHUP,
-        EPOLLRDHUP,
-        EPOLLEXCLUSIVE,
-        EPOLLWAKEUP,
-        EPOLLONESHOT,
-        EPOLLET,
-        EPOLL_CTL_ADD,
-        EPOLL_CTL_DEL,
-        EPOLL_CTL_MOD,
-        GPIO_MAX_NAME_SIZE,
-        GPIO_V2_LINES_MAX,
-        GPIO_V2_LINE_NUM_ATTRS_MAX,
-        GPIOLINE_FLAG_KERNEL,
-        GPIOLINE_FLAG_IS_OUT,
-        GPIOLINE_FLAG_ACTIVE_LOW,
-        GPIOLINE_FLAG_OPEN_DRAIN,
-        GPIOLINE_FLAG_OPEN_SOURCE,
-        GPIOLINE_FLAG_BIAS_PULL_UP,
-        GPIOLINE_FLAG_BIAS_PULL_DOWN,
-        GPIOLINE_FLAG_BIAS_DISABLE,
-        GPIOHANDLES_MAX,
-        GPIOHANDLE_REQUEST_INPUT,
-        GPIOHANDLE_REQUEST_OUTPUT,
-        GPIOHANDLE_REQUEST_ACTIVE_LOW,
-        GPIOHANDLE_REQUEST_OPEN_DRAIN,
-        GPIOHANDLE_REQUEST_OPEN_SOURCE,
-        GPIOHANDLE_REQUEST_BIAS_PULL_UP,
-        GPIOHANDLE_REQUEST_BIAS_PULL_DOWN,
-        GPIOHANDLE_REQUEST_BIAS_DISABLE,
-        GPIOEVENT_REQUEST_RISING_EDGE,
-        GPIOEVENT_REQUEST_FALLING_EDGE,
-        GPIOEVENT_REQUEST_BOTH_EDGES,
-        GPIOEVENT_EVENT_RISING_EDGE,
-        GPIOEVENT_EVENT_FALLING_EDGE,
-        GPIO_GET_CHIPINFO_IOCTL,
-        GPIO_GET_LINEINFO_UNWATCH_IOCTL,
-        GPIO_V2_GET_LINEINFO_IOCTL,
-        GPIO_V2_GET_LINEINFO_WATCH_IOCTL,
-        GPIO_V2_GET_LINE_IOCTL,
-        GPIO_V2_LINE_SET_CONFIG_IOCTL,
-        GPIO_V2_LINE_GET_VALUES_IOCTL,
-        GPIO_V2_LINE_SET_VALUES_IOCTL,
-        GPIO_GET_LINEINFO_IOCTL,
-        GPIO_GET_LINEHANDLE_IOCTL,
-        GPIO_GET_LINEEVENT_IOCTL,
-        GPIOHANDLE_GET_LINE_VALUES_IOCTL,
-        GPIOHANDLE_SET_LINE_VALUES_IOCTL,
-        GPIOHANDLE_SET_CONFIG_IOCTL,
-        GPIO_GET_LINEINFO_WATCH_IOCTL,
-        NCCS,
-        VINTR,
-        VQUIT,
-        VKILL,
-        VEOF,
-        VTIME,
-        VMIN,
-        VSTART,
-        VSTOP,
-        VSUSP,
-        VEOL,
-        IGNBRK,
-        BRKINT,
-        IGNPAR,
-        PARMRK,
-        INPCK,
-        ISTRIP,
-        INLCR,
-        IGNCR,
-        ICRNL,
-        IXON,
-        IXANY,
-        IXOFF,
-        OPOST,
-        ONLCR,
-        OCRNL,
-        ONOCR,
-        ONLRET,
-        OFILL,
-        OFDEL,
-        NLDLY,
-        NL0,
-        NL1,
-        CRDLY,
-        CR0,
-        CR1,
-        CR2,
-        CR3,
-        TABDLY,
-        TAB0,
-        TAB1,
-        TAB2,
-        TAB3,
-        BSDLY,
-        BS0,
-        BS1,
-        FFDLY,
-        FF0,
-        FF1,
-        VTDLY,
-        VT0,
-        VT1,
-        B0,
-        B50,
-        B75,
-        B110,
-        B134,
-        B150,
-        B200,
-        B300,
-        B600,
-        B1200,
-        B1800,
-        B2400,
-        B4800,
-        B9600,
-        B19200,
-        B38400,
-        EXTA,
-        EXTB,
-        B57600,
-        B115200,
-        B230400,
-        B460800,
-        B500000,
-        B576000,
-        B921600,
-        B1000000,
-        B1152000,
-        B1500000,
-        B2000000,
-        B2500000,
-        B3000000,
-        B3500000,
-        B4000000,
-        CSIZE,
-        CS5,
-        CS6,
-        CS7,
-        CS8,
-        CSTOPB,
-        CREAD,
-        PARENB,
-        PARODD,
-        HUPCL,
-        CLOCAL,
-        ISIG,
-        ICANON,
-        ECHO,
-        ECHOE,
-        ECHOK,
-        ECHONL,
-        NOFLSH,
-        TOSTOP,
-        ECHOCTL,
-        ECHOPRT,
-        ECHOKE,
-        IEXTEN,
-        EXTPROC,
-        TCOOFF,
-        TCOON,
-        TCIOFF,
-        TCION,
-        TCIFLUSH,
-        TCOFLUSH,
-        TCIOFLUSH,
-        TCSANOW,
-        TCSADRAIN,
-        TCSAFLUSH,
-        SPI_CPHA,
-        SPI_CPOL,
-        SPI_MODE_0,
-        SPI_MODE_1,
-        SPI_MODE_2,
-        SPI_MODE_3,
-        SPI_MODE_X_MASK,
-        SPI_CS_HIGH,
-        SPI_LSB_FIRST,
-        SPI_3WIRE,
-        SPI_LOOP,
-        SPI_NO_CS,
-        SPI_READY,
-        SPI_TX_DUAL,
-        SPI_TX_QUAD,
-        SPI_RX_DUAL,
-        SPI_RX_QUAD,
-        SPI_CS_WORD,
-        SPI_TX_OCTAL,
-        SPI_RX_OCTAL,
-        SPI_3WIRE_HIZ,
-        SPI_IOC_MAGIC,
-        SPI_IOC_RD_MODE,
-        SPI_IOC_WR_MODE,
-        SPI_IOC_RD_LSB_FIRST,
-        SPI_IOC_WR_LSB_FIRST,
-        SPI_IOC_RD_BITS_PER_WORD,
-        SPI_IOC_WR_BITS_PER_WORD,
-        SPI_IOC_RD_MAX_SPEED_HZ,
-        SPI_IOC_WR_MAX_SPEED_HZ,
-        SPI_IOC_RD_MODE32,
-        SPI_IOC_WR_MODE32,
-        SOCK_STREAM,
-        SOCK_DGRAM,
-        SOCK_RAW,
-        SOCK_RDM,
-        SOCK_SEQPACKET,
-        SOCK_DCCP,
-        SOCK_PACKET,
-        SOCK_CLOEXEC,
-        SOCK_NONBLOCK,
-        PF_CAN,
-        AF_NETLINK,
-        AF_CAN,
-        SOL_RAW,
-        SOL_DECNET,
-        SOL_X25,
-        SOL_PACKET,
-        SOL_ATM,
-        SOL_AAL,
-        SOL_IRDA,
-        SOL_NETBEUI,
-        SOL_LLC,
-        SOL_DCCP,
-        SOL_NETLINK,
-        SOL_TIPC,
-        SOL_RXRPC,
-        SOL_PPPOL2TP,
-        SOL_BLUETOOTH,
-        SOL_PNPIPE,
-        SOL_RDS,
-        SOL_IUCV,
-        SOL_CAIF,
-        SOL_ALG,
-        SOL_NFC,
-        SOL_KCM,
-        SOL_TLS,
-        SOL_XDP,
-        SOL_MPTCP,
-        SOL_MCTP,
-        SOL_SMC,
-        SIOCSPGRP,
-        SIOCGPGRP,
-        SIOCATMARK,
-        SIOCGSTAMP_OLD,
-        SIOCGSTAMPNS_OLD,
-        SOL_SOCKET,
-        SO_DEBUG,
-        SO_REUSEADDR,
-        SO_TYPE,
-        SO_ERROR,
-        SO_DONTROUTE,
-        SO_BROADCAST,
-        SO_SNDBUF,
-        SO_RCVBUF,
-        SO_SNDBUFFORCE,
-        SO_RCVBUFFORCE,
-        SO_KEEPALIVE,
-        SO_OOBINLINE,
-        SO_NO_CHECK,
-        SO_PRIORITY,
-        SO_LINGER,
-        SO_BSDCOMPAT,
-        SO_REUSEPORT,
-        SO_PASSCRED,
-        SO_PEERCRED,
-        SO_RCVLOWAT,
-        SO_SNDLOWAT,
-        SO_RCVTIMEO_OLD,
-        SO_SNDTIMEO_OLD,
-        SO_SECURITY_AUTHENTICATION,
-        SO_SECURITY_ENCRYPTION_TRANSPORT,
-        SO_SECURITY_ENCRYPTION_NETWORK,
-        SO_BINDTODEVICE,
-        SO_ATTACH_FILTER,
-        SO_DETACH_FILTER,
-        SO_GET_FILTER,
-        SO_PEERNAME,
-        SO_ACCEPTCONN,
-        SO_PEERSEC,
-        SO_PASSSEC,
-        SO_MARK,
-        SO_PROTOCOL,
-        SO_DOMAIN,
-        SO_RXQ_OVFL,
-        SO_WIFI_STATUS,
-        SO_PEEK_OFF,
-        SO_NOFCS,
-        SO_LOCK_FILTER,
-        SO_SELECT_ERR_QUEUE,
-        SO_BUSY_POLL,
-        SO_MAX_PACING_RATE,
-        SO_BPF_EXTENSIONS,
-        SO_INCOMING_CPU,
-        SO_ATTACH_BPF,
-        SO_DETACH_BPF,
-        SO_ATTACH_REUSEPORT_CBPF,
-        SO_ATTACH_REUSEPORT_EBPF,
-        SO_CNX_ADVICE,
-        SO_MEMINFO,
-        SO_INCOMING_NAPI_ID,
-        SO_COOKIE,
-        SO_PEERGROUPS,
-        SO_ZEROCOPY,
-        SO_TXTIME,
-        SO_BINDTOIFINDEX,
-        SO_TIMESTAMP_OLD,
-        SO_TIMESTAMPNS_OLD,
-        SO_TIMESTAMPING_OLD,
-        SO_TIMESTAMP_NEW,
-        SO_TIMESTAMPNS_NEW,
-        SO_TIMESTAMPING_NEW,
-        SO_RCVTIMEO_NEW,
-        SO_SNDTIMEO_NEW,
-        SO_DETACH_REUSEPORT_BPF,
-        SO_PREFER_BUSY_POLL,
-        SO_BUSY_POLL_BUDGET,
-        SO_NETNS_COOKIE,
-        SO_BUF_LOCK,
-        SO_RESERVE_MEM,
-        SO_TXREHASH,
-        SO_RCVMARK,
-        SO_TIMESTAMP,
-        SO_TIMESTAMPNS,
-        SO_TIMESTAMPING,
-        SO_RCVTIMEO,
-        SO_SNDTIMEO,
-        IF_NAMESIZE,
-        IFNAMSIZ,
-        SOCK_SNDBUF_LOCK,
-        SOCK_RCVBUF_LOCK,
-        SOCK_BUF_LOCK_MASK,
-        SOCK_TXREHASH_DEFAULT,
-        SOCK_TXREHASH_DISABLED,
-        SOCK_TXREHASH_ENABLED,
-        CAN_EFF_FLAG,
-        CAN_RTR_FLAG,
-        CAN_ERR_FLAG,
-        CAN_SFF_MASK,
-        CAN_EFF_MASK,
-        CAN_ERR_MASK,
-        CAN_SFF_ID_BITS,
-        CAN_EFF_ID_BITS,
-        CAN_MAX_DLC,
-        CAN_MAX_RAW_DLC,
-        CAN_MAX_DLEN,
-        CANFD_MAX_DLC,
-        CANFD_MAX_DLEN,
-        CANFD_BRS,
-        CANFD_ESI,
-        CANFD_FDF,
-        CAN_MTU,
-        CANFD_MTU,
-        CAN_RAW,
-        CAN_BCM,
-        CAN_TP16,
-        CAN_TP20,
-        CAN_MCNET,
-        CAN_ISOTP,
-        CAN_J1939,
-        CAN_NPROTO,
-        SOL_CAN_BASE,
-        CAN_INV_FILTER,
-        CAN_RAW_FILTER_MAX,
-        SOL_CAN_RAW,
-        NETLINK_ROUTE,
-        NETLINK_UNUSED,
-        NETLINK_USERSOCK,
-        NETLINK_FIREWALL,
-        NETLINK_SOCK_DIAG,
-        NETLINK_NFLOG,
-        NETLINK_XFRM,
-        NETLINK_SELINUX,
-        NETLINK_ISCSI,
-        NETLINK_AUDIT,
-        NETLINK_FIB_LOOKUP,
-        NETLINK_CONNECTOR,
-        NETLINK_NETFILTER,
-        NETLINK_IP6_FW,
-        NETLINK_DNRTMSG,
-        NETLINK_KOBJECT_UEVENT,
-        NETLINK_GENERIC,
-        NETLINK_SCSITRANSPORT,
-        NETLINK_ECRYPTFS,
-        NETLINK_RDMA,
-        NETLINK_CRYPTO,
-        NETLINK_SMC,
-        NETLINK_INET_DIAG,
-        NETLINK_ADD_MEMBERSHIP,
-        NETLINK_DROP_MEMBERSHIP,
-        NETLINK_PKTINFO,
-        NETLINK_BROADCAST_ERROR,
-        NETLINK_NO_ENOBUFS,
-        NETLINK_RX_RING,
-        NETLINK_TX_RING,
-        NETLINK_LISTEN_ALL_NSID,
-        NETLINK_LIST_MEMBERSHIPS,
-        NETLINK_CAP_ACK,
-        NETLINK_EXT_ACK,
-        NETLINK_GET_STRICT_CHK,
-        CAN_CTRLMODE_LOOPBACK,
-        CAN_CTRLMODE_LISTENONLY,
-        CAN_CTRLMODE_3_SAMPLES,
-        CAN_CTRLMODE_ONE_SHOT,
-        CAN_CTRLMODE_BERR_REPORTING,
-        CAN_CTRLMODE_FD,
-        CAN_CTRLMODE_PRESUME_ACK,
-        CAN_CTRLMODE_FD_NON_ISO,
-        CAN_CTRLMODE_CC_LEN8_DLC,
-        CAN_CTRLMODE_TDC_AUTO,
-        CAN_CTRLMODE_TDC_MANUAL,
-        CAN_TERMINATION_DISABLED;
+        EPOLL_EVENTS;
+
+// export constants
+export 'libc_constants.dart';
 
 typedef SymbolLookupFn = ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName);
 
@@ -826,6 +175,37 @@ class LibCArm extends LibC {
   @override
   int write(int __fd, ffi.Pointer<ffi.Void> __buf, int __n) {
     return _backend.write(__fd, __buf, __n);
+  }
+
+  @override
+  int send(int __fd, ffi.Pointer<ffi.Void> __buf, int __n, int __flags) {
+    return _backend.send(__fd, __buf, __n, __flags);
+  }
+
+  @override
+  int sendmsg(
+    int __fd,
+    ffi.Pointer<msghdr> __message,
+    int __flags,
+  ) {
+    return _backend.sendmsg(
+      __fd,
+      __message.cast<arm.msghdr>(),
+      __flags,
+    );
+  }
+
+  @override
+  int recvmsg(
+    int __fd,
+    ffi.Pointer<msghdr> __message,
+    int __flags,
+  ) {
+    return _backend.recvmsg(
+      __fd,
+      __message.cast<arm.msghdr>(),
+      __flags,
+    );
   }
 
   @override
@@ -988,6 +368,37 @@ class LibCArm64 extends LibC {
   }
 
   @override
+  int send(int __fd, ffi.Pointer<ffi.Void> __buf, int __n, int __flags) {
+    return _backend.send(__fd, __buf, __n, __flags);
+  }
+
+  @override
+  int sendmsg(
+    int __fd,
+    ffi.Pointer<msghdr> __message,
+    int __flags,
+  ) {
+    return _backend.sendmsg(
+      __fd,
+      __message.cast<arm64.msghdr>(),
+      __flags,
+    );
+  }
+
+  @override
+  int recvmsg(
+    int __fd,
+    ffi.Pointer<msghdr> __message,
+    int __flags,
+  ) {
+    return _backend.recvmsg(
+      __fd,
+      __message.cast<arm64.msghdr>(),
+      __flags,
+    );
+  }
+
+  @override
   int setsockopt(int __fd, int __level, int __optname, ffi.Pointer<ffi.Void> __optval, int __optlen) {
     return _backend.setsockopt(__fd, __level, __optname, __optval, __optlen);
   }
@@ -1144,6 +555,37 @@ class LibCI386 extends LibC {
   @override
   int write(int __fd, ffi.Pointer<ffi.Void> __buf, int __n) {
     return _backend.write(__fd, __buf, __n);
+  }
+
+  @override
+  int send(int __fd, ffi.Pointer<ffi.Void> __buf, int __n, int __flags) {
+    return _backend.send(__fd, __buf, __n, __flags);
+  }
+
+  @override
+  int sendmsg(
+    int __fd,
+    ffi.Pointer<msghdr> __message,
+    int __flags,
+  ) {
+    return _backend.sendmsg(
+      __fd,
+      __message.cast<i386.msghdr>(),
+      __flags,
+    );
+  }
+
+  @override
+  int recvmsg(
+    int __fd,
+    ffi.Pointer<msghdr> __message,
+    int __flags,
+  ) {
+    return _backend.recvmsg(
+      __fd,
+      __message.cast<i386.msghdr>(),
+      __flags,
+    );
   }
 
   @override
@@ -1306,6 +748,37 @@ class LibCAmd64 extends LibC {
   }
 
   @override
+  int send(int __fd, ffi.Pointer<ffi.Void> __buf, int __n, int __flags) {
+    return _backend.send(__fd, __buf, __n, __flags);
+  }
+
+  @override
+  int sendmsg(
+    int __fd,
+    ffi.Pointer<msghdr> __message,
+    int __flags,
+  ) {
+    return _backend.sendmsg(
+      __fd,
+      __message.cast<amd64.msghdr>(),
+      __flags,
+    );
+  }
+
+  @override
+  int recvmsg(
+    int __fd,
+    ffi.Pointer<msghdr> __message,
+    int __flags,
+  ) {
+    return _backend.recvmsg(
+      __fd,
+      __message.cast<amd64.msghdr>(),
+      __flags,
+    );
+  }
+
+  @override
   int setsockopt(int __fd, int __level, int __optname, ffi.Pointer<ffi.Void> __optval, int __optlen) {
     return _backend.setsockopt(__fd, __level, __optname, __optval, __optlen);
   }
@@ -1424,6 +897,12 @@ abstract class LibC {
   int bind(int __fd, ffi.Pointer<sockaddr> __addr, int __len);
 
   int getsockname(int __fd, ffi.Pointer<sockaddr> __addr, ffi.Pointer<ffi.UnsignedInt> __len);
+
+  int send(int __fd, ffi.Pointer<ffi.Void> __buf, int __n, int __flags);
+
+  int sendmsg(int __fd, ffi.Pointer<msghdr> __message, int __flags);
+
+  int recvmsg(int __fd, ffi.Pointer<msghdr> __message, int __flags);
 
   int setsockopt(int __fd, int __level, int __optname, ffi.Pointer<ffi.Void> __optval, int __optlen);
 
@@ -1617,3 +1096,76 @@ extension CanFrameUnnamedUnion on can_frame {
   int get len => unnamed.len;
   set len(int value) => unnamed.len = value;
 }
+
+// dart versions of linux macros for netlink messages.
+// See: https://man7.org/linux/man-pages/man3/netlink.3.html
+
+/// Round the length of a netlink message up to align it properly.
+int NLMSG_ALIGN(int len) => (len + NLMSG_ALIGNTO - 1) & ~(NLMSG_ALIGNTO - 1);
+
+final NLMSG_HDRLEN = NLMSG_ALIGN(ffi.sizeOf<nlmsghdr>());
+
+/// Given the payload length [len], this macro returns the aligned length
+/// to store in the [nlmsghdr.nlmsg_len] field.
+int NLMSG_LENGTH(int len) => len + NLMSG_HDRLEN;
+
+/// Return the number of bytes that a netlink message of with payload length [len] would occupy.
+int NLMSG_SPACE(int len) => NLMSG_ALIGN(NLMSG_LENGTH(len));
+
+/// Return a pointer to the payload associated with the passed [nlmsghdr].
+ffi.Pointer<T> NLMSG_DATA<T extends ffi.NativeType>(ffi.Pointer<nlmsghdr> nlh) {
+  final addr = nlh.address + NLMSG_HDRLEN;
+  return ffi.Pointer<T>.fromAddress(addr);
+}
+
+Tuple2<ffi.Pointer<nlmsghdr>, int> NLMSG_NEXT(ffi.Pointer<nlmsghdr> nlh, int len) {
+  final newLen = len - NLMSG_ALIGN(nlh.ref.nlmsg_len);
+
+  final addr = nlh.address + NLMSG_ALIGN(nlh.ref.nlmsg_len);
+  final newNlh = ffi.Pointer<nlmsghdr>.fromAddress(addr);
+
+  return Tuple2(newNlh, newLen);
+}
+
+bool NLMSG_OK(ffi.Pointer<nlmsghdr> nlh, int len) {
+  return len >= ffi.sizeOf<nlmsghdr>() && nlh.ref.nlmsg_len >= ffi.sizeOf<nlmsghdr>() && nlh.ref.nlmsg_len <= len;
+}
+
+int NLMSG_PAYLOAD(ffi.Pointer<nlmsghdr> nlh, int len) {
+  return nlh.ref.nlmsg_len - NLMSG_SPACE(len);
+}
+
+/// Return a pointer to the first byte after the payload of the passed [nlmsghdr].
+ffi.Pointer<T> NLMSG_TAIL<T extends ffi.NativeType>(ffi.Pointer<nlmsghdr> nlh) {
+  final addr = nlh.address + NLMSG_ALIGN(nlh.ref.nlmsg_len);
+  return ffi.Pointer<T>.fromAddress(addr);
+}
+
+// dart versions of linux macros for rtnetlink messages
+// See: https://man7.org/linux/man-pages/man3/rtnetlink.3.html
+
+int RTA_ALIGN(int len) => (len + RTA_ALIGNTO - 1) & ~(RTA_ALIGNTO - 1);
+
+bool RTA_OK(ffi.Pointer<rtattr> rta, int len) {
+  return len >= ffi.sizeOf<rtattr>() && rta.ref.rta_len >= ffi.sizeOf<rtattr>() && rta.ref.rta_len <= len;
+}
+
+Tuple2<ffi.Pointer<rtattr>, int> RTA_NEXT(ffi.Pointer<rtattr> rta, int attrlen) {
+  final newAttrlen = attrlen - RTA_ALIGN(rta.ref.rta_len);
+
+  final addr = rta.address + RTA_ALIGN(rta.ref.rta_len);
+  final ptr = ffi.Pointer<rtattr>.fromAddress(addr);
+
+  return Tuple2(ptr, newAttrlen);
+}
+
+int RTA_LENGTH(int len) => RTA_ALIGN(ffi.sizeOf<rtattr>() + len);
+
+int RTA_SPACE(int len) => RTA_ALIGN(RTA_LENGTH(len));
+
+ffi.Pointer<T> RTA_DATA<T extends ffi.NativeType>(ffi.Pointer<rtattr> rta) {
+  final addr = rta.address + RTA_LENGTH(0);
+  return ffi.Pointer<T>.fromAddress(addr);
+}
+
+int RTA_PAYLOAD(ffi.Pointer<rtattr> rta) => rta.ref.rta_len - RTA_LENGTH(0);
