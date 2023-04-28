@@ -110,40 +110,42 @@ abstract class _Cmd {
   final Capability seq;
 }
 
-class _AddCmd extends _Cmd {
+class _AddCmd<C, V> extends _Cmd {
   const _AddCmd({
     required super.seq,
     required this.fd,
     required this.flags,
     required this.listenerIdentity,
+    required this.callback,
+    required this.callbackContext,
   });
 
   final int fd;
   final Set<EpollFlag> flags;
   final Capability listenerIdentity;
+  final FdReadyCallback<C, V> callback;
+  final C callbackContext;
 }
 
 class _ModCmd extends _Cmd {
   const _ModCmd({
     required super.seq,
-    required this.fd,
-    required this.flags,
     required this.listenerIdentity,
+    this.flags,
+    this.callback,
   });
 
-  final int fd;
-  final Set<EpollFlag> flags;
   final Capability listenerIdentity;
+  final Set<EpollFlag>? flags;
+  final FdReadyCallback? callback;
 }
 
 class _DelCmd extends _Cmd {
   const _DelCmd({
     required super.seq,
-    required this.fd,
     required this.listenerIdentity,
   });
 
-  final int fd;
   final Capability listenerIdentity;
 }
 
@@ -157,14 +159,26 @@ abstract class _Reply {
   const _Reply();
 }
 
-class _EventReply extends _Reply {
-  const _EventReply({
+class _SuccessEvent<T> extends _Reply {
+  const _SuccessEvent({
     required this.listenerIdentity,
-    required this.events,
+    required this.event,
   });
 
   final Capability listenerIdentity;
-  final Set<EpollFlag> events;
+  final T event;
+}
+
+class _ErrorEvent<T> extends _Reply {
+  const _ErrorEvent({
+    required this.listenerIdentity,
+    required this.error,
+    this.stackTrace,
+  });
+
+  final Capability listenerIdentity;
+  final Object error;
+  final StackTrace? stackTrace;
 }
 
 abstract class _CmdReply extends _Reply {
@@ -190,209 +204,301 @@ class _ErrorCmdReply extends _CmdReply {
 
 class _IsolateQuitMessage {}
 
-void _epollMgrEntry(Tuple4<ReceivePort, SendPort, int, int> args) async {
-  final receivePort = args.item1;
-  final sendPort = args.item2;
-  final epollFd = args.item3;
-  final eventFd = args.item4;
-  final eventFdCap = Capability();
+typedef FdReadyCallback<C, V> = V Function(EpollIsolate isolate, int fd, Set<EpollFlag> flags, C context);
 
-  final capabilityMap = BiMap<int, Capability>();
-  final cmdQueue = Queue<_Cmd>();
+void _noop(EpollIsolate isolate, int fd, Set<EpollFlag> flags, void context) {}
 
-  const maxEvents = 128;
-  final events = ffi.calloc<epoll_event>(maxEvents);
-
-  var run = true;
-  var nextCapabilityMapIndex = 1;
-
-  final subscription = receivePort.listen((message) {
-    assert(message is _Cmd);
-    cmdQueue.add(message);
+class _Handler<C, V> {
+  _Handler({
+    required this.id,
+    required this.fd,
+    required this.flags,
+    required this.callback,
+    required this.callbackContext,
   });
 
-  try {
-    assert(epollFd > 0);
-    assert(eventFd > 0);
+  Capability id;
+  int fd;
+  Set<EpollFlag> flags;
+  FdReadyCallback<C, V> callback;
+  C callbackContext;
+}
 
-    final libc = LibC(ffi.DynamicLibrary.open('libc.so.6'));
+class EpollIsolate {
+  EpollIsolate.fromIsolateArgs(Tuple4<ReceivePort, SendPort, int, int> args)
+      : _receivePort = args.item1,
+        _sendPort = args.item2,
+        _epollFd = args.item3,
+        _eventFd = args.item4 {
+    _subscription = _receivePort.listen((message) {
+      assert(message is _Cmd);
+      _cmdQueue.add(message);
+    });
+  }
 
-    void epollCtl({
-      required int op,
-      required int fd,
-      required Set<EpollFlag> flags,
-      required int userdata,
-    }) {
-      final event = ffi.calloc<epoll_event>();
+  final ReceivePort _receivePort;
+  final SendPort _sendPort;
+  final int _epollFd;
+  final int _eventFd;
 
-      for (final flag in flags) {
-        event.ref.events |= flag._value;
+  // There's no real reason to use [Capability] here, since we don't communicate this
+  // across isolate boundaries, but we use Capability for all other fd handlers, so
+  // let's use it here too.
+  final _eventFdCap = Capability();
+
+  final _capabilityMap = BiMap<int, Object>();
+  final _handlerMap = <Object, _Handler>{};
+  final _cmdQueue = Queue<_Cmd>();
+
+  static const _maxEvents = 128;
+  final _events = ffi.calloc<epoll_event>(_maxEvents);
+
+  var _shouldRun = true;
+  var _nextCapabilityMapIndex = 1;
+
+  late final StreamSubscription<dynamic> _subscription;
+
+  final libc = LibC(ffi.DynamicLibrary.open('libc.so.6'));
+
+  void _epollCtl({
+    required int op,
+    required int fd,
+    required Set<EpollFlag> flags,
+    required int userdata,
+  }) {
+    final event = ffi.calloc<epoll_event>();
+
+    for (final flag in flags) {
+      event.ref.events |= flag._value;
+    }
+
+    event.ref.data.u64 = userdata;
+
+    try {
+      final ok = libc.epoll_ctl(_epollFd, op, fd, event);
+      if (ok < 0) {
+        throw LinuxError('Could not add/modify/remove epoll entry.', 'epoll_ctl', libc.errno);
       }
+    } finally {
+      ffi.calloc.free(event);
+    }
+  }
 
-      event.ref.data.u64 = userdata;
+  void _add<C, V>({
+    required Capability listenerId,
+    required int fd,
+    required Set<EpollFlag> flags,
+    required FdReadyCallback<C, V> callback,
+    required C callbackContext,
+  }) {
+    assert(!_capabilityMap.containsValue(listenerId));
+
+    final index = _nextCapabilityMapIndex;
+    final handler = _Handler<C, V>(
+      id: listenerId,
+      fd: fd,
+      flags: flags,
+      callback: callback,
+      callbackContext: callbackContext,
+    );
+
+    _epollCtl(
+      op: EPOLL_CTL_ADD,
+      fd: fd,
+      flags: flags,
+      userdata: index,
+    );
+
+    _capabilityMap[index] = listenerId;
+    _handlerMap[listenerId] = handler;
+    _nextCapabilityMapIndex++;
+  }
+
+  void _mod<C, V>({
+    required Object listenerId,
+    Set<EpollFlag>? flags,
+    FdReadyCallback<C, V>? callback,
+    C? callbackContext,
+    bool forceSetContext = false,
+    bool force = false,
+  }) {
+    assert(_capabilityMap.containsValue(listenerId));
+    assert(_handlerMap.containsKey(listenerId));
+
+    final handler = _handlerMap[listenerId]! as _Handler<C, V>;
+
+    if (flags != null || force) {
+      _epollCtl(
+        op: EPOLL_CTL_MOD,
+        fd: handler.fd,
+        flags: flags ?? handler.flags,
+        userdata: _capabilityMap.inverse[listenerId]!,
+      );
+    }
+
+    // only apply the new values when we know epoll_ctl succeeded
+    handler.flags = flags ?? handler.flags;
+    handler.callback = callback ?? handler.callback;
+    handler.callbackContext = forceSetContext ? callbackContext as C : (callbackContext ?? handler.callbackContext);
+  }
+
+  void rearm({required Object handlerId}) {
+    _mod(listenerId: handlerId, force: true);
+  }
+
+  void _del({
+    required Object listenerId,
+  }) {
+    assert(_capabilityMap.containsValue(listenerId));
+    assert(_handlerMap.containsKey(listenerId));
+
+    final handler = _handlerMap[listenerId]!;
+
+    _epollCtl(
+      op: EPOLL_CTL_DEL,
+      fd: handler.fd,
+      flags: const <EpollFlag>{},
+      userdata: 0,
+    );
+
+    _capabilityMap.inverse.remove(listenerId);
+    _handlerMap.remove(listenerId);
+  }
+
+  void _sendEvent<T>({
+    required Capability handlerId,
+    required T event,
+  }) {
+    _sendPort.send(_SuccessEvent<T>(
+      listenerIdentity: handlerId,
+      event: event,
+    ));
+  }
+
+  void _sendError<T>({
+    required Capability handlerId,
+    required Object error,
+    StackTrace? stackTrace,
+  }) {
+    _sendPort.send(_ErrorEvent<T>(
+      listenerIdentity: handlerId,
+      error: error,
+      stackTrace: stackTrace,
+    ));
+  }
+
+  void _replySuccess(
+    _Cmd cmd,
+  ) {
+    _sendPort.send(_SuccessCmdReply(seq: cmd.seq));
+  }
+
+  void _replyError(
+    _Cmd cmd, {
+    required Object error,
+    StackTrace? stackTrace,
+  }) {
+    _sendPort.send(_ErrorCmdReply(
+      seq: cmd.seq,
+      error: error,
+      stackTrace: stackTrace,
+    ));
+  }
+
+  Future<void> _waitForEvents() async {
+    await Future.delayed(Duration.zero);
+  }
+
+  void processCommands() {
+    // process cmd queue
+    while (_shouldRun && _cmdQueue.isNotEmpty) {
+      final cmd = _cmdQueue.removeFirst();
 
       try {
-        final ok = libc.epoll_ctl(epollFd, op, fd, event);
-        if (ok < 0) {
-          throw LinuxError('Could not add/modify/remove epoll entry.', 'epoll_ctl', libc.errno);
+        if (cmd is _AddCmd) {
+          _add(
+            listenerId: cmd.listenerIdentity,
+            fd: cmd.fd,
+            flags: cmd.flags,
+            callback: cmd.callback,
+            callbackContext: cmd.callbackContext,
+          );
+        } else if (cmd is _ModCmd) {
+          _mod(
+            listenerId: cmd.listenerIdentity,
+            flags: cmd.flags,
+            callback: cmd.callback,
+          );
+        } else if (cmd is _DelCmd) {
+          _del(
+            listenerId: cmd.listenerIdentity,
+          );
+        } else if (cmd is _StopCmd) {
+          _shouldRun = false;
+        } else {
+          assert(false);
         }
-      } finally {
-        ffi.calloc.free(event);
+
+        _replySuccess(cmd);
+      } on Exception catch (e, stackTrace) {
+        _replyError(
+          cmd,
+          error: e,
+          stackTrace: stackTrace,
+        );
       }
     }
+  }
 
-    void add({
-      required int fd,
-      required Set<EpollFlag> flags,
-      required Capability userdata,
-    }) {
-      assert(!capabilityMap.containsValue(userdata));
+  void dispose() {
+    _subscription.cancel();
+    ffi.calloc.free(_events);
+  }
 
-      final index = nextCapabilityMapIndex;
-
-      epollCtl(
-        op: EPOLL_CTL_ADD,
-        fd: fd,
-        flags: flags,
-        userdata: index,
-      );
-
-      capabilityMap[index] = userdata;
-      nextCapabilityMapIndex++;
-    }
-
-    void mod({
-      required int fd,
-      required Set<EpollFlag> flags,
-      required Capability userdata,
-    }) {
-      assert(capabilityMap.containsValue(userdata));
-
-      epollCtl(
-        op: EPOLL_CTL_MOD,
-        fd: fd,
-        flags: flags,
-        userdata: capabilityMap.inverse[userdata]!,
-      );
-    }
-
-    void del({
-      required int fd,
-      required Capability userdata,
-    }) {
-      assert(capabilityMap.containsValue(userdata));
-
-      epollCtl(
-        op: EPOLL_CTL_MOD,
-        fd: fd,
-        flags: const <EpollFlag>{},
-        userdata: 0,
-      );
-
-      capabilityMap.inverse.remove(userdata);
-    }
-
-    void sendEvent({
-      required Capability userdata,
-      required Set<EpollFlag> events,
-    }) {
-      sendPort.send(_EventReply(
-        listenerIdentity: userdata,
-        events: events,
-      ));
-    }
-
-    void replySuccess(
-      _Cmd cmd,
-    ) {
-      sendPort.send(_SuccessCmdReply(seq: cmd.seq));
-    }
-
-    void replyError(_Cmd cmd, {required Object error, StackTrace? stackTrace}) {
-      sendPort.send(_ErrorCmdReply(
-        seq: cmd.seq,
-        error: error,
-        stackTrace: stackTrace,
-      ));
-    }
-
-    Future<void> waitForEvents() async {
-      await Future.delayed(Duration.zero);
-    }
+  Future<void> run() async {
+    assert(_epollFd > 0);
+    assert(_eventFd > 0);
 
     /// Add the event fd to the epoll instance.
     /// so we get notified of new commands even when we're in
     /// epoll_wait right now.
-    add(
-      fd: eventFd,
+    _add<void, void>(
+      fd: _eventFd,
       flags: {EpollFlag.inReady},
-      userdata: eventFdCap,
+      listenerId: _eventFdCap,
+      callback: _noop,
+      callbackContext: null,
     );
 
-    while (run) {
+    while (_shouldRun) {
       // let the microtask loop run so events the receivePort listener
       // is invoked and commands are added to the cmd queue
-      await waitForEvents();
+      await _waitForEvents();
 
-      // process cmd queue
-      while (run && cmdQueue.isNotEmpty) {
-        final cmd = cmdQueue.removeFirst();
+      processCommands();
 
-        try {
-          if (cmd is _AddCmd) {
-            add(
-              fd: cmd.fd,
-              flags: cmd.flags,
-              userdata: cmd.listenerIdentity,
-            );
-          } else if (cmd is _ModCmd) {
-            mod(
-              fd: cmd.fd,
-              flags: cmd.flags,
-              userdata: cmd.listenerIdentity,
-            );
-          } else if (cmd is _DelCmd) {
-            del(
-              fd: cmd.fd,
-              userdata: cmd.listenerIdentity,
-            );
-          } else if (cmd is _StopCmd) {
-            run = false;
-          } else {
-            assert(false);
-          }
-
-          replySuccess(cmd);
-        } on Exception catch (e, stackTrace) {
-          replyError(
-            cmd,
-            error: e,
-            stackTrace: stackTrace,
-          );
-        }
-      }
-
-      if (!run) {
+      // It could be we received a stop command.
+      // In that case, finish early here.
+      if (!_shouldRun) {
         break;
       }
 
       final ok = libc.epoll_wait(
-        epollFd,
-        events,
-        maxEvents,
-        // run indefinitely
-        -1,
+        _epollFd,
+        _events,
+        _maxEvents,
+        -1, // wait indefinitely
       );
       if (ok < 0) {
         throw LinuxError('Could not wait for epoll events.', 'epoll_wait', libc.errno);
       }
 
       if (ok > 0) {
-        // process events
+        // process any epoll events
         for (var i = 0; i < ok; i++) {
-          final event = events.elementAt(i);
+          final event = _events.elementAt(i);
 
-          final capability = capabilityMap[event.ref.data.u64]!;
+          final capability = _capabilityMap[event.ref.data.u64]!;
 
           final flags = <EpollFlag>{};
           for (final flag in EpollFlag.values) {
@@ -401,29 +507,74 @@ void _epollMgrEntry(Tuple4<ReceivePort, SendPort, int, int> args) async {
             }
           }
 
-          if (capability == eventFdCap) {
+          if (capability == _eventFdCap) {
             // do nothing
           } else {
-            sendEvent(
-              userdata: capability,
-              events: flags,
-            );
+            assert(capability is Capability);
+
+            // Find and invoke the handler.
+            final handler = _handlerMap[capability]!;
+
+            try {
+              final value = handler.callback(this, handler.fd, flags, handler.callbackContext);
+
+              _sendEvent(
+                handlerId: handler.id,
+                event: value,
+              );
+            } on Exception catch (err, st) {
+              _sendError(
+                handlerId: handler.id,
+                error: err,
+                stackTrace: st,
+              );
+            }
           }
         }
       }
     }
-  } finally {
-    subscription.cancel();
-    ffi.calloc.free(events);
+  }
+
+  static void entry(Tuple4<ReceivePort, SendPort, int, int> args) async {
+    final isolate = EpollIsolate.fromIsolateArgs(args);
+
+    try {
+      await isolate.run();
+    } finally {
+      isolate.dispose();
+    }
   }
 }
 
-class FdListener {
-  FdListener(this._fd, this._callback);
+typedef ValueCallback<T> = void Function(T value);
 
-  final _identity = Capability();
-  final int _fd;
-  final void Function(Set<EpollFlag> events) _callback;
+typedef ErrorCallback = void Function(Object error, StackTrace? stackTrace);
+
+abstract class FdHandler<T> {
+  Capability get _id;
+  int get fd;
+  ValueCallback<T> get callback;
+  ErrorCallback get errorCallback;
+}
+
+class _FdHandlerImpl<T> implements FdHandler<T> {
+  _FdHandlerImpl({
+    required this.fd,
+    required this.callback,
+    required this.errorCallback,
+  });
+
+  @override
+  final _id = Capability();
+
+  @override
+  final int fd;
+
+  @override
+  ValueCallback<T> callback;
+
+  @override
+  ErrorCallback errorCallback;
 }
 
 class EpollEventLoop {
@@ -476,7 +627,7 @@ class EpollEventLoop {
     final mySendPort = otherReceivePort.sendPort;
 
     final isolateFuture = Isolate.spawn(
-      _epollMgrEntry,
+      EpollIsolate.entry,
       Tuple4(otherReceivePort, otherSendPort, epollFd, eventFd),
     );
 
@@ -507,13 +658,13 @@ class EpollEventLoop {
   String? _isolateErrorStackTrace;
   final _isolateExitCompleter = Completer.sync();
 
-  final _eventHandlers = <Capability, FdListener>{};
+  final _handlers = <Capability, _FdHandlerImpl>{};
   final _pendingCommands = <Capability, Completer>{};
 
   void _onReceivePortMessage(dynamic msg) {
     assert(msg is _Reply || msg is _IsolateQuitMessage || msg is List);
 
-    if (msg is _EventReply) {
+    if (msg is _SuccessEvent) {
       _onEvent(msg);
     } else if (msg is _CmdReply) {
       _onCmdReply(msg);
@@ -530,12 +681,12 @@ class EpollEventLoop {
     }
   }
 
-  void _onEvent(_EventReply event) {
-    if (!_eventHandlers.containsKey(event.listenerIdentity)) {
+  void _onEvent(_SuccessEvent event) {
+    if (!_handlers.containsKey(event.listenerIdentity)) {
       throw StateError('No event listener registered for capability ${event.listenerIdentity}.');
     }
 
-    _eventHandlers[event.listenerIdentity]!._callback(event.events);
+    _handlers[event.listenerIdentity]!.callback(event.event);
   }
 
   void _onCmdReply(_CmdReply reply) {
@@ -593,43 +744,59 @@ class EpollEventLoop {
     return await completer.future;
   }
 
-  Future<FdListener> add({
+  Future<FdHandler<V>> add<C, V>({
     required int fd,
     required Set<EpollFlag> events,
-    required void Function(Set<EpollFlag> events) callback,
+    required FdReadyCallback<C, V> isolateCallback,
+    required C isolateCallbackContext,
+    required ValueCallback<V> onValue,
+    required ErrorCallback onError,
   }) async {
     assert(_alive);
 
     final seq = Capability();
-    final listener = FdListener(fd, callback);
+    final handler = _FdHandlerImpl(
+      fd: fd,
+      callback: onValue,
+      errorCallback: onError,
+    );
 
     await _sendCmd(_AddCmd(
       seq: seq,
+      listenerIdentity: handler._id,
       fd: fd,
       flags: events,
-      listenerIdentity: listener._identity,
+      callback: isolateCallback,
+      callbackContext: isolateCallbackContext,
     ));
 
-    return listener;
+    _handlers[handler._id] = handler;
+
+    return handler;
   }
 
   Future<void> modify({
-    required FdListener listener,
-    required Set<EpollFlag> events,
+    required FdHandler listener,
+    Set<EpollFlag>? events,
+    FdReadyCallback? isolateCallback,
+    ValueCallback? callback,
   }) async {
     assert(_alive);
+    assert(_handlers.containsKey(listener));
 
     final seq = Capability();
 
     await _sendCmd(_ModCmd(
       seq: seq,
-      fd: listener._fd,
+      listenerIdentity: listener._id,
       flags: events,
-      listenerIdentity: listener._identity,
+      callback: isolateCallback,
     ));
+
+    (listener as _FdHandlerImpl).callback = callback ?? listener.callback;
   }
 
-  Future<void> _delete({required FdListener listener, bool notify = true}) async {
+  Future<void> _delete({required FdHandler listener, bool notify = true}) async {
     assert(_alive);
 
     final seq = Capability();
@@ -638,17 +805,16 @@ class EpollEventLoop {
       await _sendCmd(
         _DelCmd(
           seq: seq,
-          fd: listener._fd,
-          listenerIdentity: listener._identity,
+          listenerIdentity: listener._id,
         ),
         notify: notify,
       );
     } finally {
-      _eventHandlers.remove(listener._identity);
+      _handlers.remove(listener._id);
     }
   }
 
-  Future<void> delete({required FdListener listener}) {
+  Future<void> delete({required FdHandler listener}) {
     return _delete(listener: listener);
   }
 
@@ -661,7 +827,7 @@ class EpollEventLoop {
     // don't set notify so we don't signal the
     // eventfd 10000 times.
     final futures = [
-      for (final listener in _eventHandlers.values)
+      for (final listener in _handlers.values)
         _delete(
           listener: listener,
           notify: false,

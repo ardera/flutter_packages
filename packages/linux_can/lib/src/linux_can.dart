@@ -673,31 +673,81 @@ class CanSocket {
   var _open = true;
 
   var _listening = false;
-  FdListener? _fdListener;
+  FdHandler? _fdListener;
+  Pointer<can_frame>? _fdHandlerBuffer;
 
   void write(CanFrame frame) {
     assert(_open);
     platformInterface.write(fd, frame);
   }
 
-  void close() {
+  CanFrame? read() {
+    assert(_open);
+    return platformInterface.read(fd);
+  }
+
+  Future<void> close() async {
+    if (_listening) {
+      await _fdUnlisten();
+    }
+
     assert(_open);
     platformInterface.close(fd);
     _open = false;
   }
 
-  Future<void> _listenForFrameAvailable(void Function() callback) async {
+  static List<CanFrame>? _handleFdReady(EpollIsolate isolate, int fd, Set<EpollFlag> flags, int bufferAddr) {
+    final libc = isolate.libc;
+
+    final buffer = Pointer<Void>.fromAddress(bufferAddr);
+
+    final frames = <CanFrame>[];
+    while (true) {
+      final frame = PlatformInterface.readStatic(libc, fd, buffer, sizeOf<can_frame>());
+      if (frame != null) {
+        frames.add(frame);
+      } else {
+        break;
+      }
+    }
+
+    return frames.isEmpty ? null : frames;
+  }
+
+  Future<void> _fdListen(
+    void Function(List<CanFrame>?) onFrame,
+    void Function(Object error, StackTrace? stackTrace) onError,
+  ) async {
     assert(!_listening);
 
-    _fdListener = await platformInterface.eventListener.add(
+    _fdHandlerBuffer = calloc<can_frame>();
+
+    _fdListener = await platformInterface.eventListener.add<int, List<CanFrame>?>(
       fd: fd,
       events: {EpollFlag.inReady},
-      callback: (flags) {
-        callback();
-      },
+      isolateCallback: _handleFdReady,
+      isolateCallbackContext: _fdHandlerBuffer!.address,
+      onValue: onFrame,
+      onError: onError,
     );
 
     _listening = true;
+  }
+
+  Future<void> _fdUnlisten() async {
+    assert(_listening);
+    assert(_fdListener != null);
+    assert(_fdHandlerBuffer != null);
+
+    await platformInterface.eventListener.delete(
+      listener: _fdListener!,
+    );
+
+    calloc.free(_fdHandlerBuffer!);
+
+    _fdHandlerBuffer = null;
+    _fdListener = null;
+    _listening = false;
   }
 
   Stream<CanFrame>? _frames;
@@ -707,9 +757,22 @@ class CanSocket {
 
       controller = StreamController.broadcast(
         onListen: () {
-          _listenForFrameAvailable(() {});
+          _fdListen(
+            (frames) {
+              if (frames != null) {
+                for (final frame in frames) {
+                  controller.add(frame);
+                }
+              }
+            },
+            (object, stackTrace) {
+              controller.addError(object, stackTrace);
+            },
+          );
         },
-        onCancel: () {},
+        onCancel: () {
+          _fdUnlisten();
+        },
       );
 
       _frames = controller.stream;
@@ -831,7 +894,7 @@ class PlatformInterface {
   }
 
   int createCanSocket() {
-    final socket = libc.socket(PF_CAN, SOCK_RAW | SOCK_CLOEXEC, CAN_RAW);
+    final socket = libc.socket(PF_CAN, SOCK_RAW | SOCK_CLOEXEC | SOCK_NONBLOCK, CAN_RAW);
     if (socket < 0) {
       throw LinuxError('Could not create CAN socket.', 'socket', libc.errno);
     }
@@ -927,11 +990,67 @@ class PlatformInterface {
     }
   }
 
-  CanFrame? read(int fd) {
-    /// TODO: Implement
-    throw UnimplementedError();
+  static CanFrame canFrameFromNative(can_frame native) {
+    final eff = native.can_id & CAN_EFF_FLAG != 0;
+    final rtr = native.can_id & CAN_RTR_FLAG != 0;
+    final err = native.can_id & CAN_ERR_FLAG != 0;
 
-    // libc.read(fd, _buffer, _bufferSize);
+    if (err) {
+      return CanFrame.error();
+    } else if (eff) {
+      final id = native.can_id & CAN_EFF_MASK;
+
+      if (rtr) {
+        return CanFrame.extendedRemote(id: id);
+      } else {
+        return CanFrame.extended(
+          id: id,
+          data: List.generate(
+            native.len,
+            (index) => native.data[index],
+            growable: false,
+          ),
+        );
+      }
+    } else {
+      final id = native.can_id & CAN_SFF_MASK;
+
+      if (rtr) {
+        return CanFrame.standardRemote(id: id);
+      } else {
+        return CanFrame.standard(
+          id: id,
+          data: List.generate(
+            native.len,
+            (index) => native.data[index],
+            growable: false,
+          ),
+        );
+      }
+    }
+  }
+
+  static CanFrame? readStatic(LibC libc, int fd, Pointer<Void> buffer, int bufferSize) {
+    assert(bufferSize >= sizeOf<can_frame>());
+    assert(CAN_MTU == sizeOf<can_frame>());
+
+    final ok = libc.read(fd, buffer, sizeOf<can_frame>());
+    if (ok < 0 && libc.errno == EAGAIN) {
+      // no frame available right now.
+      return null;
+    } else if (ok < 0) {
+      throw LinuxError('Could not read CAN frame.', 'read', libc.errno);
+    }
+
+    if (ok != CAN_MTU) {
+      throw LinuxError('Malformed CAN frame. Expected received frame to be $CAN_MTU bytes large, was: $ok.', 'read');
+    }
+
+    return canFrameFromNative(buffer.cast<can_frame>().ref);
+  }
+
+  CanFrame? read(int fd) {
+    return readStatic(libc, fd, _buffer, _bufferSize);
   }
 
   /// Opens an rtnetlink socket for kernel network interface manipulation.

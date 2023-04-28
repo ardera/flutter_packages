@@ -1,10 +1,23 @@
 import 'dart:ffi' as ffi;
-
+import 'package:ffi/ffi.dart' as ffi;
 import 'package:test/test.dart';
-import 'package:_ardera_common_libc_bindings/src/libc_arm.g.dart' as arm;
-import 'package:_ardera_common_libc_bindings/src/libc_arm64.g.dart' as arm64;
-import 'package:_ardera_common_libc_bindings/src/libc_i386.g.dart' as i386;
-import 'package:_ardera_common_libc_bindings/src/libc_amd64.g.dart' as amd64;
+
+import 'package:_ardera_common_libc_bindings/src/libc.dart' as libc;
+
+void testOffset<T extends ffi.NativeType>({
+  required ffi.Pointer<T> Function(ffi.Allocator allocator) allocate,
+  required int offset,
+  required bool Function(ffi.Pointer<T> memory) check,
+  required String fieldName,
+  ffi.Allocator allocator = ffi.calloc,
+}) {
+  final memory = allocate(allocator);
+
+  memory.cast<ffi.Uint8>().elementAt(offset).value = 0xFF;
+  expect(memory, predicate(check, 'has field $fieldName at offset $offset'));
+
+  allocator.free(memory);
+}
 
 void main() {
   final abi = ffi.Abi.current();
@@ -16,39 +29,61 @@ void main() {
 
   test('epoll event binding', () {
     if (isLinuxArm) {
-      expect(ffi.sizeOf<arm.epoll_event>(), 16);
+      expect(ffi.sizeOf<libc.epoll_event>(), 16);
 
-      var ptr = ffi.Pointer<arm.epoll_event>.fromAddress(0);
+      var ptr = ffi.Pointer<libc.epoll_event>.fromAddress(0);
       expect(ptr.address, 0);
       expect(ptr.elementAt(1).address, 16);
     } else if (isLinuxArm64) {
-      expect(ffi.sizeOf<arm64.epoll_event>(), 16);
+      expect(ffi.sizeOf<libc.epoll_event>(), 16);
 
-      var ptr = ffi.Pointer<arm64.epoll_event>.fromAddress(0);
+      var ptr = ffi.Pointer<libc.epoll_event>.fromAddress(0);
       expect(ptr.address, 0);
       expect(ptr.elementAt(1).address, 16);
     } else if (isLinuxIA32) {
-      expect(ffi.sizeOf<i386.epoll_event>(), 12);
+      expect(ffi.sizeOf<libc.epoll_event>(), 12);
 
-      var ptr = ffi.Pointer<i386.epoll_event>.fromAddress(0);
+      var ptr = ffi.Pointer<libc.epoll_event>.fromAddress(0);
       expect(ptr.address, 0);
       expect(ptr.elementAt(1).address, 12);
     } else if (isLinuxX64) {
-      expect(ffi.sizeOf<amd64.epoll_event>(), 12);
+      expect(ffi.sizeOf<libc.epoll_event>(), 12);
 
-      var ptr = ffi.Pointer<amd64.epoll_event>.fromAddress(0);
+      var ptr = ffi.Pointer<libc.epoll_event>.fromAddress(0);
       expect(ptr.address, 0);
       expect(ptr.elementAt(1).address, 12);
     }
+  }, skip: !isLinux ? 'Only applies to linux platforms.' : null);
 
-    // var ptr = ffi.Pointer<epoll_event>.fromAddress(0);
-    // expect(ptr.address, 0);
-    // expect(ptr.elementAt(1).address, 16);
+  test('CAN binding', () {
+    expect(ffi.sizeOf<libc.can_frame>, libc.CAN_MTU);
+    expect(ffi.sizeOf<libc.canfd_frame>, libc.CANFD_MTU);
 
-    // ptr = ffi.calloc.allocate<epoll_event>(ffi.sizeOf<epoll_event>());
-    // expect(ptr.address, isNot(0));
-    // expect(ptr.elementAt(0).address, ptr.address + 0);
-    // expect(ptr.elementAt(1).address, ptr.address + 16);
-    // ffi.calloc.free(ptr);
+    testOffset<libc.can_frame>(
+      allocate: (alloc) => alloc(),
+      offset: 7,
+      check: (memory) {
+        return memory.ref.len8_dlc != 0;
+      },
+      fieldName: 'data',
+    );
+
+    testOffset<libc.can_frame>(
+      allocate: (alloc) => alloc(),
+      offset: 8,
+      check: (memory) {
+        return memory.ref.data[0] != 0;
+      },
+      fieldName: 'data',
+    );
+
+    testOffset<libc.canfd_frame>(
+      allocate: (alloc) => alloc(),
+      offset: 8,
+      check: (memory) {
+        return memory.ref.data[0] != 0;
+      },
+      fieldName: 'data',
+    );
   }, skip: !isLinux ? 'Only applies to linux platforms.' : null);
 }
