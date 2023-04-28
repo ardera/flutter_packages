@@ -391,14 +391,15 @@ class CanTransmissionDelayCompensationLimits {
 /// CAN device
 class CanDevice {
   CanDevice({
-    required this.platformInterface,
-    required this.netlinkSocket,
-    required this.netInterface,
-  });
+    required _PlatformInterface platformInterface,
+    required _RtnetlinkSocket netlinkSocket,
+    required this.networkInterface,
+  })  : _platformInterface = platformInterface,
+        _netlinkSocket = netlinkSocket;
 
-  final PlatformInterface platformInterface;
-  final RtnetlinkSocket netlinkSocket;
-  final NetworkInterface netInterface;
+  final _PlatformInterface _platformInterface;
+  final _RtnetlinkSocket _netlinkSocket;
+  final NetworkInterface networkInterface;
 
   void _setCanInterfaceAttributes({
     bool? setUpDown,
@@ -409,8 +410,8 @@ class CanDevice {
     CanBitTiming? dataBitTiming,
     int? termination,
   }) {
-    return netlinkSocket.setCanInterfaceAttributes(
-      netInterface.index,
+    return _netlinkSocket.setCanInterfaceAttributes(
+      networkInterface.index,
       setUpDown: setUpDown,
       bitTiming: bitTiming,
       ctrlModeFlags: ctrlModeFlags,
@@ -574,17 +575,17 @@ class CanDevice {
   //   https://elixir.bootlin.com/linux/latest/source/drivers/net/can/dev/netlink.c#L614
 
   CanSocket open() {
-    final fd = platformInterface.createCanSocket();
+    final fd = _platformInterface.createCanSocket();
     try {
-      platformInterface.bind(fd, netInterface.index);
+      _platformInterface.bind(fd, networkInterface.index);
 
       return CanSocket(
-        platformInterface: platformInterface,
+        platformInterface: _platformInterface,
         fd: fd,
-        netInterface: netInterface,
+        networkInterface: networkInterface,
       );
     } on Object {
-      platformInterface.close(fd);
+      _platformInterface.close(fd);
       rethrow;
     }
   }
@@ -662,14 +663,15 @@ class CanErrorFrame extends CanFrame {
 
 class CanSocket {
   CanSocket({
-    required this.platformInterface,
-    required this.fd,
-    required this.netInterface,
-  });
+    required _PlatformInterface platformInterface,
+    required int fd,
+    required this.networkInterface,
+  })  : _fd = fd,
+        _platformInterface = platformInterface;
 
-  final PlatformInterface platformInterface;
-  final int fd;
-  final NetworkInterface netInterface;
+  final _PlatformInterface _platformInterface;
+  final int _fd;
+  final NetworkInterface networkInterface;
   var _open = true;
 
   var _listening = false;
@@ -678,12 +680,12 @@ class CanSocket {
 
   void write(CanFrame frame) {
     assert(_open);
-    platformInterface.write(fd, frame);
+    _platformInterface.write(_fd, frame);
   }
 
   CanFrame? read() {
     assert(_open);
-    return platformInterface.read(fd);
+    return _platformInterface.read(_fd);
   }
 
   Future<void> close() async {
@@ -692,7 +694,7 @@ class CanSocket {
     }
 
     assert(_open);
-    platformInterface.close(fd);
+    _platformInterface.close(_fd);
     _open = false;
   }
 
@@ -703,7 +705,7 @@ class CanSocket {
 
     final frames = <CanFrame>[];
     while (true) {
-      final frame = PlatformInterface.readStatic(libc, fd, buffer, sizeOf<can_frame>());
+      final frame = _PlatformInterface.readStatic(libc, fd, buffer, sizeOf<can_frame>());
       if (frame != null) {
         frames.add(frame);
       } else {
@@ -718,12 +720,15 @@ class CanSocket {
     void Function(List<CanFrame>?) onFrame,
     void Function(Object error, StackTrace? stackTrace) onError,
   ) async {
+    assert(_open);
     assert(!_listening);
+    assert(_fdListener == null);
+    assert(_fdHandlerBuffer == null);
 
     _fdHandlerBuffer = calloc<can_frame>();
 
-    _fdListener = await platformInterface.eventListener.add<int, List<CanFrame>?>(
-      fd: fd,
+    _fdListener = await _platformInterface.eventListener.add<int, List<CanFrame>?>(
+      fd: _fd,
       events: {EpollFlag.inReady},
       isolateCallback: _handleFdReady,
       isolateCallbackContext: _fdHandlerBuffer!.address,
@@ -735,11 +740,12 @@ class CanSocket {
   }
 
   Future<void> _fdUnlisten() async {
+    assert(_open);
     assert(_listening);
     assert(_fdListener != null);
     assert(_fdHandlerBuffer != null);
 
-    await platformInterface.eventListener.delete(
+    await _platformInterface.eventListener.delete(
       listener: _fdListener!,
     );
 
@@ -752,22 +758,16 @@ class CanSocket {
 
   Stream<CanFrame>? _frames;
   Stream<CanFrame> get frames {
+    assert(_open);
+
     if (_frames == null) {
       late StreamController<CanFrame> controller;
 
       controller = StreamController.broadcast(
         onListen: () {
           _fdListen(
-            (frames) {
-              if (frames != null) {
-                for (final frame in frames) {
-                  controller.add(frame);
-                }
-              }
-            },
-            (object, stackTrace) {
-              controller.addError(object, stackTrace);
-            },
+            (frames) => frames?.forEach(controller.add),
+            controller.addError,
           );
         },
         onCancel: () {
@@ -782,11 +782,11 @@ class CanSocket {
   }
 }
 
-void writeBytesToArray(List<int> bytes, int length, void Function(int index, int value) setElement) {
+void _writeBytesToArray(List<int> bytes, int length, void Function(int index, int value) setElement) {
   bytes.take(length).toList().asMap().forEach(setElement);
 }
 
-void writeStringToArrayHelper(
+void _writeStringToArrayHelper(
   String str,
   int length,
   void Function(int index, int value) setElement, {
@@ -797,11 +797,11 @@ void writeStringToArrayHelper(
   untruncatedBytes.take(length).toList().asMap().forEach(setElement);
 }
 
-class RtnetlinkSocket {
-  RtnetlinkSocket({required this.fd, required this.platformInterface});
+class _RtnetlinkSocket {
+  _RtnetlinkSocket({required this.fd, required this.platformInterface});
 
   final int fd;
-  final PlatformInterface platformInterface;
+  final _PlatformInterface platformInterface;
 
   void setCanInterfaceAttributes(
     int interfaceIndex, {
@@ -827,10 +827,10 @@ class RtnetlinkSocket {
   }
 }
 
-class PlatformInterface {
+class _PlatformInterface {
   final LibC libc;
 
-  late final RtnetlinkSocket _rtnetlinkSocket = RtnetlinkSocket(
+  late final _RtnetlinkSocket _rtnetlinkSocket = _RtnetlinkSocket(
     fd: openRtNetlinkSocket(),
     platformInterface: this,
   );
@@ -840,7 +840,7 @@ class PlatformInterface {
   static const _bufferSize = 16384;
   final _buffer = calloc.allocate<Void>(_bufferSize);
 
-  PlatformInterface() : libc = LibC(DynamicLibrary.open('libc.so.6'));
+  _PlatformInterface() : libc = LibC(DynamicLibrary.open('libc.so.6'));
 
   int getInterfaceIndex(String interfaceName) {
     final native = interfaceName.toNativeUtf8();
@@ -888,7 +888,7 @@ class PlatformInterface {
           CanDevice(
             platformInterface: this,
             netlinkSocket: _rtnetlinkSocket,
-            netInterface: interface,
+            networkInterface: interface,
           ),
     ];
   }
@@ -905,7 +905,7 @@ class PlatformInterface {
   int getCanInterfaceMTU(int fd, String interfaceName) {
     final req = calloc<ifreq>();
 
-    writeStringToArrayHelper(interfaceName, IF_NAMESIZE, (index, byte) => req.ref.ifr_name[index] = byte);
+    _writeStringToArrayHelper(interfaceName, IF_NAMESIZE, (index, byte) => req.ref.ifr_name[index] = byte);
 
     req.ref.ifr_ifindex = 0;
 
@@ -960,7 +960,7 @@ class PlatformInterface {
       assert(frame.data.length <= 8);
 
       nativeFrame.ref.len = frame.data.length;
-      writeBytesToArray(
+      _writeBytesToArray(
         frame.data,
         8,
         (index, value) => nativeFrame.ref.data[index] = value,
@@ -1372,7 +1372,11 @@ class PlatformInterface {
 }
 
 class LinuxCan {
-  final PlatformInterface _interface = PlatformInterface();
+  LinuxCan._();
+
+  final _PlatformInterface _interface = _PlatformInterface();
+
+  static final LinuxCan instance = LinuxCan._();
 
   List<CanDevice> get devices {
     return _interface.getCanDevices();
