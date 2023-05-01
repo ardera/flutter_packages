@@ -110,7 +110,7 @@ abstract class _Cmd {
   final Capability seq;
 }
 
-class _AddCmd<C, V> extends _Cmd {
+class _AddCmd extends _Cmd {
   const _AddCmd({
     required super.seq,
     required this.fd,
@@ -123,8 +123,8 @@ class _AddCmd<C, V> extends _Cmd {
   final int fd;
   final Set<EpollFlag> flags;
   final Capability listenerIdentity;
-  final FdReadyCallback<C, V> callback;
-  final C callbackContext;
+  final FdReadyCallback callback;
+  final dynamic callbackContext;
 }
 
 class _ModCmd extends _Cmd {
@@ -157,6 +157,12 @@ class _StopCmd extends _Cmd {
 
 abstract class _Reply {
   const _Reply();
+}
+
+class _InitializedEvent extends _Reply {
+  const _InitializedEvent({required this.sendPort});
+
+  final SendPort sendPort;
 }
 
 class _SuccessEvent<T> extends _Reply {
@@ -202,9 +208,7 @@ class _ErrorCmdReply extends _CmdReply {
   final StackTrace? stackTrace;
 }
 
-class _IsolateQuitMessage {}
-
-typedef FdReadyCallback<C, V> = V Function(EpollIsolate isolate, int fd, Set<EpollFlag> flags, C context);
+typedef FdReadyCallback = dynamic Function(EpollIsolate isolate, int fd, Set<EpollFlag> flags, dynamic context);
 
 void _noop(EpollIsolate isolate, int fd, Set<EpollFlag> flags, void context) {}
 
@@ -220,23 +224,22 @@ class _Handler<C, V> {
   Capability id;
   int fd;
   Set<EpollFlag> flags;
-  FdReadyCallback<C, V> callback;
-  C callbackContext;
+  FdReadyCallback callback;
+  dynamic callbackContext;
 }
 
 class EpollIsolate {
-  EpollIsolate.fromIsolateArgs(Tuple4<ReceivePort, SendPort, int, int> args)
-      : _receivePort = args.item1,
-        _sendPort = args.item2,
-        _epollFd = args.item3,
-        _eventFd = args.item4 {
+  EpollIsolate.fromIsolateArgs(Tuple3<SendPort, int, int> args)
+      : _sendPort = args.item1,
+        _epollFd = args.item2,
+        _eventFd = args.item3 {
     _subscription = _receivePort.listen((message) {
       assert(message is _Cmd);
       _cmdQueue.add(message);
     });
   }
 
-  final ReceivePort _receivePort;
+  final ReceivePort _receivePort = ReceivePort();
   final SendPort _sendPort;
   final int _epollFd;
   final int _eventFd;
@@ -284,17 +287,17 @@ class EpollIsolate {
     }
   }
 
-  void _add<C, V>({
+  void _add({
     required Capability listenerId,
     required int fd,
     required Set<EpollFlag> flags,
-    required FdReadyCallback<C, V> callback,
-    required C callbackContext,
+    required FdReadyCallback callback,
+    required dynamic callbackContext,
   }) {
     assert(!_capabilityMap.containsValue(listenerId));
 
     final index = _nextCapabilityMapIndex;
-    final handler = _Handler<C, V>(
+    final handler = _Handler(
       id: listenerId,
       fd: fd,
       flags: flags,
@@ -317,8 +320,8 @@ class EpollIsolate {
   void _mod<C, V>({
     required Object listenerId,
     Set<EpollFlag>? flags,
-    FdReadyCallback<C, V>? callback,
-    C? callbackContext,
+    FdReadyCallback? callback,
+    dynamic callbackContext,
     bool forceSetContext = false,
     bool force = false,
   }) {
@@ -459,10 +462,12 @@ class EpollIsolate {
     assert(_epollFd > 0);
     assert(_eventFd > 0);
 
+    _sendPort.send(_InitializedEvent(sendPort: _receivePort.sendPort));
+
     /// Add the event fd to the epoll instance.
     /// so we get notified of new commands even when we're in
     /// epoll_wait right now.
-    _add<void, void>(
+    _add(
       fd: _eventFd,
       flags: {EpollFlag.inReady},
       listenerId: _eventFdCap,
@@ -535,7 +540,7 @@ class EpollIsolate {
     }
   }
 
-  static void entry(Tuple4<ReceivePort, SendPort, int, int> args) async {
+  static void entry(Tuple3<SendPort, int, int> args) async {
     final isolate = EpollIsolate.fromIsolateArgs(args);
 
     try {
@@ -583,13 +588,11 @@ class EpollEventLoop {
     required int epollFd,
     required int eventFd,
     required ReceivePort receivePort,
-    required SendPort sendPort,
     required Future<Isolate> isolateFuture,
   })  : _libc = libc,
         _epollFd = epollFd,
         _eventFd = eventFd,
         _receivePort = receivePort,
-        _sendPort = sendPort,
         _isolateFuture = isolateFuture,
         _notifyBuffer = ffi.calloc<ffi.Uint8>(8) {
     _isolateFuture.then(
@@ -598,7 +601,7 @@ class EpollEventLoop {
 
         isolate.addOnExitListener(
           _receivePort.sendPort,
-          response: _IsolateQuitMessage(),
+          response: 'isolate-quit',
         );
 
         isolate.addErrorListener(_receivePort.sendPort);
@@ -609,7 +612,11 @@ class EpollEventLoop {
       },
     );
 
+    _notifyBuffer.elementAt(0).value = 0x01;
+
     _receivePortSubscription = _receivePort.listen(_onReceivePortMessage);
+
+    _sendPort = _sendPortCompleter.future;
   }
 
   factory EpollEventLoop(LibC libc) {
@@ -618,34 +625,44 @@ class EpollEventLoop {
       throw LinuxError('Could not create epoll fd.', 'epoll_create1', libc.errno);
     }
 
-    final eventFd = 0;
+    try {
+      final eventFd = libc.eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK);
+      if (eventFd < 0) {
+        throw LinuxError('Could not create event fd.', 'eventfd', libc.errno);
+      }
 
-    final myReceivePort = ReceivePort();
-    final otherSendPort = myReceivePort.sendPort;
+      try {
+        final myReceivePort = ReceivePort();
+        final otherSendPort = myReceivePort.sendPort;
 
-    final otherReceivePort = ReceivePort();
-    final mySendPort = otherReceivePort.sendPort;
+        final isolateFuture = Isolate.spawn(
+          EpollIsolate.entry,
+          Tuple3(otherSendPort, epollFd, eventFd),
+        );
 
-    final isolateFuture = Isolate.spawn(
-      EpollIsolate.entry,
-      Tuple4(otherReceivePort, otherSendPort, epollFd, eventFd),
-    );
-
-    return EpollEventLoop._construct(
-      libc: libc,
-      epollFd: epollFd,
-      eventFd: eventFd,
-      receivePort: myReceivePort,
-      sendPort: mySendPort,
-      isolateFuture: isolateFuture,
-    );
+        return EpollEventLoop._construct(
+          libc: libc,
+          epollFd: epollFd,
+          eventFd: eventFd,
+          receivePort: myReceivePort,
+          isolateFuture: isolateFuture,
+        );
+      } on Object {
+        libc.close(eventFd);
+        rethrow;
+      }
+    } on Object {
+      libc.close(epollFd);
+      rethrow;
+    }
   }
 
   final LibC _libc;
   final int _epollFd;
   final int _eventFd;
   final ReceivePort _receivePort;
-  final SendPort _sendPort;
+  late FutureOr<SendPort> _sendPort;
+  final _sendPortCompleter = Completer<SendPort>();
   final Future<Isolate> _isolateFuture;
 
   late final StreamSubscription _receivePortSubscription;
@@ -662,13 +679,17 @@ class EpollEventLoop {
   final _pendingCommands = <Capability, Completer>{};
 
   void _onReceivePortMessage(dynamic msg) {
-    assert(msg is _Reply || msg is _IsolateQuitMessage || msg is List);
+    assert(msg is _Reply || msg is List || msg is String);
 
-    if (msg is _SuccessEvent) {
+    if (msg is _InitializedEvent) {
+      assert(_sendPort is Future);
+      _sendPort = msg.sendPort;
+      _sendPortCompleter.complete(msg.sendPort);
+    } else if (msg is _SuccessEvent) {
       _onEvent(msg);
     } else if (msg is _CmdReply) {
       _onCmdReply(msg);
-    } else if (msg is _IsolateQuitMessage) {
+    } else if (msg == 'isolate-quit') {
       _isolateExitCompleter.complete();
     } else if (msg is List) {
       assert(msg[0] is String);
@@ -730,7 +751,11 @@ class EpollEventLoop {
     final completer = Completer.sync();
 
     // send the commands through
-    _sendPort.send(cmd);
+    if (_sendPort is SendPort) {
+      (_sendPort as SendPort).send(cmd);
+    } else if (_sendPort is Future<SendPort>) {
+      (await _sendPort).send(cmd);
+    }
 
     _pendingCommands[seq] = completer;
 
@@ -744,12 +769,12 @@ class EpollEventLoop {
     return await completer.future;
   }
 
-  Future<FdHandler<V>> add<C, V>({
+  Future<FdHandler> add({
     required int fd,
     required Set<EpollFlag> events,
-    required FdReadyCallback<C, V> isolateCallback,
-    required C isolateCallbackContext,
-    required ValueCallback<V> onValue,
+    required FdReadyCallback isolateCallback,
+    required dynamic isolateCallbackContext,
+    required ValueCallback onValue,
     required ErrorCallback onError,
   }) async {
     assert(_alive);
