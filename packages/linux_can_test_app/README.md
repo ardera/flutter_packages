@@ -1,16 +1,14 @@
 # linux_can_test_app
 
-A new Flutter project.
+A flutter test app with an integration test for the linux_can package.
 
-## Getting Started
+See `integration_test/can_test.dart` for the actual test.
 
-This project is a starting point for a Flutter application.
+To run, first setup a raspberry pi 3 with the hardware setup documented in `dart_test.yaml` and flutter-pi.
+Then, add that raspberry pi 3 as a custom device. (https://github.com/flutter/flutter/wiki/Using-custom-embedders-with-the-Flutter-CLI)
 
-A few resources to get you started if this is your first Flutter project:
+To run the tests, run:
+```
+$ flutter run -d my-pi3-device-name -t pi3-can integration_test/can_test.dart
+```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
