@@ -435,7 +435,7 @@ abstract class CanFrame {
   }
 }
 
-abstract class CanDataFrame extends CanFrame {
+sealed class CanDataFrame extends CanFrame {
   const CanDataFrame({required this.id, required this.data}) : assert(0 <= data.length && data.length <= 8);
 
   /// CAN ID of the frame.
@@ -444,7 +444,7 @@ abstract class CanDataFrame extends CanFrame {
   final List<int> data;
 }
 
-class CanStandardDataFrame extends CanDataFrame {
+final class CanStandardDataFrame extends CanDataFrame {
   const CanStandardDataFrame({required super.id, required super.data}) : assert(id & ~CAN_SFF_MASK == 0);
 
   @override
@@ -456,7 +456,7 @@ class CanStandardDataFrame extends CanDataFrame {
   int get hashCode => Object.hash(id.hashCode, data.hashCode);
 }
 
-class CanExtendedDataFrame extends CanDataFrame {
+final class CanExtendedDataFrame extends CanDataFrame {
   const CanExtendedDataFrame({required super.id, required super.data}) : assert(id & ~CAN_EFF_MASK == 0);
 
   @override
@@ -468,14 +468,14 @@ class CanExtendedDataFrame extends CanDataFrame {
   int get hashCode => Object.hash(id.hashCode, data.hashCode);
 }
 
-abstract class CanRemoteFrame extends CanFrame {
+sealed class CanRemoteFrame extends CanFrame {
   const CanRemoteFrame({required this.id});
 
   /// CAN ID of the frame.
   final int id;
 }
 
-class CanStandardRemoteFrame extends CanRemoteFrame {
+final class CanStandardRemoteFrame extends CanRemoteFrame {
   const CanStandardRemoteFrame({required super.id}) : assert(id & ~CAN_SFF_MASK == 0);
 
   @override
@@ -487,7 +487,7 @@ class CanStandardRemoteFrame extends CanRemoteFrame {
   int get hashCode => id.hashCode;
 }
 
-class CanExtendedRemoteFrame extends CanRemoteFrame {
+final class CanExtendedRemoteFrame extends CanRemoteFrame {
   const CanExtendedRemoteFrame({required super.id}) : assert(id & ~CAN_EFF_MASK == 0);
 
   @override
@@ -499,14 +499,8 @@ class CanExtendedRemoteFrame extends CanRemoteFrame {
   int get hashCode => id.hashCode;
 }
 
-class CanErrorFrame extends CanFrame {
-  /// The fact that we only have one instance of this means we don't need to implement
-  /// operator ==() and hashCode().
-  const CanErrorFrame._();
-
-  factory CanErrorFrame() {
-    return const CanErrorFrame._();
-  }
+final class CanErrorFrame extends CanFrame {
+  const CanErrorFrame();
 }
 
 /// The RFC2863 state of the network interface.

@@ -426,32 +426,28 @@ class PlatformInterface {
 
     final nativeFrame = ffi.calloc<can_frame>();
 
-    if (frame is CanDataFrame) {
-      nativeFrame.ref.can_id = frame.id;
-      if (frame is CanExtendedDataFrame) {
-        nativeFrame.ref.can_id |= CAN_EFF_FLAG;
-      }
+    switch (frame) {
+      case CanDataFrame(data: var data):
+        nativeFrame.ref.can_id = switch (frame) {
+          CanStandardDataFrame(id: var id) => id,
+          CanExtendedDataFrame(id: var id) => id | CAN_EFF_FLAG,
+        };
 
-      assert(frame.data.length <= 8);
-
-      nativeFrame.ref.len = frame.data.length;
-      _writeBytesToArray(
-        frame.data,
-        8,
-        (index, value) => nativeFrame.ref.data[index] = value,
-      );
-    } else if (frame is CanRemoteFrame) {
-      nativeFrame.ref.can_id = frame.id;
-      if (frame is CanExtendedRemoteFrame) {
-        nativeFrame.ref.can_id |= CAN_EFF_FLAG;
-      }
-      nativeFrame.ref.can_id |= CAN_RTR_FLAG;
-
-      nativeFrame.ref.len = 0;
-    } else if (frame is CanErrorFrame) {
-      nativeFrame.ref.can_id |= CAN_ERR_FLAG;
-
-      nativeFrame.ref.len = 0;
+        nativeFrame.ref.len = frame.data.length;
+        _writeBytesToArray(
+          data,
+          8,
+          (index, value) => nativeFrame.ref.data[index] = value,
+        );
+      case CanRemoteFrame _:
+        nativeFrame.ref.can_id = switch (frame) {
+          CanStandardRemoteFrame(id: var id) => id | CAN_RTR_FLAG,
+          CanExtendedRemoteFrame(id: var id) => id | CAN_RTR_FLAG | CAN_EFF_FLAG,
+        };
+        nativeFrame.ref.len = 0;
+      case CanErrorFrame _:
+        nativeFrame.ref.can_id = CAN_ERR_FLAG;
+        nativeFrame.ref.len = 0;
     }
 
     /// TODO: use sendmsg and MSG_DONTWAIT for non-blocking sends, and make blocking sends block in the kernel
