@@ -3,6 +3,7 @@ import 'dart:ffi' as ffi;
 
 import 'package:_ardera_common_libc_bindings/_ardera_common_libc_bindings.dart';
 import 'package:_ardera_common_libc_bindings/epoll_event_loop.dart';
+import 'package:_ardera_common_libc_bindings/linux_error.dart';
 import 'package:ffi/ffi.dart' as ffi;
 import 'package:linux_can/src/data_classes.dart';
 import 'package:linux_can/src/platform_interface.dart';
@@ -20,178 +21,122 @@ class CanDevice {
   final RtnetlinkSocket _netlinkSocket;
   final NetworkInterface networkInterface;
 
-  void _setCanInterfaceAttributes({
-    bool? setUpDown,
-    CanBitTiming? bitTiming,
-    Map<CanModeFlag, bool>? ctrlModeFlags,
-    int? restartMs,
-    bool restart = false,
-    CanBitTiming? dataBitTiming,
-    int? termination,
-  }) {
-    return _netlinkSocket.setCanInterfaceAttributes(
-      networkInterface.index,
-      setUpDown: setUpDown,
-      bitTiming: bitTiming,
-      ctrlModeFlags: ctrlModeFlags,
-      restartMs: restartMs,
-      restart: restart,
-      dataBitTiming: dataBitTiming,
-      termination: termination,
-    );
+  CanInterfaceAttributes _queryAttributes({Set<CanInterfaceAttribute>? interests}) {
+    return _platformInterface.queryAttributes(_netlinkSocket.fd, networkInterface.index, interests: interests);
   }
 
-  /// TODO: Implement
-  bool get isUp {
+  CanInterfaceAttributes _queryAttribute(CanInterfaceAttribute attribute) {
+    return _queryAttributes(interests: {attribute});
+  }
+
+  CanInterfaceAttributes queryAttributes() {
+    return _queryAttributes();
+  }
+
+  Set<NetInterfaceFlag> get interfaceFlags {
+    return _queryAttribute(CanInterfaceAttribute.interfaceFlags).interfaceFlags!;
+  }
+
+  int get txQueueLength {
+    return _queryAttribute(CanInterfaceAttribute.txQueueLength).txQueueLength!;
+  }
+
+  NetInterfaceOperState get operationalState {
     /// TODO: Maybe cache these values?
     ///  They could change without our knowledge at any time though.
-    throw UnimplementedError();
+    return _queryAttribute(CanInterfaceAttribute.operState).operState!;
   }
 
-  set isUp(bool value) {
-    _setCanInterfaceAttributes(setUpDown: true);
+  bool get isUp => operationalState == NetInterfaceOperState.up;
+
+  NetInterfaceStats get stats {
+    return _queryAttribute(CanInterfaceAttribute.stats).stats!;
   }
 
-  /// TODO: Implement
-  CanBitTiming get bitTiming {
-    throw UnimplementedError();
+  int get numTxQueues {
+    return _queryAttribute(CanInterfaceAttribute.numTxQueues).numTxQueues!;
   }
 
-  set bitTiming(CanBitTiming timing) {
-    /// TODO: Should we allow a way to force set these,
-    ///  without checking isUp?
-    assert(!isUp);
-
-    // TODO: Check value is accepted beforehand
-    _setCanInterfaceAttributes(bitTiming: bitTiming);
+  int get numRxQueues {
+    return _queryAttribute(CanInterfaceAttribute.numRxQueues).numRxQueues!;
   }
 
-  set bitrate(int bitrate) {
-    // TODO: Check value is accepted beforehand
-    _setCanInterfaceAttributes(
-      bitTiming: CanBitTiming.bitrateOnly(bitrate: bitrate),
-    );
+  CanDeviceStats get xstats {
+    return _queryAttribute(CanInterfaceAttribute.xstats).xstats!;
+  }
+
+  CanBitTiming? get bitTiming {
+    return _queryAttribute(CanInterfaceAttribute.bitTiming).bitTiming;
   }
 
   /// CAN hardware-dependent bit-timing constants
   ///
   /// Used for calculating and checking bit-timing parameters
-  ///
-  /// TODO: Implement
-  CanBitTimingLimits get bitTimingConstants {
+  CanBitTimingLimits get bitTimingLimits {
     // ref: https://elixir.bootlin.com/linux/latest/source/drivers/net/can/dev/netlink.c#L555
-    throw UnimplementedError();
+    return _queryAttribute(CanInterfaceAttribute.bitTimingLimits).bitTimingLimits!;
   }
 
-  String get hardwareName => bitTimingConstants.hardwareName;
+  String get hardwareName => bitTimingLimits.hardwareName;
 
   /// CAN system clock frequency in Hz
-  /// TODO: Implement
   int get clockFrequency {
     // ref: https://elixir.bootlin.com/linux/latest/source/drivers/net/can/dev/netlink.c#L558
-    throw UnimplementedError();
+    return _queryAttribute(CanInterfaceAttribute.clockFrequency).clockFrequency!;
   }
 
   /// CAN bus state
-  /// TODO: Implement
   CanState get state {
-    throw UnimplementedError();
+    return _queryAttribute(CanInterfaceAttribute.state).state!;
   }
 
-  /// TODO: Implement
-  Map<CanModeFlag, bool> get controllerMode {
-    throw UnimplementedError();
+  Set<CanModeFlag> get controllerMode {
+    return _queryAttribute(CanInterfaceAttribute.controllerMode).controllerMode!;
   }
 
-  /// TODO: Implement
-  set controllerMode(Map<CanModeFlag, bool> flags) {
-    _setCanInterfaceAttributes(ctrlModeFlags: flags);
+  Duration get restartDelay {
+    return _queryAttribute(CanInterfaceAttribute.restartDelay).restartDelay!;
   }
 
-  /// TODO: Implement
-  int get restartDelayMillis {
-    throw UnimplementedError();
+  CanBusErrorCounters? get busErrorCounters {
+    return _queryAttribute(CanInterfaceAttribute.busErrorCounters).busErrorCounters;
   }
 
-  /// TODO: Implement
-  set restartDelayMillis(int millis) {
-    _setCanInterfaceAttributes(restartMs: millis);
+  CanBitTiming? get dataBitTiming {
+    return _queryAttribute(CanInterfaceAttribute.dataBitTiming).dataBitTiming;
   }
 
-  /// TODO: Implement
-  void restart() {
-    _setCanInterfaceAttributes(restart: true);
+  CanBitTimingLimits? get dataBitTimingLimits {
+    return _queryAttribute(CanInterfaceAttribute.dataBitTimingLimits).dataBitTimingLimits;
   }
 
-  /// TODO: Implement
-  CanBusErrorCounters get busErrorCounters {
-    throw UnimplementedError();
+  int? get termination {
+    return _queryAttribute(CanInterfaceAttribute.termination).termination;
   }
 
-  /// TODO: Implement
-  CanBitTiming get dataBitTiming {
-    throw UnimplementedError();
+  int? get fixedTermination {
+    return _queryAttribute(CanInterfaceAttribute.fixedTermination).fixedTermination;
   }
 
-  /// TODO: Implement
-  set dataBitTiming(CanBitTiming timing) {
-    assert(!isUp);
-
-    // ref: https://elixir.bootlin.com/linux/latest/source/drivers/net/can/dev/netlink.c#L303
-
-    _setCanInterfaceAttributes(dataBitTiming: timing);
+  int? get fixedBitrate {
+    return _queryAttribute(CanInterfaceAttribute.fixedBitrate).fixedBitrate;
   }
 
-  /// TODO: Implement
-  CanBitTimingLimits get dataBitTimingConstants {
-    throw UnimplementedError();
+  int? get fixedDataBitRate {
+    return _queryAttribute(CanInterfaceAttribute.fixedDataBitrate).fixedDataBitrate;
   }
 
-  /// TODO: Implement
-  int get termination {
-    throw UnimplementedError();
-  }
-
-  /// TODO: Implement
-  set termination(int termination) {
-    // not all values accepted
-    // TODO: Check value is accepted beforehand
-    // ref: https://elixir.bootlin.com/linux/latest/source/drivers/net/can/dev/netlink.c#L365
-
-    _setCanInterfaceAttributes(termination: termination);
-  }
-
-  /// TODO: Implement
-  int get terminationConst {
-    throw UnimplementedError();
-  }
-
-  /// TODO: Implement
-  int get bitrateConst {
-    throw UnimplementedError();
-  }
-
-  /// TODO: Implement
-  int get dataBitRateConst {
-    throw UnimplementedError();
-  }
-
-  /// TODO: Implement
-  int get bitRateMax {
-    throw UnimplementedError();
+  int? get maxBitrate {
+    return _queryAttribute(CanInterfaceAttribute.maxBitrate).maxBitrate;
   }
 
   // TODO: Implement TDC info
   // ref:
   //   https://elixir.bootlin.com/linux/latest/source/drivers/net/can/dev/netlink.c#L467
 
-  // TODO: Implement supported controller modes
-  // ref:
-  //   https://elixir.bootlin.com/linux/latest/source/drivers/net/can/dev/netlink.c#L520
-
-  // TODO: Implement device statistics
-  // ref:
-  //   https://elixir.bootlin.com/linux/latest/source/drivers/net/can/dev/netlink.c#L614
+  Set<CanModeFlag>? get supportedControllerModes {
+    return _queryAttribute(CanInterfaceAttribute.supportedControllerModes).supportedControllerModes;
+  }
 
   CanSocket open() {
     final fd = _platformInterface.createCanSocket();
@@ -227,9 +172,35 @@ class CanSocket {
   FdHandler? _fdListener;
   ffi.Pointer<can_frame>? _fdHandlerBuffer;
 
-  void write(CanFrame frame) {
+  /// Returns the current send buffer size of this socket.
+  ///
+  /// Every CAN frame sent with this socket will first go into the send buffer, before it's actually sent.
+  ///
+  /// It's actually surprisingly hard to determine exactly how many CAN frames fit into the send buffer.
+  /// There's some overhead by the SocketCAN implementation, some overhead of the Linux Socket implementation in general,
+  /// some overhead by alignments, paddings, and it also seems like the kernel will allocate a single page for every
+  /// frame.
+  int get sendBufSize => _platformInterface.getSendBufSize(_fd);
+
+  /// Sets the send buffer size of this socket.
+  ///
+  /// The larger the send buffer, the more more CAN frames can be sent in a short time-period.
+  ///
+  /// There's limits on the socket send buffer size, it must satisfy:
+  /// 1024 <= value <= /proc/sys/net/core/wmem_max.
+  ///
+  /// The default value is given inside /proc/sys/net/core/wmem_default.
+  set sendBufSize(int value) => _platformInterface.setSendBufSize(_fd, value);
+
+  /// Sends the standard CAN frame [frame] using this socket.
+  ///
+  /// If [block] is true, the send is re-attempted even though the send buffer is full, until it succeeds. This can
+  /// happen when sending lots of frames in a short time period. If [block] is false, this will throw a [LinuxError]
+  /// with errno [EWOULDBLOCK] (value 22) in this case.
+  void write(CanFrame frame, {bool block = true}) {
     assert(_open);
-    _platformInterface.write(_fd, frame);
+
+    _platformInterface.write(_fd, frame, block: block);
   }
 
   CanFrame? read() {

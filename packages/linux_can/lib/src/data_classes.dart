@@ -1,4 +1,6 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:_ardera_common_libc_bindings/_ardera_common_libc_bindings.dart';
+import 'package:collection/collection.dart';
 import 'package:quiver/collection.dart';
 
 /// A linux network interface.
@@ -85,6 +87,11 @@ class CanBitTiming {
 
   /// Bit-rate prescaler.
   final int bitratePrescaler;
+
+  @override
+  String toString() {
+    return 'CanBitTiming(bitrate: $bitrate, samplePoint: $samplePoint, tq: $tq, propagationSegment: $propagationSegment, phaseSegment1: $phaseSegment1, phaseSegment2: $phaseSegment2, syncJumpWidth: $syncJumpWidth, bitratePrescaler: $bitratePrescaler)';
+  }
 }
 
 /// CAN controller mode
@@ -190,6 +197,11 @@ class CanBitTimingLimits {
   final int bitRatePrescalerMin;
   final int bitRatePrescalerMax;
   final int bitRatePrescalerIncrement;
+
+  @override
+  String toString() {
+    return 'CanBitTimingLimits(hardwareName: $hardwareName, timeSegment1Min: $timeSegment1Min, timeSegment1Max: $timeSegment1Max, timeSegment2Min: $timeSegment2Min, timeSegment2Max: $timeSegment2Max, synchronisationJumpWidth: $synchronisationJumpWidth, bitRatePrescalerMin: $bitRatePrescalerMin, bitRatePrescalerMax: $bitRatePrescalerMax, bitRatePrescalerIncrement: $bitRatePrescalerIncrement)';
+  }
 }
 
 /// CAN operation and error states
@@ -198,13 +210,13 @@ class CanBitTimingLimits {
 ///   https://elixir.bootlin.com/linux/latest/source/include/uapi/linux/can/netlink.h#L66
 enum CanState {
   /// RX/TX error count < 96
-  errorActive(0),
+  active(0),
 
   /// RX/TX error count < 128
-  errorWarning(1),
+  warning(1),
 
   /// RX/TX error count < 256
-  errorPassive(2),
+  passive(2),
 
   /// RX/TX error count >= 256
   busOff(3),
@@ -233,6 +245,9 @@ class CanBusErrorCounters {
 
   final int txErrors;
   final int rxErrors;
+
+  @override
+  String toString() => 'CanBusErrorCounters(txErrors: $txErrors, rxErrors: $rxErrors)';
 }
 
 /// CAN device statistics
@@ -263,6 +278,11 @@ class CanDeviceStats {
 
   /// CAN controller re-starts
   final int restarts;
+
+  @override
+  String toString() {
+    return 'CanDeviceStats(busError: $busError, errorWarning: $errorWarning, errorPassive: $errorPassive, busOff: $busOff, arbitrationLost: $arbitrationLost, restarts: $restarts)';
+  }
 }
 
 /// CAN FD Transmission Delay Compensation parameters
@@ -486,5 +506,233 @@ class CanErrorFrame extends CanFrame {
 
   factory CanErrorFrame() {
     return const CanErrorFrame._();
+  }
+}
+
+/// The RFC2863 state of the network interface.
+///
+/// See: https://docs.kernel.org/networking/operstates.html
+enum NetInterfaceOperState {
+  /// Interface is in unknown state, neither driver nor userspace has set operational state.
+  ///
+  /// Interface must be considered for user data as setting operational state has not been implemented in every driver.
+  unknown(0),
+
+  /// Unused in current kernel (notpresent interfaces normally disappear), just a numerical placeholder.
+  notPresent(1),
+
+  /// Interface is unable to transfer data on L1, f.e. ethernet is not plugged or interface is ADMIN down.
+  down(2),
+
+  /// Interfaces stacked on an interface that is down show this state (f.e. VLAN).
+  lowerLayerDown(3),
+
+  /// Interface is in testing mode, for example executing driver self-tests or media (cable) test.
+  ///
+  /// It can't be used for normal traffic until tests complete.
+  testing(4),
+
+  /// Interface is L1 up, but waiting for an external event, f.e. for a protocol to establish. (802.1X)
+  dormant(5),
+
+  /// Interface is operational up and can be used.
+  up(6);
+
+  const NetInterfaceOperState(this.value);
+
+  final int value;
+}
+
+class NetInterfaceStats {}
+
+/// Flags describing the state of a network interface.
+///
+/// What these flags actually mean depends on the driver, because it's up to the driver
+/// to signal these.
+///
+/// Note: The iproute2 `ip link` command will sometimes report NO-CARRIER, but that's not actually a real flag
+/// reported by the kernel. Instead, `ip link` will never report (IFF_)RUNNING if it's reported by the kernel, but
+/// instead will report NO-CARRIER if UP is reported but not RUNNING:
+///   https://github.com/shemminger/iproute2/blob/v6.3.0/bridge/link.c#L37-L40
+///
+/// Reference:
+///   https://github.com/torvalds/linux/blob/v6.3/include/uapi/linux/if.h#L42-L81
+enum NetInterfaceFlag {
+  /// Interface is up.
+  up(IFF_UP),
+
+  /// Broadcast address valid.
+  broadcast(IFF_BROADCAST),
+
+  /// Turn on debugging.
+  debug(IFF_DEBUG),
+
+  /// Is a loopback net.
+  loopback(IFF_LOOPBACK),
+
+  /// Interface has p-p link.
+  pointToPoint(IFF_POINTOPOINT),
+
+  /// Avoid use of trailers.
+  noTrailers(IFF_NOTRAILERS),
+
+  /// Interface RFC2863 OPER_UP. Volatile.
+  running(IFF_RUNNING),
+
+  /// No ARP protocol.
+  noArp(IFF_NOARP),
+
+  /// Receive all packets.
+  promiscuous(IFF_PROMISC),
+
+  /// Receive all multicast packets.
+  allMulti(IFF_ALLMULTI),
+
+  /// Master of a load balancer.
+  master(IFF_MASTER),
+
+  /// Slave of a load balancer.
+  slave(IFF_SLAVE),
+
+  /// Supports multicast.
+  multicast(IFF_MULTICAST),
+
+  /// Can set media type.
+  portsel(IFF_PORTSEL),
+
+  /// Auto media select active.
+  audioMedia(IFF_AUTOMEDIA),
+
+  /// Dialup device with changing addresses.
+  dynamic(IFF_DYNAMIC),
+
+  /// Driver signals L1 up.
+  lowerUp(1 << 16),
+
+  /// Driver signals dormant.
+  dormant(1 << 17),
+
+  /// Echo sent packets.
+  echo(1 << 18);
+
+  const NetInterfaceFlag(this.nativeValue);
+
+  final int nativeValue;
+}
+
+class CanInterfaceAttributes {
+  final Set<NetInterfaceFlag>? interfaceFlags;
+
+  final int? txQueueLength;
+  final NetInterfaceOperState? operState;
+  final NetInterfaceStats? stats;
+  final int? numTxQueues;
+  final int? numRxQueues;
+
+  final CanDeviceStats? xstats;
+
+  final CanBitTiming? bitTiming;
+  final CanBitTimingLimits? bitTimingLimits;
+  final int? clockFrequency;
+  final CanState? state;
+  final Set<CanModeFlag>? controllerMode;
+  final Duration? restartDelay;
+  final CanBusErrorCounters? busErrorCounters;
+  final CanBitTiming? dataBitTiming;
+  final CanBitTimingLimits? dataBitTimingLimits;
+  final int? termination;
+  final int? fixedTermination;
+  final int? fixedBitrate;
+  final int? fixedDataBitrate;
+  final int? maxBitrate;
+  final Set<CanModeFlag>? supportedControllerModes;
+
+  /// TODO: Implement tdc and tdcLimits
+  // final CanTransmissionDelayCompensation? tdc;
+  // final CanTransmissionDelayCompensationLimits? tdcLimits;
+
+  CanInterfaceAttributes({
+    this.interfaceFlags,
+    this.txQueueLength,
+    this.operState,
+    this.stats,
+    this.numTxQueues,
+    this.numRxQueues,
+    this.xstats,
+    this.bitTiming,
+    this.bitTimingLimits,
+    this.clockFrequency,
+    this.state,
+    this.controllerMode,
+    this.restartDelay,
+    this.busErrorCounters,
+    this.dataBitTiming,
+    this.dataBitTimingLimits,
+    this.termination,
+    this.fixedTermination,
+    this.fixedBitrate,
+    this.fixedDataBitrate,
+    this.maxBitrate,
+    this.supportedControllerModes,
+  });
+
+  @override
+  bool operator ==(covariant CanInterfaceAttributes other) {
+    if (identical(this, other)) return true;
+    final setEquals = const DeepCollectionEquality().equals;
+
+    return setEquals(other.interfaceFlags, interfaceFlags) &&
+        other.txQueueLength == txQueueLength &&
+        other.operState == operState &&
+        other.stats == stats &&
+        other.numTxQueues == numTxQueues &&
+        other.numRxQueues == numRxQueues &&
+        other.xstats == xstats &&
+        other.bitTiming == bitTiming &&
+        other.bitTimingLimits == bitTimingLimits &&
+        other.clockFrequency == clockFrequency &&
+        other.state == state &&
+        setEquals(other.controllerMode, controllerMode) &&
+        other.restartDelay == restartDelay &&
+        other.busErrorCounters == busErrorCounters &&
+        other.dataBitTiming == dataBitTiming &&
+        other.dataBitTimingLimits == dataBitTimingLimits &&
+        other.termination == termination &&
+        other.fixedTermination == fixedTermination &&
+        other.fixedBitrate == fixedBitrate &&
+        other.fixedDataBitrate == fixedDataBitrate &&
+        other.maxBitrate == maxBitrate &&
+        setEquals(other.supportedControllerModes, supportedControllerModes);
+  }
+
+  @override
+  int get hashCode {
+    return interfaceFlags.hashCode ^
+        txQueueLength.hashCode ^
+        operState.hashCode ^
+        stats.hashCode ^
+        numTxQueues.hashCode ^
+        numRxQueues.hashCode ^
+        xstats.hashCode ^
+        bitTiming.hashCode ^
+        bitTimingLimits.hashCode ^
+        clockFrequency.hashCode ^
+        state.hashCode ^
+        controllerMode.hashCode ^
+        restartDelay.hashCode ^
+        busErrorCounters.hashCode ^
+        dataBitTiming.hashCode ^
+        dataBitTimingLimits.hashCode ^
+        termination.hashCode ^
+        fixedTermination.hashCode ^
+        fixedBitrate.hashCode ^
+        fixedDataBitrate.hashCode ^
+        maxBitrate.hashCode ^
+        supportedControllerModes.hashCode;
+  }
+
+  @override
+  String toString() {
+    return 'CanInterfaceAttributes(interfaceFlags: $interfaceFlags, txQueueLength: $txQueueLength, operState: $operState, stats: $stats, numTxQueues: $numTxQueues, numRxQueues: $numRxQueues, xstats: $xstats, bitTiming: $bitTiming, bitTimingLimits: $bitTimingLimits, clockFrequency: $clockFrequency, state: $state, controllerMode: $controllerMode, restartDelay: $restartDelay, busErrorCounters: $busErrorCounters, dataBitTiming: $dataBitTiming, dataBitTimingLimits: $dataBitTimingLimits, termination: $termination, fixedTermination: $fixedTermination, fixedBitrate: $fixedBitrate, fixedDataBitrate: $fixedDataBitrate, maxBitrate: $maxBitrate, supportedControllerModes: $supportedControllerModes)';
   }
 }
