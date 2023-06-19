@@ -1,41 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:linux_can/linux_can.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+void main() async {
+  final can0 = LinuxCan.instance.devices.singleWhere((device) => device.networkInterface.name == 'can0');
+  final can1 = LinuxCan.instance.devices.singleWhere((device) => device.networkInterface.name == 'can1');
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  await Future.delayed(const Duration(seconds: 3));
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'linux_can Test App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(title: 'linux_can Test App'),
-    );
-  }
-}
+  can0.queryAttributes();
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  final can1Attributes = can1.queryAttributes();
+  debugPrint('can1 attributes: $can1Attributes');
 
-  final String title;
+  debugPrint('can1 hardwareName: ${can1.hardwareName}');
 
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
+  debugPrint('can1 xstats: ${can1.xstats}');
 
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Container(),
-    );
+  debugPrint('can1 txqlen: ${can1.txQueueLength}');
+
+  for (var i = 0; i < 50; i++) {
+    can1.hardwareName;
   }
 }

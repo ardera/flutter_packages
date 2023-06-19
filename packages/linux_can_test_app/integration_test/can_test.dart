@@ -4,21 +4,21 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:linux_can/linux_can.dart';
 
 void main() {
-  testWidgets('querying CAN devices', (_) async {
+  testWidgets('LinuxCan.instance.devices returns normally', (_) async {
     expect(
       () => LinuxCan.instance.devices,
       returnsNormally,
     );
   }, tags: 'pi3-can');
 
-  group('general CAN', () {
+  group('', () {
     late List<CanDevice> devices;
 
     setUp(() {
       devices = LinuxCan.instance.devices;
     });
 
-    testWidgets('CAN device list details', (_) async {
+    testWidgets('LinuxCan.instance.devices works', (_) async {
       expect(devices, hasLength(2));
 
       expect(devices[0].networkInterface.index, equals(3));
@@ -27,7 +27,7 @@ void main() {
       expect(devices[1].networkInterface.name, equals('can1'));
     }, tags: 'pi3-can');
 
-    group('control can0 and can1', () {
+    group('CanDevice', () {
       late CanDevice can0;
       late CanDevice can1;
 
@@ -35,6 +35,94 @@ void main() {
         can0 = devices.singleWhere((device) => device.networkInterface.name == 'can0');
         can1 = devices.singleWhere((device) => device.networkInterface.name == 'can1');
       });
+
+      testWidgets('can0 queryAttributes', (_) async {
+        final attributes = can0.queryAttributes();
+
+        expect(
+          attributes.interfaceFlags,
+          equals({
+            NetInterfaceFlag.up,
+            NetInterfaceFlag.running,
+            NetInterfaceFlag.noArp,
+            NetInterfaceFlag.lowerUp,
+            NetInterfaceFlag.echo
+          }),
+        );
+        expect(attributes.txQueueLength, greaterThanOrEqualTo(1000));
+        expect(attributes.operState, equals(NetInterfaceOperState.up));
+
+        /// TODO: Implement stats
+        expect(attributes.stats, anything);
+        expect(attributes.numTxQueues, equals(1));
+        expect(attributes.numRxQueues, equals(1));
+
+        expect(attributes.bitTiming?.bitrate, equals(125000));
+        expect(attributes.bitTimingLimits?.hardwareName, equals('mcp251x'));
+        expect(attributes.bitTimingLimits?.timeSegment1Min, equals(3));
+        expect(attributes.bitTimingLimits?.timeSegment1Max, equals(16));
+        expect(attributes.bitTimingLimits?.timeSegment2Min, equals(2));
+        expect(attributes.bitTimingLimits?.timeSegment2Max, equals(8));
+        expect(attributes.bitTimingLimits?.bitRatePrescalerMin, equals(1));
+        expect(attributes.bitTimingLimits?.bitRatePrescalerMax, equals(64));
+        expect(attributes.bitTimingLimits?.bitRatePrescalerIncrement, equals(1));
+
+        expect(attributes.clockFrequency, equals(8000000));
+        expect(attributes.state, equals(CanState.active));
+        expect(attributes.restartDelay, equals(Duration.zero));
+        expect(attributes.busErrorCounters, isNull);
+        expect(attributes.dataBitTiming, isNull);
+        expect(attributes.dataBitTimingLimits, isNull);
+        expect(attributes.termination, isNull);
+        expect(attributes.fixedTermination, isNull);
+        expect(attributes.fixedBitrate, isNull);
+        expect(attributes.fixedDataBitrate, isNull);
+        expect(attributes.maxBitrate, equals(0));
+      }, tags: 'pi3-can');
+
+      testWidgets('can1 attributes', (_) async {
+        final attributes = can1.queryAttributes();
+
+        expect(
+          attributes.interfaceFlags,
+          equals({
+            NetInterfaceFlag.up,
+            NetInterfaceFlag.running,
+            NetInterfaceFlag.noArp,
+            NetInterfaceFlag.lowerUp,
+            NetInterfaceFlag.echo
+          }),
+        );
+        expect(attributes.txQueueLength, greaterThanOrEqualTo(1000));
+        expect(attributes.operState, equals(NetInterfaceOperState.up));
+
+        /// TODO: Implement stats
+        expect(attributes.stats, anything);
+        expect(attributes.numTxQueues, equals(1));
+        expect(attributes.numRxQueues, equals(1));
+
+        expect(attributes.bitTiming?.bitrate, equals(125000));
+        expect(attributes.bitTimingLimits?.hardwareName, equals('mcp251x'));
+        expect(attributes.bitTimingLimits?.timeSegment1Min, equals(3));
+        expect(attributes.bitTimingLimits?.timeSegment1Max, equals(16));
+        expect(attributes.bitTimingLimits?.timeSegment2Min, equals(2));
+        expect(attributes.bitTimingLimits?.timeSegment2Max, equals(8));
+        expect(attributes.bitTimingLimits?.bitRatePrescalerMin, equals(1));
+        expect(attributes.bitTimingLimits?.bitRatePrescalerMax, equals(64));
+        expect(attributes.bitTimingLimits?.bitRatePrescalerIncrement, equals(1));
+
+        expect(attributes.clockFrequency, equals(8000000));
+        expect(attributes.state, equals(CanState.active));
+        expect(attributes.restartDelay, equals(Duration.zero));
+        expect(attributes.busErrorCounters, isNull);
+        expect(attributes.dataBitTiming, isNull);
+        expect(attributes.dataBitTimingLimits, isNull);
+        expect(attributes.termination, isNull);
+        expect(attributes.fixedTermination, isNull);
+        expect(attributes.fixedBitrate, isNull);
+        expect(attributes.fixedDataBitrate, isNull);
+        expect(attributes.maxBitrate, equals(0));
+      }, tags: 'pi3-can');
 
       testWidgets('opening & closing can0 device', (_) async {
         late CanSocket socket;
@@ -61,7 +149,7 @@ void main() {
       }, tags: 'pi3-can');
     });
 
-    group('use can0 and can1', () {
+    group('CanSocket', () {
       late CanSocket can0;
       late CanSocket can1;
 
@@ -78,6 +166,10 @@ void main() {
         can0.close();
         can1.close();
       });
+
+      testWidgets('can0 send buf size', (_) async {
+        expect(can0.sendBufSize, equals(22 * 4096));
+      }, tags: 'pi3-can');
 
       testWidgets('writing standard CAN frame to can0', (_) async {
         expect(
