@@ -171,6 +171,17 @@ class LibCArm extends LibC {
   }
 
   @override
+  int getsockopt(
+    int __fd,
+    int __level,
+    int __optname,
+    ffi.Pointer<ffi.Void> __optval,
+    ffi.Pointer<ffi.UnsignedInt> __optlen,
+  ) {
+    return _backend.getsockopt(__fd, __level, __optname, __optval, __optlen);
+  }
+
+  @override
   int socket(int __domain, int __type, int __protocol) {
     return _backend.socket(__domain, __type, __protocol);
   }
@@ -363,6 +374,17 @@ class LibCArm64 extends LibC {
   @override
   int setsockopt(int __fd, int __level, int __optname, ffi.Pointer<ffi.Void> __optval, int __optlen) {
     return _backend.setsockopt(__fd, __level, __optname, __optval, __optlen);
+  }
+
+  @override
+  int getsockopt(
+    int __fd,
+    int __level,
+    int __optname,
+    ffi.Pointer<ffi.Void> __optval,
+    ffi.Pointer<ffi.UnsignedInt> __optlen,
+  ) {
+    return _backend.getsockopt(__fd, __level, __optname, __optval, __optlen);
   }
 
   @override
@@ -561,6 +583,17 @@ class LibCI386 extends LibC {
   }
 
   @override
+  int getsockopt(
+    int __fd,
+    int __level,
+    int __optname,
+    ffi.Pointer<ffi.Void> __optval,
+    ffi.Pointer<ffi.UnsignedInt> __optlen,
+  ) {
+    return _backend.getsockopt(__fd, __level, __optname, __optval, __optlen);
+  }
+
+  @override
   int socket(int __domain, int __type, int __protocol) {
     return _backend.socket(__domain, __type, __protocol);
   }
@@ -756,6 +789,17 @@ class LibCAmd64 extends LibC {
   }
 
   @override
+  int getsockopt(
+    int __fd,
+    int __level,
+    int __optname,
+    ffi.Pointer<ffi.Void> __optval,
+    ffi.Pointer<ffi.UnsignedInt> __optlen,
+  ) {
+    return _backend.getsockopt(__fd, __level, __optname, __optval, __optlen);
+  }
+
+  @override
   int socket(int __domain, int __type, int __protocol) {
     return _backend.socket(__domain, __type, __protocol);
   }
@@ -879,6 +923,14 @@ abstract class LibC {
   int recvmsg(int __fd, ffi.Pointer<msghdr> __message, int __flags);
 
   int setsockopt(int __fd, int __level, int __optname, ffi.Pointer<ffi.Void> __optval, int __optlen);
+
+  int getsockopt(
+    int __fd,
+    int __level,
+    int __optname,
+    ffi.Pointer<ffi.Void> __optval,
+    ffi.Pointer<ffi.UnsignedInt> __optlen,
+  );
 
   int if_nametoindex(ffi.Pointer<ffi.Char> __ifname);
 

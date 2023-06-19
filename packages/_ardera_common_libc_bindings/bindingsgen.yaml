@@ -58,6 +58,7 @@ ffigen-options:
       # linux_can
       - socket
       - setsockopt
+      - getsockopt
       - getsockname
       - bind
       - send

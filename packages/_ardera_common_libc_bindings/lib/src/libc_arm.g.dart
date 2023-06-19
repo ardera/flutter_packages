@@ -486,6 +486,30 @@ class LibCArm {
   late final _recvmsg = _recvmsgPtr
       .asFunction<int Function(int, ffi.Pointer<msghdr>, int)>(isLeaf: true);
 
+  int getsockopt(
+    int __fd,
+    int __level,
+    int __optname,
+    ffi.Pointer<ffi.Void> __optval,
+    ffi.Pointer<ffi.UnsignedInt> __optlen,
+  ) {
+    return _getsockopt(
+      __fd,
+      __level,
+      __optname,
+      __optval,
+      __optlen,
+    );
+  }
+
+  late final _getsockoptPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Int Function(ffi.Int, ffi.Int, ffi.Int, ffi.Pointer<ffi.Void>,
+              ffi.Pointer<ffi.UnsignedInt>)>>('getsockopt');
+  late final _getsockopt = _getsockoptPtr.asFunction<
+      int Function(int, int, int, ffi.Pointer<ffi.Void>,
+          ffi.Pointer<ffi.UnsignedInt>)>(isLeaf: true);
+
   int setsockopt(
     int __fd,
     int __level,
