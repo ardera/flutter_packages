@@ -112,7 +112,7 @@ void main() {
   // We can't override the widgets binding so we can't really do anything about it. Maybe we can fix it
   // in the android subproject.
   // assert here so we at least fail early.
-  assert(window.physicalSize != Size.zero);
+  assert(PlatformDispatcher.instance.implicitView!.physicalSize != Size.zero);
 
   group('test gpio on pi 4', () {
     testWidgets('test pi 4 general gpio', (_) async {
