@@ -22,8 +22,7 @@ RUN apt-get install -y libclang-dev
 
 COPY . /tmp/_ardera_common_libc_bindings
 WORKDIR /tmp/_ardera_common_libc_bindings
-RUN dart pub get && dart pub get -C tool/bindingsgenerator
+RUN dart pub get
 
-#CMD dart pub get && dart run ffigen --config=ffigen.yaml && cp /tmp/_ardera_common_libc_bindings/lib/src/libc.g.dart /tmp/_ardera_common_libc_bindings_output/lib/src/libc.g.dart
-CMD dart run tool/bindingsgenerator/bin/entry.dart && \
+CMD dart run tool/bindingsgenerator_entry.dart && \
     cp /tmp/_ardera_common_libc_bindings/lib/src/libc_*.g.dart /tmp/_ardera_common_libc_bindings_output/lib/src/

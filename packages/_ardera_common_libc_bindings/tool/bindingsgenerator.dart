@@ -23,14 +23,13 @@ void main(List<String> arguments) async {
   final scriptUri = Platform.script;
 
   assert(scriptUri.pathSegments.last == 'bindingsgenerator.dart');
-  assert(scriptUri.pathSegments[scriptUri.pathSegments.length - 2] == 'bindingsgenerator');
-  assert(scriptUri.pathSegments[scriptUri.pathSegments.length - 3] == 'tool');
-  assert(scriptUri.pathSegments[scriptUri.pathSegments.length - 4] == '_ardera_common_libc_bindings');
+  assert(scriptUri.pathSegments[scriptUri.pathSegments.length - 1] == 'tool');
+  assert(scriptUri.pathSegments[scriptUri.pathSegments.length - 2] == '_ardera_common_libc_bindings');
 
   final script = scriptUri.toFilePath();
-  final dockerfile = path.relative(path.join(script, '../../Dockerfile'));
-  final bindings = path.relative(path.join(script, '../../../..'));
-  final bindingsAbsolute = path.normalize(path.join(script, '../../../..'));
+  final dockerfile = path.relative(path.join(script, '../Dockerfile'));
+  final bindings = path.relative(path.join(script, '../..'));
+  final bindingsAbsolute = path.normalize(path.join(script, '../..'));
   print('relative path of bindings library: $bindings');
 
   await run(

@@ -10,8 +10,11 @@ environment:
 
 dev_dependencies:
   lints: ^2.0.0
-  test: ^1.20.1
+  test: ^1.21.0
   ffigen: ^7.2.10
+  dart_style: ^2.3.0
+  path: ^1.8.3
+  yaml: ^3.1.1
 
 dependencies:
   build_runner: ^2.1.7
