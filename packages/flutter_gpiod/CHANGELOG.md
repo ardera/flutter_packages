@@ -1,3 +1,7 @@
+## 0.5.1+2
+
+ - Update a dependency to the latest release.
+
 ## 0.5.1+1
 
  - **FIX**: use dart 2.17 for `dart:ffi` abi-specific integer types. ([79e410a2](https://github.com/ardera/flutter_packages/commit/79e410a2c08e114c4afee8312aefb9ba493048d7))

@@ -1,3 +1,7 @@
+## 0.3.0+1
+
+ - **REFACTOR**: de-assemble bindingsgen helper package. ([f5e6255c](https://github.com/ardera/flutter_packages/commit/f5e6255cd90957507f2c0e81a5bae21244860d6f))
+
 ## 0.3.0
 
 > Note: This release has breaking changes.

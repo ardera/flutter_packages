@@ -1,6 +1,6 @@
 name: linux_can
 description: Package for using CAN devices on linux.
-version: 0.1.0
+version: 0.1.0+1
 repository: https://github.com/ardera/flutter_packages
 
 environment:
@@ -11,7 +11,7 @@ dev_dependencies:
   test: ^1.21.0
 
 dependencies:
-  _ardera_common_libc_bindings: ^0.3.0
+  _ardera_common_libc_bindings: ^0.3.0+1
   collection: ^1.17.2
   ffi: ^2.0.1
   quiver: ^3.2.1

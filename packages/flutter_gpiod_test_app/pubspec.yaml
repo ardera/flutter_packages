@@ -10,7 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.2
-  flutter_gpiod: ^0.5.1+1
+  flutter_gpiod: ^0.5.1+2
 dev_dependencies:
   integration_test:
     sdk: flutter
