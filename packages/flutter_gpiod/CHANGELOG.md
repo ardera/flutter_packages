@@ -1,3 +1,8 @@
+## 0.5.1+1
+
+ - **FIX**: use dart 2.17 for `dart:ffi` abi-specific integer types. ([79e410a2](https://github.com/ardera/flutter_packages/commit/79e410a2c08e114c4afee8312aefb9ba493048d7))
+ - **FIX**: invoke libc.errno_location as a function. ([896af01e](https://github.com/ardera/flutter_packages/commit/896af01e5323e2a959df454e71671d126a8c6f20))
+
 ## 0.5.1
 
  - **FEAT**: use newly generated libc bindings in dependants. ([14972b55](https://github.com/ardera/flutter_packages/commit/14972b5560d1e6e0cfd748cb47936e6696577c0e))

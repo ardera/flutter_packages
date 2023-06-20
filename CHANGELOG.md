@@ -3,6 +3,68 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2023-06-20
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`_ardera_common_libc_bindings` - `v0.3.0`](#_ardera_common_libc_bindings---v030)
+ - [`linux_can` - `v0.1.0`](#linux_can---v010)
+
+Packages with other changes:
+
+ - [`_ardera_libc_bindings_generator` - `v0.1.1+1`](#_ardera_libc_bindings_generator---v0111)
+ - [`flutter_gpiod` - `v0.5.1+1`](#flutter_gpiod---v0511)
+ - [`linux_spidev` - `v0.2.1+1`](#linux_spidev---v0211)
+ - [`linux_serial` - `v0.2.3+1`](#linux_serial---v0231)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `linux_serial` - `v0.2.3+1`
+
+---
+
+#### `_ardera_common_libc_bindings` - `v0.3.0`
+
+ - **FEAT**: bindingsgen: add `getsockopt` binding. ([fed350e6](https://github.com/ardera/flutter_packages/commit/fed350e646b128d29468a165d78bcaee84859737))
+ - **FEAT**: CAN event listening. ([48913713](https://github.com/ardera/flutter_packages/commit/48913713f48ce5665dfd8c73ab0e5e7653634f73))
+ - **FEAT**: more & restructured bindings, epoll event loop, linux_can CAN TDC dataclasses. ([088922bc](https://github.com/ardera/flutter_packages/commit/088922bc66ed415f9bbd6a39bf624db09f92ba18))
+ - **FEAT**: add more rtnetlink communication. ([f73e08bb](https://github.com/ardera/flutter_packages/commit/f73e08bb135ccc67222d8e1cfb210fd0f550d8c1))
+ - **FEAT**: regenerate libc bindings using bindingsgenerator tool. ([79fc3e4a](https://github.com/ardera/flutter_packages/commit/79fc3e4a5cb5e84fd6df24f1ba1bdbbc81ff8e60))
+ - **FEAT**: add packages/_ardera_common_libc_bindings/tool/bindingsgenerator. ([0df03227](https://github.com/ardera/flutter_packages/commit/0df03227620d4762f812b8be2feaebe1e383783d))
+ - **BREAKING** **FIX**: make EpollListener work. ([6b7b215b](https://github.com/ardera/flutter_packages/commit/6b7b215bc65c079490ef147521e62385238aa22d))
+
+#### `linux_can` - `v0.1.0`
+
+ - **REFACTOR**: use dart 3 pattern matching. ([7f4a1d9c](https://github.com/ardera/flutter_packages/commit/7f4a1d9cf3b99bacfa4e4196326a06e7e504c81a))
+ - **FIX**: linux_can: depend on package collection. ([6bd56f02](https://github.com/ardera/flutter_packages/commit/6bd56f028959b0da3c260baa0d17fb2cee022db8))
+ - **FEAT**: refactors, improvements for linux_can. ([7b44800a](https://github.com/ardera/flutter_packages/commit/7b44800affb76e29f1c11088bb73b17bd69280ca))
+ - **FEAT**: CAN event listening. ([48913713](https://github.com/ardera/flutter_packages/commit/48913713f48ce5665dfd8c73ab0e5e7653634f73))
+ - **FEAT**: more & restructured bindings, epoll event loop, linux_can CAN TDC dataclasses. ([088922bc](https://github.com/ardera/flutter_packages/commit/088922bc66ed415f9bbd6a39bf624db09f92ba18))
+ - **FEAT**: add more rtnetlink communication. ([f73e08bb](https://github.com/ardera/flutter_packages/commit/f73e08bb135ccc67222d8e1cfb210fd0f550d8c1))
+ - **FEAT**: add linux_can package. ([26bd3258](https://github.com/ardera/flutter_packages/commit/26bd3258b44eab3b943c972a5fc1bcd8569edeb1))
+ - **BREAKING** **FIX**: Make some linux_can fields private, Add asserts. ([ecb1f885](https://github.com/ardera/flutter_packages/commit/ecb1f8856e55cdeb637f2c848503ea02db411277))
+ - **BREAKING** **FEAT**: implement querying CAN interface attributes. ([51d1923f](https://github.com/ardera/flutter_packages/commit/51d1923f3e3423813feebf08a371d432dc020065))
+
+#### `_ardera_libc_bindings_generator` - `v0.1.1+1`
+
+ - **FIX**: depend on dart 2.17 for abi specific integer types. ([037b78cc](https://github.com/ardera/flutter_packages/commit/037b78cc2e11ce75719c12b6a71b9388d8803cb4))
+
+#### `flutter_gpiod` - `v0.5.1+1`
+
+ - **FIX**: use dart 2.17 for `dart:ffi` abi-specific integer types. ([79e410a2](https://github.com/ardera/flutter_packages/commit/79e410a2c08e114c4afee8312aefb9ba493048d7))
+ - **FIX**: invoke libc.errno_location as a function. ([896af01e](https://github.com/ardera/flutter_packages/commit/896af01e5323e2a959df454e71671d126a8c6f20))
+
+#### `linux_spidev` - `v0.2.1+1`
+
+ - **FIX**: use dart 2.17 for `dart:ffi` abi-specific integer types. ([79e410a2](https://github.com/ardera/flutter_packages/commit/79e410a2c08e114c4afee8312aefb9ba493048d7))
+
+
 ## 2023-04-04
 
 ### Changes

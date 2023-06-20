@@ -1,3 +1,7 @@
+## 0.2.3+1
+
+ - Update a dependency to the latest release.
+
 ## 0.2.3
 
  - **FIX**: remove logging, increase dart SDK min to 2.16. ([7e4a0058](https://github.com/ardera/flutter_packages/commit/7e4a0058ba8e58b2715d54a6cf62179467a7b4e0))
