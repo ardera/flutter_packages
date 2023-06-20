@@ -10,27 +10,20 @@ import 'ssize_t.dart' as pkg_ssizet;
 /// libc backend for arm
 class LibCArm {
   /// Holds the symbol lookup function.
-  final ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
-      _lookup;
+  final ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName) _lookup;
 
   /// The symbols are looked up in [dynamicLibrary].
   LibCArm(ffi.DynamicLibrary dynamicLibrary) : _lookup = dynamicLibrary.lookup;
 
   /// The symbols are looked up with [lookup].
-  LibCArm.fromLookup(
-      ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
-          lookup)
-      : _lookup = lookup;
+  LibCArm.fromLookup(ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName) lookup) : _lookup = lookup;
 
   ffi.Pointer<ffi.Int> errno_location() {
     return _errno_location();
   }
 
-  late final _errno_locationPtr =
-      _lookup<ffi.NativeFunction<ffi.Pointer<ffi.Int> Function()>>(
-          '__errno_location');
-  late final _errno_location = _errno_locationPtr
-      .asFunction<ffi.Pointer<ffi.Int> Function()>(isLeaf: true);
+  late final _errno_locationPtr = _lookup<ffi.NativeFunction<ffi.Pointer<ffi.Int> Function()>>('__errno_location');
+  late final _errno_location = _errno_locationPtr.asFunction<ffi.Pointer<ffi.Int> Function()>(isLeaf: true);
 
   int open(
     ffi.Pointer<ffi.Char> __file,
@@ -42,11 +35,8 @@ class LibCArm {
     );
   }
 
-  late final _openPtr = _lookup<
-          ffi.NativeFunction<ffi.Int Function(ffi.Pointer<ffi.Char>, ffi.Int)>>(
-      'open');
-  late final _open = _openPtr
-      .asFunction<int Function(ffi.Pointer<ffi.Char>, int)>(isLeaf: true);
+  late final _openPtr = _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Pointer<ffi.Char>, ffi.Int)>>('open');
+  late final _open = _openPtr.asFunction<int Function(ffi.Pointer<ffi.Char>, int)>(isLeaf: true);
 
   int close(
     int __fd,
@@ -56,8 +46,7 @@ class LibCArm {
     );
   }
 
-  late final _closePtr =
-      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int)>>('close');
+  late final _closePtr = _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int)>>('close');
   late final _close = _closePtr.asFunction<int Function(int)>(isLeaf: true);
 
   int read(
@@ -72,12 +61,9 @@ class LibCArm {
     );
   }
 
-  late final _readPtr = _lookup<
-      ffi.NativeFunction<
-          pkg_ssizet.SSize Function(
-              ffi.Int, ffi.Pointer<ffi.Void>, ffi.Int)>>('read');
-  late final _read = _readPtr
-      .asFunction<int Function(int, ffi.Pointer<ffi.Void>, int)>(isLeaf: true);
+  late final _readPtr =
+      _lookup<ffi.NativeFunction<pkg_ssizet.SSize Function(ffi.Int, ffi.Pointer<ffi.Void>, ffi.Int)>>('read');
+  late final _read = _readPtr.asFunction<int Function(int, ffi.Pointer<ffi.Void>, int)>(isLeaf: true);
 
   int write(
     int __fd,
@@ -91,12 +77,9 @@ class LibCArm {
     );
   }
 
-  late final _writePtr = _lookup<
-      ffi.NativeFunction<
-          pkg_ssizet.SSize Function(
-              ffi.Int, ffi.Pointer<ffi.Void>, ffi.Int)>>('write');
-  late final _write = _writePtr
-      .asFunction<int Function(int, ffi.Pointer<ffi.Void>, int)>(isLeaf: true);
+  late final _writePtr =
+      _lookup<ffi.NativeFunction<pkg_ssizet.SSize Function(ffi.Int, ffi.Pointer<ffi.Void>, ffi.Int)>>('write');
+  late final _write = _writePtr.asFunction<int Function(int, ffi.Pointer<ffi.Void>, int)>(isLeaf: true);
 
   int ioctl(
     int __fd,
@@ -108,11 +91,8 @@ class LibCArm {
     );
   }
 
-  late final _ioctlPtr =
-      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.UnsignedLong)>>(
-          'ioctl');
-  late final _ioctl =
-      _ioctlPtr.asFunction<int Function(int, int)>(isLeaf: true);
+  late final _ioctlPtr = _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.UnsignedLong)>>('ioctl');
+  late final _ioctl = _ioctlPtr.asFunction<int Function(int, int)>(isLeaf: true);
 
   int epoll_create(
     int __size,
@@ -122,10 +102,8 @@ class LibCArm {
     );
   }
 
-  late final _epoll_createPtr =
-      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int)>>('epoll_create');
-  late final _epoll_create =
-      _epoll_createPtr.asFunction<int Function(int)>(isLeaf: true);
+  late final _epoll_createPtr = _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int)>>('epoll_create');
+  late final _epoll_create = _epoll_createPtr.asFunction<int Function(int)>(isLeaf: true);
 
   int epoll_create1(
     int __flags,
@@ -135,10 +113,8 @@ class LibCArm {
     );
   }
 
-  late final _epoll_create1Ptr =
-      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int)>>('epoll_create1');
-  late final _epoll_create1 =
-      _epoll_create1Ptr.asFunction<int Function(int)>(isLeaf: true);
+  late final _epoll_create1Ptr = _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int)>>('epoll_create1');
+  late final _epoll_create1 = _epoll_create1Ptr.asFunction<int Function(int)>(isLeaf: true);
 
   int epoll_ctl(
     int __epfd,
@@ -154,13 +130,9 @@ class LibCArm {
     );
   }
 
-  late final _epoll_ctlPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Int Function(ffi.Int, ffi.Int, ffi.Int,
-              ffi.Pointer<epoll_event>)>>('epoll_ctl');
-  late final _epoll_ctl = _epoll_ctlPtr
-      .asFunction<int Function(int, int, int, ffi.Pointer<epoll_event>)>(
-          isLeaf: true);
+  late final _epoll_ctlPtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Int, ffi.Int, ffi.Pointer<epoll_event>)>>('epoll_ctl');
+  late final _epoll_ctl = _epoll_ctlPtr.asFunction<int Function(int, int, int, ffi.Pointer<epoll_event>)>(isLeaf: true);
 
   int epoll_wait(
     int __epfd,
@@ -176,13 +148,10 @@ class LibCArm {
     );
   }
 
-  late final _epoll_waitPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Int Function(ffi.Int, ffi.Pointer<epoll_event>, ffi.Int,
-              ffi.Int)>>('epoll_wait');
-  late final _epoll_wait = _epoll_waitPtr
-      .asFunction<int Function(int, ffi.Pointer<epoll_event>, int, int)>(
-          isLeaf: true);
+  late final _epoll_waitPtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Pointer<epoll_event>, ffi.Int, ffi.Int)>>('epoll_wait');
+  late final _epoll_wait =
+      _epoll_waitPtr.asFunction<int Function(int, ffi.Pointer<epoll_event>, int, int)>(isLeaf: true);
 
   int eventfd(
     int __count,
@@ -194,11 +163,8 @@ class LibCArm {
     );
   }
 
-  late final _eventfdPtr =
-      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.UnsignedInt, ffi.Int)>>(
-          'eventfd');
-  late final _eventfd =
-      _eventfdPtr.asFunction<int Function(int, int)>(isLeaf: true);
+  late final _eventfdPtr = _lookup<ffi.NativeFunction<ffi.Int Function(ffi.UnsignedInt, ffi.Int)>>('eventfd');
+  late final _eventfd = _eventfdPtr.asFunction<int Function(int, int)>(isLeaf: true);
 
   int cfgetospeed(
     ffi.Pointer<termios> __termios_p,
@@ -208,11 +174,9 @@ class LibCArm {
     );
   }
 
-  late final _cfgetospeedPtr = _lookup<
-          ffi.NativeFunction<ffi.UnsignedInt Function(ffi.Pointer<termios>)>>(
-      'cfgetospeed');
-  late final _cfgetospeed = _cfgetospeedPtr
-      .asFunction<int Function(ffi.Pointer<termios>)>(isLeaf: true);
+  late final _cfgetospeedPtr =
+      _lookup<ffi.NativeFunction<ffi.UnsignedInt Function(ffi.Pointer<termios>)>>('cfgetospeed');
+  late final _cfgetospeed = _cfgetospeedPtr.asFunction<int Function(ffi.Pointer<termios>)>(isLeaf: true);
 
   int cfgetispeed(
     ffi.Pointer<termios> __termios_p,
@@ -222,11 +186,9 @@ class LibCArm {
     );
   }
 
-  late final _cfgetispeedPtr = _lookup<
-          ffi.NativeFunction<ffi.UnsignedInt Function(ffi.Pointer<termios>)>>(
-      'cfgetispeed');
-  late final _cfgetispeed = _cfgetispeedPtr
-      .asFunction<int Function(ffi.Pointer<termios>)>(isLeaf: true);
+  late final _cfgetispeedPtr =
+      _lookup<ffi.NativeFunction<ffi.UnsignedInt Function(ffi.Pointer<termios>)>>('cfgetispeed');
+  late final _cfgetispeed = _cfgetispeedPtr.asFunction<int Function(ffi.Pointer<termios>)>(isLeaf: true);
 
   int cfsetospeed(
     ffi.Pointer<termios> __termios_p,
@@ -238,12 +200,9 @@ class LibCArm {
     );
   }
 
-  late final _cfsetospeedPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Int Function(
-              ffi.Pointer<termios>, ffi.UnsignedInt)>>('cfsetospeed');
-  late final _cfsetospeed = _cfsetospeedPtr
-      .asFunction<int Function(ffi.Pointer<termios>, int)>(isLeaf: true);
+  late final _cfsetospeedPtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Pointer<termios>, ffi.UnsignedInt)>>('cfsetospeed');
+  late final _cfsetospeed = _cfsetospeedPtr.asFunction<int Function(ffi.Pointer<termios>, int)>(isLeaf: true);
 
   int cfsetispeed(
     ffi.Pointer<termios> __termios_p,
@@ -255,12 +214,9 @@ class LibCArm {
     );
   }
 
-  late final _cfsetispeedPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Int Function(
-              ffi.Pointer<termios>, ffi.UnsignedInt)>>('cfsetispeed');
-  late final _cfsetispeed = _cfsetispeedPtr
-      .asFunction<int Function(ffi.Pointer<termios>, int)>(isLeaf: true);
+  late final _cfsetispeedPtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Pointer<termios>, ffi.UnsignedInt)>>('cfsetispeed');
+  late final _cfsetispeed = _cfsetispeedPtr.asFunction<int Function(ffi.Pointer<termios>, int)>(isLeaf: true);
 
   int tcgetattr(
     int __fd,
@@ -272,11 +228,8 @@ class LibCArm {
     );
   }
 
-  late final _tcgetattrPtr = _lookup<
-          ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Pointer<termios>)>>(
-      'tcgetattr');
-  late final _tcgetattr = _tcgetattrPtr
-      .asFunction<int Function(int, ffi.Pointer<termios>)>(isLeaf: true);
+  late final _tcgetattrPtr = _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Pointer<termios>)>>('tcgetattr');
+  late final _tcgetattr = _tcgetattrPtr.asFunction<int Function(int, ffi.Pointer<termios>)>(isLeaf: true);
 
   int tcsetattr(
     int __fd,
@@ -290,12 +243,9 @@ class LibCArm {
     );
   }
 
-  late final _tcsetattrPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Int Function(
-              ffi.Int, ffi.Int, ffi.Pointer<termios>)>>('tcsetattr');
-  late final _tcsetattr = _tcsetattrPtr
-      .asFunction<int Function(int, int, ffi.Pointer<termios>)>(isLeaf: true);
+  late final _tcsetattrPtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Int, ffi.Pointer<termios>)>>('tcsetattr');
+  late final _tcsetattr = _tcsetattrPtr.asFunction<int Function(int, int, ffi.Pointer<termios>)>(isLeaf: true);
 
   int tcsendbreak(
     int __fd,
@@ -307,11 +257,8 @@ class LibCArm {
     );
   }
 
-  late final _tcsendbreakPtr =
-      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Int)>>(
-          'tcsendbreak');
-  late final _tcsendbreak =
-      _tcsendbreakPtr.asFunction<int Function(int, int)>(isLeaf: true);
+  late final _tcsendbreakPtr = _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Int)>>('tcsendbreak');
+  late final _tcsendbreak = _tcsendbreakPtr.asFunction<int Function(int, int)>(isLeaf: true);
 
   int tcdrain(
     int __fd,
@@ -321,8 +268,7 @@ class LibCArm {
     );
   }
 
-  late final _tcdrainPtr =
-      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int)>>('tcdrain');
+  late final _tcdrainPtr = _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int)>>('tcdrain');
   late final _tcdrain = _tcdrainPtr.asFunction<int Function(int)>(isLeaf: true);
 
   int tcflush(
@@ -335,11 +281,8 @@ class LibCArm {
     );
   }
 
-  late final _tcflushPtr =
-      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Int)>>(
-          'tcflush');
-  late final _tcflush =
-      _tcflushPtr.asFunction<int Function(int, int)>(isLeaf: true);
+  late final _tcflushPtr = _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Int)>>('tcflush');
+  late final _tcflush = _tcflushPtr.asFunction<int Function(int, int)>(isLeaf: true);
 
   int tcflow(
     int __fd,
@@ -351,10 +294,8 @@ class LibCArm {
     );
   }
 
-  late final _tcflowPtr =
-      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Int)>>('tcflow');
-  late final _tcflow =
-      _tcflowPtr.asFunction<int Function(int, int)>(isLeaf: true);
+  late final _tcflowPtr = _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Int)>>('tcflow');
+  late final _tcflow = _tcflowPtr.asFunction<int Function(int, int)>(isLeaf: true);
 
   int tcgetsid(
     int __fd,
@@ -364,10 +305,8 @@ class LibCArm {
     );
   }
 
-  late final _tcgetsidPtr =
-      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int)>>('tcgetsid');
-  late final _tcgetsid =
-      _tcgetsidPtr.asFunction<int Function(int)>(isLeaf: true);
+  late final _tcgetsidPtr = _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int)>>('tcgetsid');
+  late final _tcgetsid = _tcgetsidPtr.asFunction<int Function(int)>(isLeaf: true);
 
   int socket(
     int __domain,
@@ -381,11 +320,8 @@ class LibCArm {
     );
   }
 
-  late final _socketPtr =
-      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Int, ffi.Int)>>(
-          'socket');
-  late final _socket =
-      _socketPtr.asFunction<int Function(int, int, int)>(isLeaf: true);
+  late final _socketPtr = _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Int, ffi.Int)>>('socket');
+  late final _socket = _socketPtr.asFunction<int Function(int, int, int)>(isLeaf: true);
 
   int bind(
     int __fd,
@@ -399,12 +335,9 @@ class LibCArm {
     );
   }
 
-  late final _bindPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Int Function(
-              ffi.Int, ffi.Pointer<sockaddr>, ffi.UnsignedInt)>>('bind');
-  late final _bind = _bindPtr
-      .asFunction<int Function(int, ffi.Pointer<sockaddr>, int)>(isLeaf: true);
+  late final _bindPtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Pointer<sockaddr>, ffi.UnsignedInt)>>('bind');
+  late final _bind = _bindPtr.asFunction<int Function(int, ffi.Pointer<sockaddr>, int)>(isLeaf: true);
 
   int getsockname(
     int __fd,
@@ -418,13 +351,11 @@ class LibCArm {
     );
   }
 
-  late final _getsocknamePtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Int Function(ffi.Int, ffi.Pointer<sockaddr>,
-              ffi.Pointer<ffi.UnsignedInt>)>>('getsockname');
-  late final _getsockname = _getsocknamePtr.asFunction<
-      int Function(int, ffi.Pointer<sockaddr>,
-          ffi.Pointer<ffi.UnsignedInt>)>(isLeaf: true);
+  late final _getsocknamePtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Pointer<sockaddr>, ffi.Pointer<ffi.UnsignedInt>)>>(
+          'getsockname');
+  late final _getsockname =
+      _getsocknamePtr.asFunction<int Function(int, ffi.Pointer<sockaddr>, ffi.Pointer<ffi.UnsignedInt>)>(isLeaf: true);
 
   int send(
     int __fd,
@@ -440,13 +371,9 @@ class LibCArm {
     );
   }
 
-  late final _sendPtr = _lookup<
-      ffi.NativeFunction<
-          pkg_ssizet.SSize Function(
-              ffi.Int, ffi.Pointer<ffi.Void>, ffi.Int, ffi.Int)>>('send');
-  late final _send =
-      _sendPtr.asFunction<int Function(int, ffi.Pointer<ffi.Void>, int, int)>(
-          isLeaf: true);
+  late final _sendPtr =
+      _lookup<ffi.NativeFunction<pkg_ssizet.SSize Function(ffi.Int, ffi.Pointer<ffi.Void>, ffi.Int, ffi.Int)>>('send');
+  late final _send = _sendPtr.asFunction<int Function(int, ffi.Pointer<ffi.Void>, int, int)>(isLeaf: true);
 
   int sendmsg(
     int __fd,
@@ -460,12 +387,9 @@ class LibCArm {
     );
   }
 
-  late final _sendmsgPtr = _lookup<
-      ffi.NativeFunction<
-          pkg_ssizet.SSize Function(
-              ffi.Int, ffi.Pointer<msghdr>, ffi.Int)>>('sendmsg');
-  late final _sendmsg = _sendmsgPtr
-      .asFunction<int Function(int, ffi.Pointer<msghdr>, int)>(isLeaf: true);
+  late final _sendmsgPtr =
+      _lookup<ffi.NativeFunction<pkg_ssizet.SSize Function(ffi.Int, ffi.Pointer<msghdr>, ffi.Int)>>('sendmsg');
+  late final _sendmsg = _sendmsgPtr.asFunction<int Function(int, ffi.Pointer<msghdr>, int)>(isLeaf: true);
 
   int recvmsg(
     int __fd,
@@ -479,12 +403,9 @@ class LibCArm {
     );
   }
 
-  late final _recvmsgPtr = _lookup<
-      ffi.NativeFunction<
-          pkg_ssizet.SSize Function(
-              ffi.Int, ffi.Pointer<msghdr>, ffi.Int)>>('recvmsg');
-  late final _recvmsg = _recvmsgPtr
-      .asFunction<int Function(int, ffi.Pointer<msghdr>, int)>(isLeaf: true);
+  late final _recvmsgPtr =
+      _lookup<ffi.NativeFunction<pkg_ssizet.SSize Function(ffi.Int, ffi.Pointer<msghdr>, ffi.Int)>>('recvmsg');
+  late final _recvmsg = _recvmsgPtr.asFunction<int Function(int, ffi.Pointer<msghdr>, int)>(isLeaf: true);
 
   int getsockopt(
     int __fd,
@@ -504,11 +425,10 @@ class LibCArm {
 
   late final _getsockoptPtr = _lookup<
       ffi.NativeFunction<
-          ffi.Int Function(ffi.Int, ffi.Int, ffi.Int, ffi.Pointer<ffi.Void>,
-              ffi.Pointer<ffi.UnsignedInt>)>>('getsockopt');
-  late final _getsockopt = _getsockoptPtr.asFunction<
-      int Function(int, int, int, ffi.Pointer<ffi.Void>,
-          ffi.Pointer<ffi.UnsignedInt>)>(isLeaf: true);
+          ffi.Int Function(
+              ffi.Int, ffi.Int, ffi.Int, ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.UnsignedInt>)>>('getsockopt');
+  late final _getsockopt = _getsockoptPtr
+      .asFunction<int Function(int, int, int, ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.UnsignedInt>)>(isLeaf: true);
 
   int setsockopt(
     int __fd,
@@ -526,13 +446,11 @@ class LibCArm {
     );
   }
 
-  late final _setsockoptPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Int Function(ffi.Int, ffi.Int, ffi.Int, ffi.Pointer<ffi.Void>,
-              ffi.UnsignedInt)>>('setsockopt');
-  late final _setsockopt = _setsockoptPtr
-      .asFunction<int Function(int, int, int, ffi.Pointer<ffi.Void>, int)>(
-          isLeaf: true);
+  late final _setsockoptPtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Int, ffi.Int, ffi.Pointer<ffi.Void>, ffi.UnsignedInt)>>(
+          'setsockopt');
+  late final _setsockopt =
+      _setsockoptPtr.asFunction<int Function(int, int, int, ffi.Pointer<ffi.Void>, int)>(isLeaf: true);
 
   int if_nametoindex(
     ffi.Pointer<ffi.Char> __ifname,
@@ -542,11 +460,9 @@ class LibCArm {
     );
   }
 
-  late final _if_nametoindexPtr = _lookup<
-          ffi.NativeFunction<ffi.UnsignedInt Function(ffi.Pointer<ffi.Char>)>>(
-      'if_nametoindex');
-  late final _if_nametoindex = _if_nametoindexPtr
-      .asFunction<int Function(ffi.Pointer<ffi.Char>)>(isLeaf: true);
+  late final _if_nametoindexPtr =
+      _lookup<ffi.NativeFunction<ffi.UnsignedInt Function(ffi.Pointer<ffi.Char>)>>('if_nametoindex');
+  late final _if_nametoindex = _if_nametoindexPtr.asFunction<int Function(ffi.Pointer<ffi.Char>)>(isLeaf: true);
 
   ffi.Pointer<ffi.Char> if_indextoname(
     int __ifindex,
@@ -558,23 +474,18 @@ class LibCArm {
     );
   }
 
-  late final _if_indextonamePtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Pointer<ffi.Char> Function(
-              ffi.UnsignedInt, ffi.Pointer<ffi.Char>)>>('if_indextoname');
-  late final _if_indextoname = _if_indextonamePtr
-      .asFunction<ffi.Pointer<ffi.Char> Function(int, ffi.Pointer<ffi.Char>)>(
-          isLeaf: true);
+  late final _if_indextonamePtr =
+      _lookup<ffi.NativeFunction<ffi.Pointer<ffi.Char> Function(ffi.UnsignedInt, ffi.Pointer<ffi.Char>)>>(
+          'if_indextoname');
+  late final _if_indextoname =
+      _if_indextonamePtr.asFunction<ffi.Pointer<ffi.Char> Function(int, ffi.Pointer<ffi.Char>)>(isLeaf: true);
 
   ffi.Pointer<if_nameindex> if_nameindex1() {
     return _if_nameindex1();
   }
 
-  late final _if_nameindex1Ptr =
-      _lookup<ffi.NativeFunction<ffi.Pointer<if_nameindex> Function()>>(
-          'if_nameindex');
-  late final _if_nameindex1 = _if_nameindex1Ptr
-      .asFunction<ffi.Pointer<if_nameindex> Function()>(isLeaf: true);
+  late final _if_nameindex1Ptr = _lookup<ffi.NativeFunction<ffi.Pointer<if_nameindex> Function()>>('if_nameindex');
+  late final _if_nameindex1 = _if_nameindex1Ptr.asFunction<ffi.Pointer<if_nameindex> Function()>(isLeaf: true);
 
   void if_freenameindex(
     ffi.Pointer<if_nameindex> __ptr,
@@ -585,10 +496,9 @@ class LibCArm {
   }
 
   late final _if_freenameindexPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<if_nameindex>)>>(
-          'if_freenameindex');
-  late final _if_freenameindex = _if_freenameindexPtr
-      .asFunction<void Function(ffi.Pointer<if_nameindex>)>(isLeaf: true);
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<if_nameindex>)>>('if_freenameindex');
+  late final _if_freenameindex =
+      _if_freenameindexPtr.asFunction<void Function(ffi.Pointer<if_nameindex>)>(isLeaf: true);
 
   late final addresses = _SymbolAddresses(this);
 }
@@ -596,24 +506,13 @@ class LibCArm {
 class _SymbolAddresses {
   final LibCArm _library;
   _SymbolAddresses(this._library);
-  ffi.Pointer<ffi.NativeFunction<ffi.Pointer<ffi.Int> Function()>>
-      get errno_location => _library._errno_locationPtr;
-  ffi.Pointer<
-      ffi.NativeFunction<
-          pkg_ssizet.SSize Function(
-              ffi.Int, ffi.Pointer<ffi.Void>, ffi.Int)>> get read =>
+  ffi.Pointer<ffi.NativeFunction<ffi.Pointer<ffi.Int> Function()>> get errno_location => _library._errno_locationPtr;
+  ffi.Pointer<ffi.NativeFunction<pkg_ssizet.SSize Function(ffi.Int, ffi.Pointer<ffi.Void>, ffi.Int)>> get read =>
       _library._readPtr;
-  ffi.Pointer<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.UnsignedLong)>>
-      get ioctl => _library._ioctlPtr;
-  ffi.Pointer<
-          ffi.NativeFunction<
-              ffi.Int Function(
-                  ffi.Int, ffi.Int, ffi.Int, ffi.Pointer<epoll_event>)>>
+  ffi.Pointer<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.UnsignedLong)>> get ioctl => _library._ioctlPtr;
+  ffi.Pointer<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Int, ffi.Int, ffi.Pointer<epoll_event>)>>
       get epoll_ctl => _library._epoll_ctlPtr;
-  ffi.Pointer<
-          ffi.NativeFunction<
-              ffi.Int Function(
-                  ffi.Int, ffi.Pointer<epoll_event>, ffi.Int, ffi.Int)>>
+  ffi.Pointer<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Pointer<epoll_event>, ffi.Int, ffi.Int)>>
       get epoll_wait => _library._epoll_waitPtr;
 }
 
