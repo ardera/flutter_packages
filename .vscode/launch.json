@@ -48,6 +48,13 @@
             "type": "dart"
         },
         {
+            "name": "linux_can_test_app",
+            "cwd": "packages\\linux_can_test_app",
+            "program": "lib/main.dart",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
             "name": "build common libc bindings",
             "cwd": "packages/_ardera_common_libc_bindings",
             "request": "launch",
