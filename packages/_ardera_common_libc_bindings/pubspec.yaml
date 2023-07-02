@@ -2,7 +2,7 @@ name: _ardera_common_libc_bindings
 description: |
   Some common libc bindings. (ioctl, gpio, stuff like that)
 
-version: 0.3.0+1
+version: 0.3.0+2
 repository: https://github.com/ardera/flutter_packages/
 
 environment:

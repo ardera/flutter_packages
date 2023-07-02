@@ -1,3 +1,8 @@
+## 0.3.0+2
+
+ - **FIX**: ioctlPtr. ([c3994b74](https://github.com/ardera/flutter_packages/commit/c3994b741933f8440ae83f4182113b21f15e06ed))
+ - **FIX**: mark some functions non-leaf as workaround. ([9bfa7a6d](https://github.com/ardera/flutter_packages/commit/9bfa7a6d3e03f888308a627f3b0a491c03f5e8da))
+
 ## 0.3.0+1
 
  - **REFACTOR**: de-assemble bindingsgen helper package. ([f5e6255c](https://github.com/ardera/flutter_packages/commit/f5e6255cd90957507f2c0e81a5bae21244860d6f))

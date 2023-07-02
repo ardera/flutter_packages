@@ -3,6 +3,44 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2023-07-03
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`_ardera_common_libc_bindings` - `v0.3.0+2`](#_ardera_common_libc_bindings---v0302)
+ - [`flutter_gpiod` - `v0.5.1+3`](#flutter_gpiod---v0513)
+ - [`linux_can` - `v0.1.0+2`](#linux_can---v0102)
+ - [`linux_serial` - `v0.2.3+3`](#linux_serial---v0233)
+ - [`linux_spidev` - `v0.2.1+3`](#linux_spidev---v0213)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `linux_can` - `v0.1.0+2`
+ - `linux_serial` - `v0.2.3+3`
+ - `linux_spidev` - `v0.2.1+3`
+
+---
+
+#### `_ardera_common_libc_bindings` - `v0.3.0+2`
+
+ - **FIX**: ioctlPtr. ([c3994b74](https://github.com/ardera/flutter_packages/commit/c3994b741933f8440ae83f4182113b21f15e06ed))
+ - **FIX**: mark some functions non-leaf as workaround. ([9bfa7a6d](https://github.com/ardera/flutter_packages/commit/9bfa7a6d3e03f888308a627f3b0a491c03f5e8da))
+
+#### `flutter_gpiod` - `v0.5.1+3`
+
+ - **FIX**: don't block infinitely waiting for gpio events. ([81123cfe](https://github.com/ardera/flutter_packages/commit/81123cfe0acc75a0512f43cb7131abc3fb4cecb4))
+
+
 ## 2023-06-21
 
 ### Changes

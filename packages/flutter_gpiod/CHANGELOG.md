@@ -1,3 +1,7 @@
+## 0.5.1+3
+
+ - **FIX**: don't block infinitely waiting for gpio events. ([81123cfe](https://github.com/ardera/flutter_packages/commit/81123cfe0acc75a0512f43cb7131abc3fb4cecb4))
+
 ## 0.5.1+2
 
  - Update a dependency to the latest release.
