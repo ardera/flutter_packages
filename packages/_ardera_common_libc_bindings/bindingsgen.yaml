@@ -79,8 +79,13 @@ ffigen-options:
         - read
         - ioctl
     leaf:
-      include:
-        - '.*'
+      exclude:
+        - 'epoll_wait'
+        - 'read'
+        - 'send'
+        - 'sendmsg'
+        - 'recvmsg'
+        - 'write'
   structs:
     include:
 

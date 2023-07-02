@@ -63,7 +63,7 @@ class LibCArm64 {
 
   late final _readPtr =
       _lookup<ffi.NativeFunction<pkg_ssizet.SSize Function(ffi.Int, ffi.Pointer<ffi.Void>, ffi.Int)>>('read');
-  late final _read = _readPtr.asFunction<int Function(int, ffi.Pointer<ffi.Void>, int)>(isLeaf: true);
+  late final _read = _readPtr.asFunction<int Function(int, ffi.Pointer<ffi.Void>, int)>();
 
   int write(
     int __fd,
@@ -79,7 +79,7 @@ class LibCArm64 {
 
   late final _writePtr =
       _lookup<ffi.NativeFunction<pkg_ssizet.SSize Function(ffi.Int, ffi.Pointer<ffi.Void>, ffi.Int)>>('write');
-  late final _write = _writePtr.asFunction<int Function(int, ffi.Pointer<ffi.Void>, int)>(isLeaf: true);
+  late final _write = _writePtr.asFunction<int Function(int, ffi.Pointer<ffi.Void>, int)>();
 
   int ioctl(
     int __fd,
@@ -150,8 +150,7 @@ class LibCArm64 {
 
   late final _epoll_waitPtr =
       _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Pointer<epoll_event>, ffi.Int, ffi.Int)>>('epoll_wait');
-  late final _epoll_wait =
-      _epoll_waitPtr.asFunction<int Function(int, ffi.Pointer<epoll_event>, int, int)>(isLeaf: true);
+  late final _epoll_wait = _epoll_waitPtr.asFunction<int Function(int, ffi.Pointer<epoll_event>, int, int)>();
 
   int eventfd(
     int __count,
@@ -373,7 +372,7 @@ class LibCArm64 {
 
   late final _sendPtr =
       _lookup<ffi.NativeFunction<pkg_ssizet.SSize Function(ffi.Int, ffi.Pointer<ffi.Void>, ffi.Int, ffi.Int)>>('send');
-  late final _send = _sendPtr.asFunction<int Function(int, ffi.Pointer<ffi.Void>, int, int)>(isLeaf: true);
+  late final _send = _sendPtr.asFunction<int Function(int, ffi.Pointer<ffi.Void>, int, int)>();
 
   int sendmsg(
     int __fd,
@@ -389,7 +388,7 @@ class LibCArm64 {
 
   late final _sendmsgPtr =
       _lookup<ffi.NativeFunction<pkg_ssizet.SSize Function(ffi.Int, ffi.Pointer<msghdr>, ffi.Int)>>('sendmsg');
-  late final _sendmsg = _sendmsgPtr.asFunction<int Function(int, ffi.Pointer<msghdr>, int)>(isLeaf: true);
+  late final _sendmsg = _sendmsgPtr.asFunction<int Function(int, ffi.Pointer<msghdr>, int)>();
 
   int recvmsg(
     int __fd,
@@ -405,7 +404,7 @@ class LibCArm64 {
 
   late final _recvmsgPtr =
       _lookup<ffi.NativeFunction<pkg_ssizet.SSize Function(ffi.Int, ffi.Pointer<msghdr>, ffi.Int)>>('recvmsg');
-  late final _recvmsg = _recvmsgPtr.asFunction<int Function(int, ffi.Pointer<msghdr>, int)>(isLeaf: true);
+  late final _recvmsg = _recvmsgPtr.asFunction<int Function(int, ffi.Pointer<msghdr>, int)>();
 
   int getsockopt(
     int __fd,
