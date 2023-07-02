@@ -156,7 +156,7 @@ typedef dart_read64 = dart_read;
 typedef native_errno_location = ffi.NativeFunction<ffi.Pointer<ffi.Int32> Function()>;
 typedef dart_errno_location = ffi.Pointer<ffi.Int32> Function();
 
-void _eventIsolateEntry2(List args) {
+Future<void> _eventIsolateEntry2(List args) async {
   int ok;
 
   final sendPort = args[0] as SendPort;
@@ -170,13 +170,15 @@ void _eventIsolateEntry2(List args) {
   final events = newGpioEventData(count: maxEvents);
 
   while (true) {
+    await Future.delayed(Duration.zero);
+
     ok = _syscall4(
       libc.errno_location(),
       libc.epoll_wait,
       epollFd,
       epollEvents,
       maxEpollEvents,
-      -1,
+      200,
     );
     if (ok < 0) {
       freeStruct(epollEvents, allocator: ffi.calloc);
@@ -275,6 +277,8 @@ class PlatformInterface {
     final receivePort = ReceivePort();
     final errorReceivePort = ReceivePort();
 
+    print('before isolate.spawn');
+
     Isolate.spawn(
       _eventIsolateEntry2,
       [
@@ -284,6 +288,8 @@ class PlatformInterface {
       onError: errorReceivePort.sendPort,
       debugName: 'flutter_gpiod event listener',
     );
+
+    print('after isolate.spawn');
 
     errorReceivePort.listen((message) {
       throw RemoteError(message[0], message[1]);
