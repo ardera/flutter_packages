@@ -24,9 +24,6 @@ class LibCArm extends LibC {
         super._fromLookup(_lookup);
 
   @override
-  get addresses => throw UnimplementedError();
-
-  @override
   int bind(int __fd, ffi.Pointer<sockaddr> __addr, int __len) {
     return _backend.bind(__fd, __addr.cast<arm.sockaddr>(), __len);
   }
@@ -228,9 +225,6 @@ class LibCArm64 extends LibC {
   LibCArm64.fromLookup(SymbolLookupFn _lookup)
       : _backend = backend.LibCArm64.fromLookup(_lookup),
         super._fromLookup(_lookup);
-
-  @override
-  get addresses => throw UnimplementedError();
 
   @override
   int bind(int __fd, ffi.Pointer<sockaddr> __addr, int __len) {
@@ -436,9 +430,6 @@ class LibCI386 extends LibC {
         super._fromLookup(_lookup);
 
   @override
-  get addresses => throw UnimplementedError();
-
-  @override
   int bind(int __fd, ffi.Pointer<sockaddr> __addr, int __len) {
     return _backend.bind(__fd, __addr.cast<i386.sockaddr>(), __len);
   }
@@ -640,9 +631,6 @@ class LibCAmd64 extends LibC {
   LibCAmd64.fromLookup(SymbolLookupFn _lookup)
       : _backend = backend.LibCAmd64.fromLookup(_lookup),
         super._fromLookup(_lookup);
-
-  @override
-  get addresses => throw UnimplementedError();
 
   @override
   int bind(int __fd, ffi.Pointer<sockaddr> __addr, int __len) {
@@ -866,8 +854,6 @@ abstract class LibC {
     }
   }
 
-  dynamic get addresses;
-
   int cfgetispeed(ffi.Pointer<termios> __termios_p);
 
   int cfgetospeed(ffi.Pointer<termios> __termios_p);
@@ -941,8 +927,8 @@ abstract class LibC {
   void if_freenameindex(ffi.Pointer<if_nameindex> __ptr);
 
   late final _ioctl_ptrPtr = (() {
-    final ffi.Pointer ptr = addresses.ioctl;
-    return ptr.cast<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Size, ffi.Pointer<ffi.Void>)>>();
+    final ptr = _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Size, ffi.Pointer<ffi.Void>)>>('ioctl');
+    return ptr;
   })();
 
   late final _ioctl_ptr = _ioctl_ptrPtr.asFunction<int Function(int, int, ffi.Pointer<ffi.Void>)>(isLeaf: true);
