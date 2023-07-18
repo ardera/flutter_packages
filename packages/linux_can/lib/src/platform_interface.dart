@@ -352,8 +352,8 @@ class PlatformInterface {
     return socket;
   }
 
-  int getCanInterfaceMTU(int fd, String interfaceName) {
-    assert(_debugOpenFds.contains(fd));
+  int getInterfaceMTU(String interfaceName) {
+    _debugCheckOpenFd(_rtnetlinkFd);
 
     final req = ffi.calloc<ifreq>();
 
@@ -361,7 +361,7 @@ class PlatformInterface {
 
     req.ref.ifr_ifindex = 0;
 
-    final ok = libc.ioctlPtr(fd, SIOCGIFMTU, req);
+    final ok = libc.ioctlPtr(_rtnetlinkFd, SIOCGIFMTU, req);
     if (ok < 0) {
       ffi.calloc.free(req);
       throw LinuxError('Could not get CAN interface MTU.', 'ioctl', libc.errno);
@@ -374,9 +374,8 @@ class PlatformInterface {
     return mtu;
   }
 
-  bool isFlexibleDatarateCapable(int fd, String interfaceName) {
-    assert(_debugOpenFds.contains(fd));
-    return getCanInterfaceMTU(fd, interfaceName) == CANFD_MTU;
+  bool isFlexibleDatarateCapable(String interfaceName) {
+    return getInterfaceMTU(interfaceName) == CANFD_MTU;
   }
 
   void bind(int fd, int interfaceIndex) {
