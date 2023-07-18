@@ -635,9 +635,9 @@ class CanInterfaceAttributes {
   final CanBitTiming? dataBitTiming;
   final CanBitTimingLimits? dataBitTimingLimits;
   final int? termination;
-  final int? fixedTermination;
-  final int? fixedBitrate;
-  final int? fixedDataBitrate;
+  final List<int>? supportedTerminations;
+  final List<int>? supportedBitrates;
+  final List<int>? supportedDataBitrates;
   final int? maxBitrate;
   final Set<CanModeFlag>? supportedControllerModes;
 
@@ -663,9 +663,9 @@ class CanInterfaceAttributes {
     this.dataBitTiming,
     this.dataBitTimingLimits,
     this.termination,
-    this.fixedTermination,
-    this.fixedBitrate,
-    this.fixedDataBitrate,
+    this.supportedTerminations,
+    this.supportedBitrates,
+    this.supportedDataBitrates,
     this.maxBitrate,
     this.supportedControllerModes,
   });
@@ -692,9 +692,9 @@ class CanInterfaceAttributes {
         other.dataBitTiming == dataBitTiming &&
         other.dataBitTimingLimits == dataBitTimingLimits &&
         other.termination == termination &&
-        other.fixedTermination == fixedTermination &&
-        other.fixedBitrate == fixedBitrate &&
-        other.fixedDataBitrate == fixedDataBitrate &&
+        other.supportedTerminations == supportedTerminations &&
+        other.supportedBitrates == supportedBitrates &&
+        other.supportedDataBitrates == supportedDataBitrates &&
         other.maxBitrate == maxBitrate &&
         setEquals(other.supportedControllerModes, supportedControllerModes);
   }
@@ -718,15 +718,15 @@ class CanInterfaceAttributes {
         dataBitTiming.hashCode ^
         dataBitTimingLimits.hashCode ^
         termination.hashCode ^
-        fixedTermination.hashCode ^
-        fixedBitrate.hashCode ^
-        fixedDataBitrate.hashCode ^
+        supportedTerminations.hashCode ^
+        supportedBitrates.hashCode ^
+        supportedDataBitrates.hashCode ^
         maxBitrate.hashCode ^
         supportedControllerModes.hashCode;
   }
 
   @override
   String toString() {
-    return 'CanInterfaceAttributes(interfaceFlags: $interfaceFlags, txQueueLength: $txQueueLength, operState: $operState, stats: $stats, numTxQueues: $numTxQueues, numRxQueues: $numRxQueues, xstats: $xstats, bitTiming: $bitTiming, bitTimingLimits: $bitTimingLimits, clockFrequency: $clockFrequency, state: $state, controllerMode: $controllerMode, restartDelay: $restartDelay, busErrorCounters: $busErrorCounters, dataBitTiming: $dataBitTiming, dataBitTimingLimits: $dataBitTimingLimits, termination: $termination, fixedTermination: $fixedTermination, fixedBitrate: $fixedBitrate, fixedDataBitrate: $fixedDataBitrate, maxBitrate: $maxBitrate, supportedControllerModes: $supportedControllerModes)';
+    return 'CanInterfaceAttributes(interfaceFlags: $interfaceFlags, txQueueLength: $txQueueLength, operState: $operState, stats: $stats, numTxQueues: $numTxQueues, numRxQueues: $numRxQueues, xstats: $xstats, bitTiming: $bitTiming, bitTimingLimits: $bitTimingLimits, clockFrequency: $clockFrequency, state: $state, controllerMode: $controllerMode, restartDelay: $restartDelay, busErrorCounters: $busErrorCounters, dataBitTiming: $dataBitTiming, dataBitTimingLimits: $dataBitTimingLimits, termination: $termination, supportedTerminations: $supportedTerminations, supportedBitrates: $supportedBitrates, supportedDataBitrates: $supportedDataBitrates, maxBitrate: $maxBitrate, supportedControllerModes: $supportedControllerModes)';
   }
 }

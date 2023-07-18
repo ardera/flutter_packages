@@ -74,9 +74,9 @@ void main() {
         expect(attributes.dataBitTiming, isNull);
         expect(attributes.dataBitTimingLimits, isNull);
         expect(attributes.termination, isNull);
-        expect(attributes.fixedTermination, isNull);
-        expect(attributes.fixedBitrate, isNull);
-        expect(attributes.fixedDataBitrate, isNull);
+        expect(attributes.supportedTerminations, isNull);
+        expect(attributes.supportedBitrates, isNull);
+        expect(attributes.supportedDataBitrates, isNull);
         expect(attributes.maxBitrate, equals(0));
       }, tags: 'pi3-can');
 
@@ -118,9 +118,9 @@ void main() {
         expect(attributes.dataBitTiming, isNull);
         expect(attributes.dataBitTimingLimits, isNull);
         expect(attributes.termination, isNull);
-        expect(attributes.fixedTermination, isNull);
-        expect(attributes.fixedBitrate, isNull);
-        expect(attributes.fixedDataBitrate, isNull);
+        expect(attributes.supportedTerminations, isNull);
+        expect(attributes.supportedBitrates, isNull);
+        expect(attributes.supportedDataBitrates, isNull);
         expect(attributes.maxBitrate, equals(0));
       }, tags: 'pi3-can');
 

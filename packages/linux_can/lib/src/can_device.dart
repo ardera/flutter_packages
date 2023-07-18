@@ -111,16 +111,16 @@ class CanDevice {
     return _queryAttribute(CanInterfaceAttribute.termination).termination;
   }
 
-  int? get fixedTermination {
-    return _queryAttribute(CanInterfaceAttribute.fixedTermination).fixedTermination;
+  List<int>? get supportedTerminations {
+    return _queryAttribute(CanInterfaceAttribute.supportedTerminations).supportedTerminations;
   }
 
-  int? get fixedBitrate {
-    return _queryAttribute(CanInterfaceAttribute.fixedBitrate).fixedBitrate;
+  List<int>? get supportedBitrates {
+    return _queryAttribute(CanInterfaceAttribute.supportedBitrates).supportedBitrates;
   }
 
-  int? get fixedDataBitRate {
-    return _queryAttribute(CanInterfaceAttribute.fixedDataBitrate).fixedDataBitrate;
+  List<int>? get supportedDataBitrates {
+    return _queryAttribute(CanInterfaceAttribute.supportedDataBitrates).supportedDataBitrates;
   }
 
   int? get maxBitrate {

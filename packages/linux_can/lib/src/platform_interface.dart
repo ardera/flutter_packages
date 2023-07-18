@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:ffi' as ffi;
+import 'dart:typed_data';
 
 import 'package:_ardera_common_libc_bindings/_ardera_common_libc_bindings.dart';
 import 'package:_ardera_common_libc_bindings/epoll_event_loop.dart';
@@ -108,9 +109,9 @@ enum CanInterfaceAttribute {
   dataBitTiming,
   dataBitTimingLimits,
   termination,
-  fixedTermination,
-  fixedBitrate,
-  fixedDataBitrate,
+  supportedTerminations,
+  supportedBitrates,
+  supportedDataBitrates,
   maxBitrate,
   supportedControllerModes,
 
@@ -156,11 +157,11 @@ class _MutableCanInterfaceAttributes implements CanInterfaceAttributes {
   @override
   int? termination;
   @override
-  int? fixedTermination;
+  List<int>? supportedTerminations;
   @override
-  int? fixedBitrate;
+  List<int>? supportedBitrates;
   @override
-  int? fixedDataBitrate;
+  List<int>? supportedDataBitrates;
   @override
   int? maxBitrate;
   @override
@@ -168,7 +169,7 @@ class _MutableCanInterfaceAttributes implements CanInterfaceAttributes {
 
   @override
   String toString() {
-    return 'CanInterfaceAttributes(txQueueLength: $txQueueLength, operState: $operState, stats: $stats, numTxQueues: $numTxQueues, numRxQueues: $numRxQueues, xstats: $xstats, bitTiming: $bitTiming, bitTimingLimits: $bitTimingLimits, clockFrequency: $clockFrequency, state: $state, controllerMode: $controllerMode, restartDelay: $restartDelay, busErrorCounters: $busErrorCounters, dataBitTiming: $dataBitTiming, dataBitTimingLimits: $dataBitTimingLimits, termination: $termination, fixedTermination: $fixedTermination, fixedBitrate: $fixedBitrate, fixedDataBitrate: $fixedDataBitrate, bitrateMax: $maxBitrate, supportedControllerModes: $supportedControllerModes)';
+    return 'CanInterfaceAttributes(txQueueLength: $txQueueLength, operState: $operState, stats: $stats, numTxQueues: $numTxQueues, numRxQueues: $numRxQueues, xstats: $xstats, bitTiming: $bitTiming, bitTimingLimits: $bitTimingLimits, clockFrequency: $clockFrequency, state: $state, controllerMode: $controllerMode, restartDelay: $restartDelay, busErrorCounters: $busErrorCounters, dataBitTiming: $dataBitTiming, dataBitTimingLimits: $dataBitTimingLimits, termination: $termination, fixedTermination: $supportedTerminations, fixedBitrate: $supportedBitrates, fixedDataBitrate: $supportedDataBitrates, bitrateMax: $maxBitrate, supportedControllerModes: $supportedControllerModes)';
   }
 }
 
@@ -265,9 +266,9 @@ class PlatformInterface {
     CanInterfaceAttribute.dataBitTiming,
     CanInterfaceAttribute.dataBitTimingLimits,
     CanInterfaceAttribute.termination,
-    CanInterfaceAttribute.fixedTermination,
-    CanInterfaceAttribute.fixedBitrate,
-    CanInterfaceAttribute.fixedDataBitrate,
+    CanInterfaceAttribute.supportedTerminations,
+    CanInterfaceAttribute.supportedBitrates,
+    CanInterfaceAttribute.supportedDataBitrates,
     CanInterfaceAttribute.maxBitrate,
     CanInterfaceAttribute.supportedControllerModes,
   };
@@ -723,11 +724,33 @@ class PlatformInterface {
     return str;
   }
 
+  Uint16List _parseRtaUint16List(ffi.Pointer<rtattr> rta) {
+    final elementSize = ffi.sizeOf<ffi.Uint16>();
+
+    if (RTA_PAYLOAD(rta) % elementSize != 0) {
+      throw LinuxError('Malformed rtnetlink message.', 'recvmsg');
+    }
+
+    final length = RTA_PAYLOAD(rta) ~/ elementSize;
+
+    return RTA_DATA<ffi.Uint16>(rta).asTypedList(length);
+  }
+
   int _parseRtaUint32(ffi.Pointer<rtattr> rta) {
     if (RTA_PAYLOAD(rta) != ffi.sizeOf<ffi.Uint32>()) {
       throw LinuxError('Malformed rtnetlink message.', 'recvmsg');
     }
     return RTA_DATA<ffi.Uint32>(rta).value;
+  }
+
+  Uint32List _parseRtaUint32List(ffi.Pointer<rtattr> rta) {
+    if (RTA_PAYLOAD(rta) % ffi.sizeOf<ffi.Uint32>() != 0) {
+      throw LinuxError('Malformed rtnetlink message.', 'recvmsg');
+    }
+
+    final length = RTA_PAYLOAD(rta) ~/ ffi.sizeOf<ffi.Uint32>();
+
+    return RTA_DATA<ffi.Uint32>(rta).asTypedList(length);
   }
 
   int _parseRtaUint8(ffi.Pointer<rtattr> rta) {
@@ -826,22 +849,22 @@ class PlatformInterface {
           interests.remove(CanInterfaceAttribute.termination);
 
         case IFLA_CAN_TERMINATION_CONST:
-          if (!interests.contains(CanInterfaceAttribute.fixedTermination)) break;
+          if (!interests.contains(CanInterfaceAttribute.supportedTerminations)) break;
 
-          attributes.fixedTermination = _parseRtaUint32(rta);
-          interests.remove(CanInterfaceAttribute.fixedTermination);
+          attributes.supportedTerminations = List.of(_parseRtaUint16List(rta));
+          interests.remove(CanInterfaceAttribute.supportedTerminations);
 
         case IFLA_CAN_BITRATE_CONST:
-          if (!interests.contains(CanInterfaceAttribute.fixedBitrate)) break;
+          if (!interests.contains(CanInterfaceAttribute.supportedBitrates)) break;
 
-          attributes.fixedBitrate = _parseRtaUint32(rta);
-          interests.remove(CanInterfaceAttribute.fixedBitrate);
+          attributes.supportedBitrates = List.of(_parseRtaUint32List(rta));
+          interests.remove(CanInterfaceAttribute.supportedBitrates);
 
         case IFLA_CAN_DATA_BITRATE_CONST:
-          if (!interests.contains(CanInterfaceAttribute.fixedDataBitrate)) break;
+          if (!interests.contains(CanInterfaceAttribute.supportedDataBitrates)) break;
 
-          attributes.fixedDataBitrate = _parseRtaUint32(rta);
-          interests.remove(CanInterfaceAttribute.fixedDataBitrate);
+          attributes.supportedDataBitrates = List.of(_parseRtaUint32List(rta));
+          interests.remove(CanInterfaceAttribute.supportedDataBitrates);
 
         case IFLA_CAN_BITRATE_MAX:
           if (!interests.contains(CanInterfaceAttribute.maxBitrate)) break;
