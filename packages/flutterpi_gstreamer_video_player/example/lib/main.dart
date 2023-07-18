@@ -7,6 +7,7 @@
 
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutterpi_gstreamer_video_player/flutterpi_gstreamer_video_player.dart';
 
@@ -134,6 +135,11 @@ class _VideoAppState extends State<_VideoApp> {
         length: 2,
         child: Scaffold(
           appBar: AppBar(
+            leading: BackButton(
+              onPressed: () {
+                SystemNavigator.pop();
+              },
+            ),
             bottom: const TabBar(
               tabs: [
                 Tab(text: 'Example Video'),
