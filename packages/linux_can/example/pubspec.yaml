@@ -1,0 +1,10 @@
+name: linux_can_example
+description: Demonstrates how to use the linux_can package.
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  linux_can:
+    path: ../
