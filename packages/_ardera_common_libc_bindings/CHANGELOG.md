@@ -1,3 +1,7 @@
+## 0.3.1
+
+ - **FEAT**(bindings): add `ARPHRD_...` bindings. ([b123003f](https://github.com/ardera/flutter_packages/commit/b123003f7e08b6b3da220d5a95391735a1cefef7))
+
 ## 0.3.0+2
 
  - **FIX**: ioctlPtr. ([c3994b74](https://github.com/ardera/flutter_packages/commit/c3994b741933f8440ae83f4182113b21f15e06ed))

@@ -3,6 +3,50 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2023-07-18
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`_ardera_common_libc_bindings` - `v0.3.1`](#_ardera_common_libc_bindings---v031)
+ - [`flutterpi_gstreamer_video_player` - `v0.1.1`](#flutterpi_gstreamer_video_player---v011)
+ - [`linux_can` - `v0.1.0+1`](#linux_can---v0101)
+ - [`linux_serial` - `v0.2.3+4`](#linux_serial---v0234)
+ - [`linux_spidev` - `v0.2.1+4`](#linux_spidev---v0214)
+ - [`flutter_gpiod` - `v0.5.1+4`](#flutter_gpiod---v0514)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `linux_serial` - `v0.2.3+4`
+ - `linux_spidev` - `v0.2.1+4`
+ - `flutter_gpiod` - `v0.5.1+4`
+
+---
+
+#### `_ardera_common_libc_bindings` - `v0.3.1`
+
+ - **FEAT**(bindings): add `ARPHRD_...` bindings. ([b123003f](https://github.com/ardera/flutter_packages/commit/b123003f7e08b6b3da220d5a95391735a1cefef7))
+
+#### `flutterpi_gstreamer_video_player` - `v0.1.1`
+
+ - **FEAT**(flutterpi_gstreamer_video_player_example): add exit button. ([7d4f37c6](https://github.com/ardera/flutter_packages/commit/7d4f37c678bea11d92975e3185f01f85b380e1b5))
+
+#### `linux_can` - `v0.1.0+1`
+
+ - **REFACTOR**(linux_can): Use binding instead of magic nr. ([e5975413](https://github.com/ardera/flutter_packages/commit/e597541357b5809ed834e52e26d319bfeba5483c))
+ - **REFACTOR**(linux_can): use rtnetlink fd for querying MTU. ([78a933ed](https://github.com/ardera/flutter_packages/commit/78a933edc96acac75fd91ac6992904d933141c98))
+ - **FIX**(linux_can): More robust checking for CAN device. ([78e2f805](https://github.com/ardera/flutter_packages/commit/78e2f805871035422800de0b27c8241d36fe8f9a))
+
+
 ## 2023-07-03
 
 ### Changes
