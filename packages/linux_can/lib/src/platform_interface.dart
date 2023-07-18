@@ -84,13 +84,6 @@ CanBusErrorCounters canBusErrorCountersFromNative(ffi.Pointer<can_berr_counter> 
   );
 }
 
-class RtnetlinkSocket {
-  RtnetlinkSocket({required this.fd, required this.platformInterface});
-
-  final int fd;
-  final PlatformInterface platformInterface;
-}
-
 enum CanInterfaceAttribute {
   // general network interface attributes
   interfaceFlags,
@@ -251,13 +244,9 @@ final class NetlinkDataMessage extends NetlinkMessage {
 }
 
 class PlatformInterface {
-  final LibC libc;
+  final libc = LibC(ffi.DynamicLibrary.open('libc.so.6'));
 
-  late final rtnetlinkSocket = RtnetlinkSocket(
-    fd: openRtNetlinkSocket(),
-    platformInterface: this,
-  );
-
+  late final _rtnetlinkFd = openRtNetlinkSocket();
   late final eventListener = EpollEventLoop(libc);
 
   static const _bufferSize = 16384;
@@ -287,8 +276,6 @@ class PlatformInterface {
     ..._linkInfoDataAttributes,
     CanInterfaceAttribute.xstats,
   };
-
-  PlatformInterface() : libc = LibC(ffi.DynamicLibrary.open('libc.so.6'));
 
   void _debugCheckOpenFd(int fd) {
     assert(_debugOpenFds.contains(fd));
@@ -339,7 +326,6 @@ class PlatformInterface {
         if (interface.name.startsWith('can'))
           CanDevice(
             platformInterface: this,
-            netlinkSocket: rtnetlinkSocket,
             networkInterface: interface,
           ),
     ];
@@ -974,18 +960,17 @@ class PlatformInterface {
   }
 
   CanInterfaceAttributes _queryAttributes(
-    int netlinkFd,
     int interfaceIndex, {
     Set<CanInterfaceAttribute>? interests,
   }) {
-    assert(_debugOpenFds.contains(netlinkFd));
+    _debugCheckOpenFd(_rtnetlinkFd);
 
     final allocator = ffi.Arena();
 
     try {
       final messages = _rtnetlinkTalk(
         allocator: allocator,
-        netlinkFd: netlinkFd,
+        netlinkFd: _rtnetlinkFd,
         interfaceIndex: interfaceIndex,
         setupMessage: (nlh, size) {
           nlh.ref.nlmsg_len = NLMSG_LENGTH(ffi.sizeOf<ifinfomsg>());
@@ -1060,13 +1045,12 @@ class PlatformInterface {
   }
 
   CanInterfaceAttributes queryAttributes(
-    int netlinkFd,
     int interfaceIndex, {
     Set<CanInterfaceAttribute>? interests,
   }) {
     return Timeline.timeSync(
       'query CAN interface attributes',
-      () => _queryAttributes(netlinkFd, interfaceIndex, interests: interests),
+      () => _queryAttributes(interfaceIndex, interests: interests),
       arguments: {
         'interests': interests?.toList().map((interest) => interest.toString()).toList(),
       },

@@ -12,17 +12,14 @@ import 'package:linux_can/src/platform_interface.dart';
 class CanDevice {
   CanDevice({
     required PlatformInterface platformInterface,
-    required RtnetlinkSocket netlinkSocket,
     required this.networkInterface,
-  })  : _platformInterface = platformInterface,
-        _netlinkSocket = netlinkSocket;
+  }) : _platformInterface = platformInterface;
 
   final PlatformInterface _platformInterface;
-  final RtnetlinkSocket _netlinkSocket;
   final NetworkInterface networkInterface;
 
   CanInterfaceAttributes _queryAttributes({Set<CanInterfaceAttribute>? interests}) {
-    return _platformInterface.queryAttributes(_netlinkSocket.fd, networkInterface.index, interests: interests);
+    return _platformInterface.queryAttributes(networkInterface.index, interests: interests);
   }
 
   CanInterfaceAttributes _queryAttribute(CanInterfaceAttribute attribute) {
