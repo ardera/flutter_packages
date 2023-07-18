@@ -319,8 +319,7 @@ class PlatformInterface {
     ffi.calloc.free(req);
 
     return switch (socketAddressFamily) {
-      // TODO: Replace 280 with ARPHRD_CAN
-      280 => true,
+      ARPHRD_CAN => true,
       _ => false,
     };
   }
