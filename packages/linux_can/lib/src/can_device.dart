@@ -210,6 +210,8 @@ class CanSocket {
       await _fdUnlisten();
     }
 
+    await _controller.close();
+
     assert(_open);
     _platformInterface.close(_fd);
     _open = false;
@@ -278,28 +280,17 @@ class CanSocket {
     _listening = false;
   }
 
-  Stream<CanFrame>? _frames;
-  Stream<CanFrame> get frames {
-    assert(_open);
-
-    if (_frames == null) {
-      late StreamController<CanFrame> controller;
-
-      controller = StreamController.broadcast(
-        onListen: () {
-          _fdListen(
-            (frames) => frames?.forEach(controller.add),
-            controller.addError,
-          );
-        },
-        onCancel: () {
-          _fdUnlisten();
-        },
+  late final StreamController<CanFrame> _controller = StreamController.broadcast(
+    onListen: () {
+      _fdListen(
+        (frames) => frames?.forEach(_controller.add),
+        _controller.addError,
       );
+    },
+    onCancel: () {
+      _fdUnlisten();
+    },
+  );
 
-      _frames = controller.stream;
-    }
-
-    return _frames!;
-  }
+  Stream<CanFrame> get frames => _controller.stream;
 }
