@@ -299,6 +299,32 @@ class PlatformInterface {
     }
   }
 
+  bool isCanDevice(String interfaceName) {
+    _debugCheckOpenFd(_rtnetlinkFd);
+
+    final req = ffi.calloc<ifreq>();
+
+    _writeStringToArrayHelper(interfaceName, IF_NAMESIZE, (index, byte) => req.ref.ifr_name[index] = byte);
+
+    req.ref.ifr_ifindex = 0;
+
+    final ok = libc.ioctlPtr(_rtnetlinkFd, SIOCGIFHWADDR, req);
+    if (ok < 0) {
+      ffi.calloc.free(req);
+      throw LinuxError('Could not get CAN interface MTU.', 'ioctl', libc.errno);
+    }
+
+    final socketAddressFamily = req.ref.ifr_hwaddr.sa_family;
+
+    ffi.calloc.free(req);
+
+    return switch (socketAddressFamily) {
+      // TODO: Replace 280 with ARPHRD_CAN
+      280 => true,
+      _ => false,
+    };
+  }
+
   List<NetworkInterface> getNetworkInterfaces() {
     final nameindex = libc.if_nameindex1();
 
@@ -324,7 +350,7 @@ class PlatformInterface {
   List<CanDevice> getCanDevices() {
     return <CanDevice>[
       for (final interface in getNetworkInterfaces())
-        if (interface.name.startsWith('can'))
+        if (isCanDevice(interface.name))
           CanDevice(
             platformInterface: this,
             networkInterface: interface,
