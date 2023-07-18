@@ -1617,6 +1617,12 @@ const int IFLA_TSO_MAX_SEGS = 60;
 
 const int IFLA_ALLMULTI = 61;
 
+const int IFLA_DEVLINK_PORT = 62;
+
+const int IFLA_GSO_IPV4_MAX_SIZE = 63;
+
+const int IFLA_GRO_IPV4_MAX_SIZE = 64;
+
 const int IFLA_PROTO_DOWN_REASON_UNSPEC = 0;
 
 const int IFLA_PROTO_DOWN_REASON_MASK = 1;
@@ -1824,6 +1830,12 @@ const int IFLA_BRPORT_MCAST_EHT_HOSTS_LIMIT = 37;
 const int IFLA_BRPORT_MCAST_EHT_HOSTS_CNT = 38;
 
 const int IFLA_BRPORT_LOCKED = 39;
+
+const int IFLA_BRPORT_MAB = 40;
+
+const int IFLA_BRPORT_MCAST_N_GROUPS = 41;
+
+const int IFLA_BRPORT_MCAST_MAX_GROUPS = 42;
 
 const int IFLA_INFO_UNSPEC = 0;
 
@@ -3783,7 +3795,7 @@ const int IFLA_LINKINFO1 = 18;
 
 const int IFLA_PROMISCUITY1 = 30;
 
-const int IFLA_MAX = 61;
+const int IFLA_MAX = 64;
 
 const int IFLA_INET_MAX = 1;
 
@@ -3791,7 +3803,7 @@ const int IFLA_INET6_MAX = 9;
 
 const int IFLA_BR_MAX = 47;
 
-const int IFLA_BRPORT_MAX = 39;
+const int IFLA_BRPORT_MAX = 42;
 
 const int IFLA_INFO_MAX = 5;
 
@@ -3860,6 +3872,150 @@ const int IFLA_RMNET_MAX = 2;
 const int IFLA_MCTP_MAX = 1;
 
 const int IFLA_DSA_MAX = 1;
+
+const int IFF_LOWER_UP = 65536;
+
+const int IFF_DORMANT = 131072;
+
+const int IFF_ECHO = 262144;
+
+const int IFF_VOLATILE = 461914;
+
+const int ARPHRD_NETROM = 0;
+
+const int ARPHRD_ETHER = 1;
+
+const int ARPHRD_EETHER = 2;
+
+const int ARPHRD_AX25 = 3;
+
+const int ARPHRD_PRONET = 4;
+
+const int ARPHRD_CHAOS = 5;
+
+const int ARPHRD_IEEE802 = 6;
+
+const int ARPHRD_ARCNET = 7;
+
+const int ARPHRD_APPLETLK = 8;
+
+const int ARPHRD_DLCI = 15;
+
+const int ARPHRD_ATM = 19;
+
+const int ARPHRD_METRICOM = 23;
+
+const int ARPHRD_IEEE1394 = 24;
+
+const int ARPHRD_EUI64 = 27;
+
+const int ARPHRD_INFINIBAND = 32;
+
+const int ARPHRD_SLIP = 256;
+
+const int ARPHRD_CSLIP = 257;
+
+const int ARPHRD_SLIP6 = 258;
+
+const int ARPHRD_CSLIP6 = 259;
+
+const int ARPHRD_RSRVD = 260;
+
+const int ARPHRD_ADAPT = 264;
+
+const int ARPHRD_ROSE = 270;
+
+const int ARPHRD_X25 = 271;
+
+const int ARPHRD_HWX25 = 272;
+
+const int ARPHRD_CAN = 280;
+
+const int ARPHRD_MCTP = 290;
+
+const int ARPHRD_PPP = 512;
+
+const int ARPHRD_CISCO = 513;
+
+const int ARPHRD_HDLC = 513;
+
+const int ARPHRD_LAPB = 516;
+
+const int ARPHRD_DDCMP = 517;
+
+const int ARPHRD_RAWHDLC = 518;
+
+const int ARPHRD_RAWIP = 519;
+
+const int ARPHRD_TUNNEL = 768;
+
+const int ARPHRD_TUNNEL6 = 769;
+
+const int ARPHRD_FRAD = 770;
+
+const int ARPHRD_SKIP = 771;
+
+const int ARPHRD_LOOPBACK = 772;
+
+const int ARPHRD_LOCALTLK = 773;
+
+const int ARPHRD_FDDI = 774;
+
+const int ARPHRD_BIF = 775;
+
+const int ARPHRD_SIT = 776;
+
+const int ARPHRD_IPDDP = 777;
+
+const int ARPHRD_IPGRE = 778;
+
+const int ARPHRD_PIMREG = 779;
+
+const int ARPHRD_HIPPI = 780;
+
+const int ARPHRD_ASH = 781;
+
+const int ARPHRD_ECONET = 782;
+
+const int ARPHRD_IRDA = 783;
+
+const int ARPHRD_FCPP = 784;
+
+const int ARPHRD_FCAL = 785;
+
+const int ARPHRD_FCPL = 786;
+
+const int ARPHRD_FCFABRIC = 787;
+
+const int ARPHRD_IEEE802_TR = 800;
+
+const int ARPHRD_IEEE80211 = 801;
+
+const int ARPHRD_IEEE80211_PRISM = 802;
+
+const int ARPHRD_IEEE80211_RADIOTAP = 803;
+
+const int ARPHRD_IEEE802154 = 804;
+
+const int ARPHRD_IEEE802154_MONITOR = 805;
+
+const int ARPHRD_PHONET = 820;
+
+const int ARPHRD_PHONET_PIPE = 821;
+
+const int ARPHRD_CAIF = 822;
+
+const int ARPHRD_IP6GRE = 823;
+
+const int ARPHRD_NETLINK = 824;
+
+const int ARPHRD_6LOWPAN = 825;
+
+const int ARPHRD_VSOCKMON = 826;
+
+const int ARPHRD_VOID = 65535;
+
+const int ARPHRD_NONE = 65534;
 
 const int RTM_BASE = 16;
 

@@ -25,6 +25,7 @@ ffigen-options:
       - 'linux/can.h'
       - 'linux/can/raw.h'
       - 'linux/if_link.h'
+      - 'linux/if_arp.h'
       - 'linux/rtnetlink.h'
       - 'linux/netlink.h'
       - 'linux/can/netlink.h'
@@ -346,6 +347,7 @@ ffigen-options:
       - 'RTM_.*'
       - 'IFF_.*'
       - 'IFLA_.*'
+      - 'ARPHRD_.*'
     exclude:
       # somehow these have different values depending on ABI.
       - 'O_NOFOLLOW'
