@@ -169,6 +169,12 @@ class CanSocket {
   FdHandler? _fdListener;
   ffi.Pointer<can_frame>? _fdHandlerBuffer;
 
+  void _checkOpen() {
+    if (!_open) {
+      throw StateError('CanSocket is closed');
+    }
+  }
+
   /// Returns the current send buffer size of this socket.
   ///
   /// Every CAN frame sent with this socket will first go into the send buffer, before it's actually sent.
@@ -195,17 +201,19 @@ class CanSocket {
   /// happen when sending lots of frames in a short time period. If [block] is false, this will throw a [LinuxError]
   /// with errno [EWOULDBLOCK] (value 22) in this case.
   void write(CanFrame frame, {bool block = true}) {
-    assert(_open);
+    _checkOpen();
 
     _platformInterface.write(_fd, frame, block: block);
   }
 
   CanFrame? read() {
-    assert(_open);
+    _checkOpen();
     return _platformInterface.read(_fd);
   }
 
   Future<void> close() async {
+    _checkOpen();
+
     if (_listening) {
       await _fdUnlisten();
     }
@@ -241,7 +249,8 @@ class CanSocket {
     void Function(List<CanFrame>?) onFrame,
     void Function(Object error, StackTrace? stackTrace) onError,
   ) async {
-    assert(_open);
+    _checkOpen();
+
     assert(!_listening);
     assert(_fdListener == null);
     assert(_fdHandlerBuffer == null);
@@ -264,7 +273,8 @@ class CanSocket {
   }
 
   Future<void> _fdUnlisten() async {
-    assert(_open);
+    _checkOpen();
+
     assert(_listening);
     assert(_fdListener != null);
     assert(_fdHandlerBuffer != null);
