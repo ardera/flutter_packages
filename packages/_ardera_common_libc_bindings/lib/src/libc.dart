@@ -9,5 +9,5 @@ export 'libc_constants.dart';
 // export libc function macros
 export 'libc_macros.dart';
 
-// eport libc functions
+// export libc functions
 export 'libc_functions.dart';

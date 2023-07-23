@@ -16,7 +16,7 @@ import 'package:_ardera_common_libc_bindings/src/libc_structs.dart'
 
 typedef SymbolLookupFn = ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName);
 
-class LibCArm extends LibC {
+final class LibCArm extends LibC {
   final backend.LibCArm _backend;
 
   LibCArm.fromLookup(SymbolLookupFn _lookup)
@@ -219,7 +219,7 @@ class LibCArm extends LibC {
   }
 }
 
-class LibCArm64 extends LibC {
+final class LibCArm64 extends LibC {
   final backend.LibCArm64 _backend;
 
   LibCArm64.fromLookup(SymbolLookupFn _lookup)
@@ -422,7 +422,7 @@ class LibCArm64 extends LibC {
   }
 }
 
-class LibCI386 extends LibC {
+final class LibCI386 extends LibC {
   final backend.LibCI386 _backend;
 
   LibCI386.fromLookup(SymbolLookupFn _lookup)
@@ -625,7 +625,7 @@ class LibCI386 extends LibC {
   }
 }
 
-class LibCAmd64 extends LibC {
+final class LibCAmd64 extends LibC {
   final backend.LibCAmd64 _backend;
 
   LibCAmd64.fromLookup(SymbolLookupFn _lookup)
@@ -828,7 +828,7 @@ class LibCAmd64 extends LibC {
   }
 }
 
-abstract class LibC {
+abstract base class LibC {
   final SymbolLookupFn _lookup;
 
   LibC._fromLookup(this._lookup);
