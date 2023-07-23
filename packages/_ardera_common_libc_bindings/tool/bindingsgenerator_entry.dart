@@ -280,7 +280,7 @@ String generateForArch(TargetArch arch, YamlMap ffigenOptions) {
 
   final contents = library.generate();
 
-  final formatted = DartFormatter().format(contents);
+  final formatted = DartFormatter(pageWidth: 120).format(contents);
 
   return formatted;
 }
