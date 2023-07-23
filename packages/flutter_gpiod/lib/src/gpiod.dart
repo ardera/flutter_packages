@@ -229,6 +229,23 @@ Future<void> _eventIsolateEntry2(List args) async {
   }
 }
 
+class PlatformInterface2 {
+  late final libc = switch ((android: Platform.isAndroid, linux: Platform.isLinux)) {
+    (android: false, linux: true) => LibC(ffi.DynamicLibrary.open('libc.so.6')),
+    (android: true, linux: false) => LibC(ffi.DynamicLibrary.open('libc.so')),
+    _ => throw UnsupportedError('Unsupported OS: ${Platform.operatingSystem}'),
+  };
+
+  // Use major:minor numbers here
+  List<String> getGpioNames() {
+    return Directory('/dev')
+        .listSync(followLinks: false, recursive: false)
+        .map((e) => basename(e.path))
+        .where((name) => name.startsWith('gpiochip'))
+        .toList();
+  }
+}
+
 /// Provides raw access to the platform-side methods.
 class PlatformInterface {
   PlatformInterface._construct(
