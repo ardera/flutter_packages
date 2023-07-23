@@ -28,6 +28,6 @@ import 'dart:ffi';
   Abi.windowsIA32: Int32(),
   Abi.windowsX64: Int64(),
 })
-class SSize extends AbiSpecificInteger {
+final class SSize extends AbiSpecificInteger {
   const SSize();
 }

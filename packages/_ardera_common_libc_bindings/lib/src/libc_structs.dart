@@ -63,7 +63,7 @@ export 'libc_arm.g.dart'
 /// Only thing we need to look out for is the offsets still matching.
 
 @ffi.Packed(1)
-class epoll_data extends ffi.Union {
+final class epoll_data extends ffi.Union {
   external ffi.Pointer<ffi.Void> ptr;
 
   @ffi.Int()
@@ -96,12 +96,12 @@ class epoll_data extends ffi.Union {
   ffi.Abi.windowsIA32: ffi.Uint64(),
   ffi.Abi.windowsX64: ffi.Uint64(),
 })
-class epoll_event_align extends ffi.AbiSpecificInteger {
+final class epoll_event_align extends ffi.AbiSpecificInteger {
   const epoll_event_align();
 }
 
 @ffi.Packed(1)
-class epoll_event_align_union extends ffi.Union {
+final class epoll_event_align_union extends ffi.Union {
   @ffi.Uint32()
   external int events;
 
@@ -110,7 +110,7 @@ class epoll_event_align_union extends ffi.Union {
 }
 
 @ffi.Packed(1)
-class epoll_event extends ffi.Struct {
+final class epoll_event extends ffi.Struct {
   @visibleForTesting
   external epoll_event_align_union align_hack;
 

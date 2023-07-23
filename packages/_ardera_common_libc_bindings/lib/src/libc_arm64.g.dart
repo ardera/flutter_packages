@@ -533,7 +533,7 @@ abstract class EPOLL_EVENTS {
   static const int EPOLLET = -2147483648;
 }
 
-class epoll_data extends ffi.Union {
+final class epoll_data extends ffi.Union {
   external ffi.Pointer<ffi.Void> ptr;
 
   @ffi.Int()
@@ -546,7 +546,7 @@ class epoll_data extends ffi.Union {
   external int u64;
 }
 
-class epoll_event extends ffi.Struct {
+final class epoll_event extends ffi.Struct {
   @ffi.Uint32()
   external int events;
 
@@ -558,7 +558,7 @@ class epoll_event extends ffi.Struct {
 /// @label: a functional name for this GPIO chip, such as a product
 /// number, may be empty (i.e. label[0] == '\0')
 /// @lines: number of GPIO lines on this chip
-class gpiochip_info extends ffi.Struct {
+final class gpiochip_info extends ffi.Struct {
   @ffi.Array.multi([32])
   external ffi.Array<ffi.Char> name;
 
@@ -575,7 +575,7 @@ class gpiochip_info extends ffi.Struct {
 /// @mask: a bitmap identifying the lines to get or set, with each bit
 /// number corresponding to the index into &struct
 /// gpio_v2_line_request.offsets.
-class gpio_v2_line_values extends ffi.Struct {
+final class gpio_v2_line_values extends ffi.Struct {
   @ffi.Uint64()
   external int bits;
 
@@ -597,7 +597,7 @@ class gpio_v2_line_values extends ffi.Struct {
 /// gpio_v2_line_request.offsets.
 /// @debounce_period_us: if id is %GPIO_V2_LINE_ATTR_ID_DEBOUNCE, the
 /// desired debounce period, in microseconds
-class gpio_v2_line_attribute extends ffi.Struct {
+final class gpio_v2_line_attribute extends ffi.Struct {
   @ffi.Uint32()
   external int id;
 
@@ -607,7 +607,7 @@ class gpio_v2_line_attribute extends ffi.Struct {
   external UnnamedUnion1 unnamed;
 }
 
-class UnnamedUnion1 extends ffi.Union {
+final class UnnamedUnion1 extends ffi.Union {
   @ffi.Uint64()
   external int flags;
 
@@ -624,7 +624,7 @@ class UnnamedUnion1 extends ffi.Union {
 /// @mask: a bitmap identifying the lines to which the attribute applies,
 /// with each bit number corresponding to the index into &struct
 /// gpio_v2_line_request.offsets.
-class gpio_v2_line_config_attribute extends ffi.Struct {
+final class gpio_v2_line_config_attribute extends ffi.Struct {
   external gpio_v2_line_attribute attr;
 
   @ffi.Uint64()
@@ -643,7 +643,7 @@ class gpio_v2_line_config_attribute extends ffi.Struct {
 /// lines.  Any attribute should only be associated with a particular line
 /// once.  If an attribute is associated with a line multiple times then the
 /// first occurrence (i.e. lowest index) has precedence.
-class gpio_v2_line_config extends ffi.Struct {
+final class gpio_v2_line_config extends ffi.Struct {
   @ffi.Uint64()
   external int flags;
 
@@ -676,7 +676,7 @@ class gpio_v2_line_config extends ffi.Struct {
 /// @fd: if successful this field will contain a valid anonymous file handle
 /// after a %GPIO_GET_LINE_IOCTL operation, zero or negative value means
 /// error
-class gpio_v2_line_request extends ffi.Struct {
+final class gpio_v2_line_request extends ffi.Struct {
   @ffi.Array.multi([64])
   external ffi.Array<ffi.Uint32> offsets;
 
@@ -713,7 +713,7 @@ class gpio_v2_line_request extends ffi.Struct {
 /// %GPIO_V2_LINE_FLAG_OUTPUT etc, added together.
 /// @attrs: the configuration attributes associated with the line
 /// @padding: reserved for future use
-class gpio_v2_line_info extends ffi.Struct {
+final class gpio_v2_line_info extends ffi.Struct {
   @ffi.Array.multi([32])
   external ffi.Array<ffi.Char> name;
 
@@ -752,7 +752,7 @@ class gpio_v2_line_info extends ffi.Struct {
 ///
 /// If the %GPIO_V2_LINE_FLAG_EVENT_CLOCK_REALTIME flag is set then the
 /// @timestamp_ns is read from %CLOCK_REALTIME.
-class gpio_v2_line_event extends ffi.Struct {
+final class gpio_v2_line_event extends ffi.Struct {
   @ffi.Uint64()
   external int timestamp_ns;
 
@@ -785,7 +785,7 @@ class gpio_v2_line_event extends ffi.Struct {
 ///
 /// Note: This struct is part of ABI v1 and is deprecated.
 /// Use &struct gpio_v2_line_info instead.
-class gpioline_info extends ffi.Struct {
+final class gpioline_info extends ffi.Struct {
   @ffi.Uint32()
   external int line_offset;
 
@@ -815,7 +815,7 @@ class gpioline_info extends ffi.Struct {
 ///
 /// Note: This struct is part of ABI v1 and is deprecated.
 /// Use &struct gpio_v2_line_info_changed instead.
-class gpioline_info_changed extends ffi.Struct {
+final class gpioline_info_changed extends ffi.Struct {
   external gpioline_info info;
 
   @ffi.Uint64()
@@ -851,7 +851,7 @@ class gpioline_info_changed extends ffi.Struct {
 ///
 /// Note: This struct is part of ABI v1 and is deprecated.
 /// Use &struct gpio_v2_line_request instead.
-class gpiohandle_request extends ffi.Struct {
+final class gpiohandle_request extends ffi.Struct {
   @ffi.Array.multi([64])
   external ffi.Array<ffi.Uint32> lineoffsets;
 
@@ -882,7 +882,7 @@ class gpiohandle_request extends ffi.Struct {
 ///
 /// Note: This struct is part of ABI v1 and is deprecated.
 /// Use &struct gpio_v2_line_config instead.
-class gpiohandle_config extends ffi.Struct {
+final class gpiohandle_config extends ffi.Struct {
   @ffi.Uint32()
   external int flags;
 
@@ -900,7 +900,7 @@ class gpiohandle_config extends ffi.Struct {
 ///
 /// Note: This struct is part of ABI v1 and is deprecated.
 /// Use &struct gpio_v2_line_values instead.
-class gpiohandle_data extends ffi.Struct {
+final class gpiohandle_data extends ffi.Struct {
   @ffi.Array.multi([64])
   external ffi.Array<ffi.Uint8> values;
 }
@@ -920,7 +920,7 @@ class gpiohandle_data extends ffi.Struct {
 ///
 /// Note: This struct is part of ABI v1 and is deprecated.
 /// Use &struct gpio_v2_line_request instead.
-class gpioevent_request extends ffi.Struct {
+final class gpioevent_request extends ffi.Struct {
   @ffi.Uint32()
   external int lineoffset;
 
@@ -943,7 +943,7 @@ class gpioevent_request extends ffi.Struct {
 ///
 /// Note: This struct is part of ABI v1 and is deprecated.
 /// Use &struct gpio_v2_line_event instead.
-class gpioevent_data extends ffi.Struct {
+final class gpioevent_data extends ffi.Struct {
   @ffi.Uint64()
   external int timestamp;
 
@@ -951,7 +951,7 @@ class gpioevent_data extends ffi.Struct {
   external int id;
 }
 
-class termios extends ffi.Struct {
+final class termios extends ffi.Struct {
   @ffi.UnsignedInt()
   external int c_iflag;
 
@@ -1011,7 +1011,7 @@ class termios extends ffi.Struct {
 /// terminating that command by temporarily deselecting the chip; the next
 /// could send a different nine bit command (re-selecting the chip), and the
 /// last transfer might write some register values.
-class spi_ioc_transfer extends ffi.Struct {
+final class spi_ioc_transfer extends ffi.Struct {
   @ffi.Uint64()
   external int tx_buf;
 
@@ -1046,14 +1046,14 @@ class spi_ioc_transfer extends ffi.Struct {
   external int pad;
 }
 
-class iovec extends ffi.Struct {
+final class iovec extends ffi.Struct {
   external ffi.Pointer<ffi.Void> iov_base;
 
   @ffi.Int()
   external int iov_len;
 }
 
-class sockaddr extends ffi.Struct {
+final class sockaddr extends ffi.Struct {
   @ffi.UnsignedShort()
   external int sa_family;
 
@@ -1061,7 +1061,7 @@ class sockaddr extends ffi.Struct {
   external ffi.Array<ffi.Char> sa_data;
 }
 
-class msghdr extends ffi.Struct {
+final class msghdr extends ffi.Struct {
   external ffi.Pointer<ffi.Void> msg_name;
 
   @ffi.UnsignedInt()
@@ -1081,25 +1081,25 @@ class msghdr extends ffi.Struct {
   external int msg_flags;
 }
 
-class if_nameindex extends ffi.Struct {
+final class if_nameindex extends ffi.Struct {
   @ffi.UnsignedInt()
   external int if_index;
 
   external ffi.Pointer<ffi.Char> if_name;
 }
 
-class ifreq extends ffi.Struct {
+final class ifreq extends ffi.Struct {
   external UnnamedUnion2 ifr_ifrn;
 
   external UnnamedUnion3 ifr_ifru;
 }
 
-class UnnamedUnion2 extends ffi.Union {
+final class UnnamedUnion2 extends ffi.Union {
   @ffi.Array.multi([16])
   external ffi.Array<ffi.Char> ifrn_name;
 }
 
-class UnnamedUnion3 extends ffi.Union {
+final class UnnamedUnion3 extends ffi.Union {
   external sockaddr ifru_addr;
 
   external sockaddr ifru_dstaddr;
@@ -1130,7 +1130,7 @@ class UnnamedUnion3 extends ffi.Union {
   external ffi.Pointer<ffi.Char> ifru_data;
 }
 
-class ifmap extends ffi.Struct {
+final class ifmap extends ffi.Struct {
   @ffi.UnsignedLong()
   external int mem_start;
 
@@ -1161,7 +1161,7 @@ class ifmap extends ffi.Struct {
 /// 8 bytes but the DLC value (see ISO 11898-1) is greater then 8.
 /// CAN_CTRLMODE_CC_LEN8_DLC flag has to be enabled in CAN driver.
 /// @data:     CAN frame payload (up to 8 byte)
-class can_frame extends ffi.Struct {
+final class can_frame extends ffi.Struct {
   @ffi.Uint32()
   external int can_id;
 
@@ -1180,7 +1180,7 @@ class can_frame extends ffi.Struct {
   external ffi.Array<ffi.Uint8> data;
 }
 
-class UnnamedUnion4 extends ffi.Union {
+final class UnnamedUnion4 extends ffi.Union {
   @ffi.Uint8()
   external int len;
 
@@ -1195,7 +1195,7 @@ class UnnamedUnion4 extends ffi.Union {
 /// @__res0: reserved / padding
 /// @__res1: reserved / padding
 /// @data:   CAN FD frame payload (up to CANFD_MAX_DLEN byte)
-class canfd_frame extends ffi.Struct {
+final class canfd_frame extends ffi.Struct {
   @ffi.Uint32()
   external int can_id;
 
@@ -1219,7 +1219,7 @@ class canfd_frame extends ffi.Struct {
 /// @can_family:  address family number AF_CAN.
 /// @can_ifindex: CAN network interface index.
 /// @can_addr:    protocol specific address information
-class sockaddr_can extends ffi.Struct {
+final class sockaddr_can extends ffi.Struct {
   @ffi.UnsignedShort()
   external int can_family;
 
@@ -1229,13 +1229,13 @@ class sockaddr_can extends ffi.Struct {
   external UnnamedUnion5 can_addr;
 }
 
-class UnnamedUnion5 extends ffi.Union {
+final class UnnamedUnion5 extends ffi.Union {
   external UnnamedStruct1 tp;
 
   external UnnamedStruct2 j1939;
 }
 
-class UnnamedStruct1 extends ffi.Struct {
+final class UnnamedStruct1 extends ffi.Struct {
   @ffi.Uint32()
   external int rx_id;
 
@@ -1243,7 +1243,7 @@ class UnnamedStruct1 extends ffi.Struct {
   external int tx_id;
 }
 
-class UnnamedStruct2 extends ffi.Struct {
+final class UnnamedStruct2 extends ffi.Struct {
   @ffi.Uint64()
   external int name;
 
@@ -1265,7 +1265,7 @@ class UnnamedStruct2 extends ffi.Struct {
 ///
 /// The filter can be inverted (CAN_INV_FILTER bit set in can_id) or it can
 /// filter for error message frames (CAN_ERR_FLAG bit set in mask).
-class can_filter extends ffi.Struct {
+final class can_filter extends ffi.Struct {
   @ffi.Uint32()
   external int can_id;
 
@@ -1273,7 +1273,7 @@ class can_filter extends ffi.Struct {
   external int can_mask;
 }
 
-class sockaddr_nl extends ffi.Struct {
+final class sockaddr_nl extends ffi.Struct {
   @ffi.UnsignedShort()
   external int nl_family;
 
@@ -1293,7 +1293,7 @@ class sockaddr_nl extends ffi.Struct {
 /// @nlmsg_flags: Additional flags
 /// @nlmsg_seq:   Sequence number
 /// @nlmsg_pid:   Sending process port ID
-class nlmsghdr extends ffi.Struct {
+final class nlmsghdr extends ffi.Struct {
   @ffi.Uint32()
   external int nlmsg_len;
 
@@ -1310,14 +1310,14 @@ class nlmsghdr extends ffi.Struct {
   external int nlmsg_pid;
 }
 
-class nlmsgerr extends ffi.Struct {
+final class nlmsgerr extends ffi.Struct {
   @ffi.Int()
   external int error;
 
   external nlmsghdr msg;
 }
 
-class rtattr extends ffi.Struct {
+final class rtattr extends ffi.Struct {
   @ffi.UnsignedShort()
   external int rta_len;
 
@@ -1326,7 +1326,7 @@ class rtattr extends ffi.Struct {
 }
 
 /// Definitions used in routing table administration.
-class rtmsg extends ffi.Struct {
+final class rtmsg extends ffi.Struct {
   @ffi.UnsignedChar()
   external int rtm_family;
 
@@ -1356,7 +1356,7 @@ class rtmsg extends ffi.Struct {
 }
 
 /// Link layer specific messages.
-class ifinfomsg extends ffi.Struct {
+final class ifinfomsg extends ffi.Struct {
   @ffi.UnsignedChar()
   external int ifi_family;
 
@@ -1376,7 +1376,7 @@ class ifinfomsg extends ffi.Struct {
   external int ifi_change;
 }
 
-class can_bittiming extends ffi.Struct {
+final class can_bittiming extends ffi.Struct {
   @ffi.Uint32()
   external int bitrate;
 
@@ -1402,7 +1402,7 @@ class can_bittiming extends ffi.Struct {
   external int brp;
 }
 
-class can_bittiming_const extends ffi.Struct {
+final class can_bittiming_const extends ffi.Struct {
   @ffi.Array.multi([16])
   external ffi.Array<ffi.Char> name;
 
@@ -1431,7 +1431,7 @@ class can_bittiming_const extends ffi.Struct {
   external int brp_inc;
 }
 
-class can_clock extends ffi.Struct {
+final class can_clock extends ffi.Struct {
   @ffi.Uint32()
   external int freq;
 }
@@ -1446,7 +1446,7 @@ abstract class can_state {
   static const int CAN_STATE_MAX = 6;
 }
 
-class can_berr_counter extends ffi.Struct {
+final class can_berr_counter extends ffi.Struct {
   @ffi.Uint16()
   external int txerr;
 
@@ -1454,7 +1454,7 @@ class can_berr_counter extends ffi.Struct {
   external int rxerr;
 }
 
-class can_ctrlmode extends ffi.Struct {
+final class can_ctrlmode extends ffi.Struct {
   @ffi.Uint32()
   external int mask;
 
@@ -1462,7 +1462,7 @@ class can_ctrlmode extends ffi.Struct {
   external int flags;
 }
 
-class can_device_stats extends ffi.Struct {
+final class can_device_stats extends ffi.Struct {
   @ffi.Uint32()
   external int bus_error;
 
