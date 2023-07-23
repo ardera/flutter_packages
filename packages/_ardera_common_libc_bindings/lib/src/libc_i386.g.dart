@@ -94,6 +94,21 @@ class LibCI386 {
   late final _ioctlPtr = _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.UnsignedLong)>>('ioctl');
   late final _ioctl = _ioctlPtr.asFunction<int Function(int, int)>(isLeaf: true);
 
+  int stat_fn(
+    ffi.Pointer<ffi.Char> __file,
+    ffi.Pointer<stat_buf> __buf,
+  ) {
+    return _stat_fn(
+      __file,
+      __buf,
+    );
+  }
+
+  late final _stat_fnPtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<stat_buf>)>>('stat');
+  late final _stat_fn =
+      _stat_fnPtr.asFunction<int Function(ffi.Pointer<ffi.Char>, ffi.Pointer<stat_buf>)>(isLeaf: true);
+
   int epoll_create(
     int __size,
   ) {
@@ -513,6 +528,64 @@ class _SymbolAddresses {
       get epoll_ctl => _library._epoll_ctlPtr;
   ffi.Pointer<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Pointer<epoll_event>, ffi.Int, ffi.Int)>>
       get epoll_wait => _library._epoll_waitPtr;
+}
+
+final class stat_buf extends ffi.Struct {
+  @ffi.UnsignedLongLong()
+  external int st_dev;
+
+  @ffi.UnsignedShort()
+  external int __pad1;
+
+  @ffi.UnsignedLong()
+  external int st_ino;
+
+  @ffi.UnsignedInt()
+  external int st_mode;
+
+  @ffi.UnsignedInt()
+  external int st_nlink;
+
+  @ffi.UnsignedInt()
+  external int st_uid;
+
+  @ffi.UnsignedInt()
+  external int st_gid;
+
+  @ffi.UnsignedLongLong()
+  external int st_rdev;
+
+  @ffi.UnsignedShort()
+  external int __pad2;
+
+  @ffi.Long()
+  external int st_size;
+
+  @ffi.Long()
+  external int st_blksize;
+
+  @ffi.Long()
+  external int st_blocks;
+
+  external timespec st_atim;
+
+  external timespec st_mtim;
+
+  external timespec st_ctim;
+
+  @ffi.UnsignedLong()
+  external int __glibc_reserved4;
+
+  @ffi.UnsignedLong()
+  external int __glibc_reserved5;
+}
+
+final class timespec extends ffi.Struct {
+  @ffi.Long()
+  external int tv_sec;
+
+  @ffi.Long()
+  external int tv_nsec;
 }
 
 abstract class EPOLL_EVENTS {

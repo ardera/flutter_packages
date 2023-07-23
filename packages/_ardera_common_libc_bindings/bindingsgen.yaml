@@ -9,6 +9,7 @@ ffigen-options:
       - 'sys/stat.h'
       - 'sys/epoll.h'
       - 'sys/eventfd.h'
+      - 'sys/stat.h'
 
       # flutter_gpiod
       - 'linux/gpio.h'
@@ -42,6 +43,7 @@ ffigen-options:
       - close
       - read
       - eventfd
+      - stat
 
       # linux_serial
       - cfgetispeed
@@ -72,6 +74,7 @@ ffigen-options:
       - write
     rename:
       '__errno_location': 'errno_location'
+      'stat': 'stat_fn'
     symbol-address:
       include:
         - epoll_ctl
@@ -117,6 +120,7 @@ ffigen-options:
       # flutter_gpiod, linux_serial, linux_spidev
       - epoll_event
       - epoll_data
+      - stat
 
       # linux_can
       - ifreq
@@ -152,6 +156,8 @@ ffigen-options:
       # - 'sockaddr_can',
       # - 'can_filter'
     dependency-only: opaque
+    rename:
+      'stat': 'stat_buf'
   unions:
     include:
       - epoll_data

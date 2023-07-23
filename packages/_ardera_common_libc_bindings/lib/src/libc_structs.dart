@@ -4,6 +4,11 @@ import 'dart:ffi' as ffi;
 
 import 'package:meta/meta.dart';
 
+import 'package:_ardera_common_libc_bindings/src/libc_arm.g.dart' as arm show stat_buf;
+import 'package:_ardera_common_libc_bindings/src/libc_arm64.g.dart' as arm64 show stat_buf;
+import 'package:_ardera_common_libc_bindings/src/libc_i386.g.dart' as i386 show stat_buf;
+import 'package:_ardera_common_libc_bindings/src/libc_amd64.g.dart' as amd64 show stat_buf;
+
 import 'package:_ardera_common_libc_bindings/src/libc_arm.g.dart' show sockaddr, ifreq, ifmap, can_frame;
 
 export 'libc_arm.g.dart'
@@ -184,3 +189,8 @@ extension CanFrameUnnamedUnion on can_frame {
   int get len => unnamed.len;
   set len(int value) => unnamed.len = value;
 }
+
+typedef stat_buf_arm = arm.stat_buf;
+typedef stat_buf_arm64 = arm64.stat_buf;
+typedef stat_buf_i386 = i386.stat_buf;
+typedef stat_buf_amd64 = amd64.stat_buf;

@@ -131,6 +131,10 @@ final class LibCArm extends LibC {
     return _backend.write(__fd, __buf, __n);
   }
 
+  int stat(ffi.Pointer<ffi.Char> __file, ffi.Pointer<arm.stat_buf> __buf) {
+    return _backend.stat_fn(__file, __buf);
+  }
+
   @override
   int send(int __fd, ffi.Pointer<ffi.Void> __buf, int __n, int __flags) {
     return _backend.send(__fd, __buf, __n, __flags);
@@ -332,6 +336,10 @@ final class LibCArm64 extends LibC {
   @override
   int write(int __fd, ffi.Pointer<ffi.Void> __buf, int __n) {
     return _backend.write(__fd, __buf, __n);
+  }
+
+  int stat(ffi.Pointer<ffi.Char> __file, ffi.Pointer<arm64.stat_buf> __buf) {
+    return _backend.stat_fn(__file, __buf);
   }
 
   @override
@@ -537,6 +545,10 @@ final class LibCI386 extends LibC {
     return _backend.write(__fd, __buf, __n);
   }
 
+  int stat(ffi.Pointer<ffi.Char> __file, ffi.Pointer<i386.stat_buf> __buf) {
+    return _backend.stat_fn(__file, __buf);
+  }
+
   @override
   int send(int __fd, ffi.Pointer<ffi.Void> __buf, int __n, int __flags) {
     return _backend.send(__fd, __buf, __n, __flags);
@@ -738,6 +750,10 @@ final class LibCAmd64 extends LibC {
   @override
   int write(int __fd, ffi.Pointer<ffi.Void> __buf, int __n) {
     return _backend.write(__fd, __buf, __n);
+  }
+
+  int stat(ffi.Pointer<ffi.Char> __file, ffi.Pointer<amd64.stat_buf> __buf) {
+    return _backend.stat_fn(__file, __buf);
   }
 
   @override
