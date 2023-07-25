@@ -1132,4 +1132,85 @@ class PlatformInterface {
       throw LinuxError('Could not set SO_SNDBUF socket option.', 'setsockopt', libc.errno);
     }
   }
+
+  void setFilter(int fd, CanFilter filter) {
+    final rules = filter.rules;
+    final combinator = filter.ruleCombinator;
+    final errors = filter.errors;
+
+    if (rules.length > CAN_RAW_FILTER_MAX) {
+      throw ArgumentError(
+          'The specified filter has too many rules. SocketCAN only accepts at max $CAN_RAW_FILTER_MAX rules per filter.');
+    }
+
+    final arena = ffi.Arena();
+
+    try {
+      final nativeRules = arena<can_filter>(rules.length);
+
+      for (final (index, rule) in rules.indexed) {
+        if (combinator == CanRuleCombinator.or) {
+          // Every rule must be disjoint with every other rule.
+          // Otherwise we might receive frames multiple times.
+          // This check is O(n^2) so only run it in debug mode.
+          assert(
+            rules.skip(index + 1).every((other) => rule.disjoint(other)),
+            'When using logical OR as the combining operator, '
+            'every filter rule must be disjoint with every other filter rule.'
+            'Disjoint in this context means, there is no CAN frame with a '
+            'specific id, frame type and frame format that satisfies both rules.'
+            'Otherwise, frames might be received multiple times.',
+          );
+        } else {
+          assert(combinator == CanRuleCombinator.and);
+
+          /// TODO: Allow this?
+          assert(
+            rules.skip(index + 1).every((other) => rule.intersecting(other)),
+            'When using logical AND as the combining operator, '
+            'every filter rule must be intersecting with every other filter rule.'
+            'Intersecting in this context means, there is a CAN frame with a'
+            'specific id, frame type and frame format that satisfies both rules.'
+            'Otherwise, the filter can never be satisfied, and no frames will '
+            'ever be received at all.',
+          );
+        }
+
+        var id = rule.id;
+        var mask = rule.mask;
+
+        id &= CAN_EFF_MASK;
+        mask &= CAN_EFF_MASK;
+
+        final (maskEffBit, idEffBit) = switch (rule.formats.asConst()) {
+          const {} => (false, true),
+          const {CanFrameFormat.base} => (true, false),
+          const {CanFrameFormat.extended} => (true, true),
+          const {CanFrameFormat.base, CanFrameFormat.extended} => (false, false),
+          _ => throw StateError('Unreachable'),
+        };
+
+        mask |= maskEffBit ? CAN_EFF_FLAG : 0;
+        id |= idEffBit ? CAN_EFF_FLAG : 0;
+
+        final (maskRtrBit, idRtrBit) = switch (rule.types.asConst()) {
+          const {} => (false, true),
+          const {CanFrameType.data} => (true, false),
+          const {CanFrameType.remote} => (true, true),
+          const {CanFrameType.data, CanFrameType.remote} => (false, false),
+          _ => throw StateError('Unreachable'),
+        };
+
+        mask |= maskRtrBit ? CAN_RTR_FLAG : 0;
+        id |= idRtrBit ? CAN_RTR_FLAG : 0;
+
+        final native = nativeRules.elementAt(index);
+
+        native.ref.can_id = id;
+        native.ref.can_mask = mask;
+      }
+    } finally {
+      arena.releaseAll();
+    }
+  }
 }

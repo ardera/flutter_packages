@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:_ardera_common_libc_bindings/_ardera_common_libc_bindings.dart';
 import 'package:collection/collection.dart';
 import 'package:quiver/collection.dart';
@@ -728,5 +727,408 @@ class CanInterfaceAttributes {
   @override
   String toString() {
     return 'CanInterfaceAttributes(interfaceFlags: $interfaceFlags, txQueueLength: $txQueueLength, operState: $operState, stats: $stats, numTxQueues: $numTxQueues, numRxQueues: $numRxQueues, xstats: $xstats, bitTiming: $bitTiming, bitTimingLimits: $bitTimingLimits, clockFrequency: $clockFrequency, state: $state, controllerMode: $controllerMode, restartDelay: $restartDelay, busErrorCounters: $busErrorCounters, dataBitTiming: $dataBitTiming, dataBitTimingLimits: $dataBitTimingLimits, termination: $termination, supportedTerminations: $supportedTerminations, supportedBitrates: $supportedBitrates, supportedDataBitrates: $supportedDataBitrates, maxBitrate: $maxBitrate, supportedControllerModes: $supportedControllerModes)';
+  }
+}
+
+enum CanError {
+  txTimeout(0x1),
+  arbitrationLost(0x2),
+  controllerProblems(0x4),
+  protocolViolations(0x8),
+  transceiverStatus(0x10),
+  noAck(0x20),
+  busOff(0x40),
+  busError(0x80),
+  restarted(0x100),
+  count(0x200);
+
+  const CanError(this.native);
+
+  final int native;
+}
+
+enum CanRuleCombinator { or, and }
+
+class CanFilterRule {
+  const CanFilterRule({
+    required this.id,
+    required this.mask,
+    this.formats = const {CanFrameFormat.base, CanFrameFormat.extended},
+    this.types = const {CanFrameType.data},
+    this.invert = false,
+  })  : assert(0 <= id && id <= CAN_EFF_MASK),
+        assert(0 <= mask && mask <= CAN_EFF_MASK);
+
+  static const empty = CanFilterRule(id: 1, mask: 0, formats: {}, types: {}, invert: false);
+
+  final int id;
+  final int mask;
+  final Set<CanFrameFormat> formats;
+  final Set<CanFrameType> types;
+  final bool invert;
+
+  CanFilterRule copyWith({
+    int? id,
+    int? mask,
+    Set<CanFrameFormat>? formats,
+    Set<CanFrameType>? types,
+    bool? invert,
+  }) {
+    return CanFilterRule(
+      id: id ?? this.id,
+      mask: mask ?? this.mask,
+      formats: formats ?? this.formats,
+      types: types ?? this.types,
+      invert: invert ?? this.invert,
+    );
+  }
+
+  bool disjoint(CanFilterRule other) {
+    if (invert || other.invert) {
+      throw UnimplementedError();
+    }
+
+    if (id & other.mask != other.id & mask) {
+      // disjoint.
+      return true;
+    }
+
+    // There are ids that match both rules.
+    // If the format sets are disjoint, the rules are still disjoint.
+    if (formats.intersection(other.formats).isNotEmpty) {
+      return false;
+    }
+
+    // If the frame types are disjoint, the rules are still disjoint.
+    if (types.intersection(other.types).isNotEmpty) {
+      return false;
+    }
+
+    return true;
+  }
+
+  bool intersecting(CanFilterRule other) => !disjoint(other);
+}
+
+enum CanFrameFormat {
+  base,
+  extended;
+
+  const CanFrameFormat();
+
+  static const both = {base, extended};
+
+  Set<CanFrameFormat> toSet() {
+    return switch (this) {
+      CanFrameFormat.base => const {CanFrameFormat.base},
+      CanFrameFormat.extended => const {CanFrameFormat.extended},
+    };
+  }
+}
+
+extension CanFrameFormatAsConstSet on Set<CanFrameFormat> {
+  static const _noneSet = <CanFrameFormat>{};
+  static const _baseOnlySet = {CanFrameFormat.base};
+  static const _extendedOnlySet = {CanFrameFormat.extended};
+  static const _bothSet = {CanFrameFormat.base, CanFrameFormat.extended};
+
+  Set<CanFrameFormat> asConst() {
+    switch (this) {
+      case _noneSet:
+      case _baseOnlySet:
+      case _extendedOnlySet:
+      case _bothSet:
+        return this;
+      default:
+        if (isEmpty) {
+          return _noneSet;
+        } else if (contains(CanFrameFormat.base)) {
+          if (contains(CanFrameFormat.extended)) {
+            return _bothSet;
+          } else {
+            return _baseOnlySet;
+          }
+        } else {
+          return _extendedOnlySet;
+        }
+    }
+  }
+}
+
+enum CanFrameType { data, remote }
+
+extension CanFrameTypeAsConstSet on Set<CanFrameType> {
+  static const _noneSet = <CanFrameType>{};
+  static const _dataOnlySet = {CanFrameType.data};
+  static const _remoteOnlySet = {CanFrameType.remote};
+  static const _bothSet = {CanFrameType.data, CanFrameType.remote};
+
+  Set<CanFrameType> asConst() {
+    switch (this) {
+      case _noneSet:
+      case _dataOnlySet:
+      case _remoteOnlySet:
+      case _bothSet:
+        return this;
+      default:
+        if (isEmpty) {
+          return _noneSet;
+        } else if (contains(CanFrameType.data)) {
+          if (contains(CanFrameType.remote)) {
+            return _bothSet;
+          } else {
+            return _dataOnlySet;
+          }
+        } else {
+          return _remoteOnlySet;
+        }
+    }
+  }
+}
+
+abstract base class CanFilter {
+  const CanFilter();
+
+  const factory CanFilter.idEquals(
+    int id, {
+    int? mask,
+    Set<CanFrameFormat> formats,
+    Set<CanFrameType> types,
+  }) = CanFilterIdEquals;
+
+  const factory CanFilter.notIdEquals(
+    int id, {
+    int? mask,
+    Set<CanFrameFormat> formats,
+    Set<CanFrameType> types,
+  }) = CanFilterIdEquals.not;
+
+  const factory CanFilter.errorMatches(Set<CanError> errors) = CanFilterErrorMatches;
+
+  const factory CanFilter.not(CanFilter operand) = CanFilterNot;
+
+  const factory CanFilter.or(Iterable<CanFilter> operands) = CanFilterOr.fromIterable;
+
+  const factory CanFilter.and(Iterable<CanFilter> operands) = CanFilterAnd.fromIterable;
+
+  Iterable<CanFilterRule> get rules;
+
+  Set<CanError> get errors;
+
+  CanRuleCombinator? get ruleCombinator;
+}
+
+final class CanFilterIdEquals extends CanFilter {
+  const CanFilterIdEquals(
+    this.id, {
+    this.mask,
+    this.formats = CanFrameFormat.both,
+    this.types = const {CanFrameType.data},
+  })  : assert(0 <= id && id <= CAN_EFF_MASK),
+        assert(mask == null || 0 <= mask && mask <= CAN_EFF_MASK),
+        invert = false;
+
+  const CanFilterIdEquals.not(
+    this.id, {
+    this.mask,
+    this.formats = CanFrameFormat.both,
+    this.types = const {CanFrameType.data, CanFrameType.remote},
+  })  : assert(0 <= id && id <= CAN_EFF_MASK),
+        assert(mask == null || 0 <= mask && mask <= CAN_EFF_MASK),
+        invert = true;
+
+  final int id;
+  final int? mask;
+  final Set<CanFrameFormat> formats;
+  final Set<CanFrameType> types;
+  final bool invert;
+
+  CanFilterRule _getUniversal() {
+    final mask = this.mask ?? CAN_EFF_MASK;
+
+    return CanFilterRule(
+      id: id,
+      mask: mask,
+      formats: formats,
+      types: types,
+      invert: invert,
+    );
+  }
+
+  @override
+  Iterable<CanFilterRule> get rules {
+    return [
+      _getUniversal(),
+    ];
+  }
+
+  static int fullMaskForFormat(CanFrameFormat format) {
+    return switch (format) {
+      CanFrameFormat.base => CAN_SFF_MASK,
+      CanFrameFormat.extended => CAN_EFF_MASK,
+    };
+  }
+
+  int maskForFormat(CanFrameFormat format) {
+    final mask = this.mask;
+
+    return switch (format) {
+      CanFrameFormat.base => mask != null ? mask & CAN_SFF_MASK : CAN_SFF_MASK,
+      CanFrameFormat.extended => mask != null ? mask & CAN_EFF_MASK : CAN_EFF_MASK
+    };
+  }
+
+  Iterable<CanFilterRule> get optimizedRules {
+    // We short-circuit here if we can't fully optimize the filter rules.
+    // The kernel keeps special, optimized filter lists for rules that:
+    //   - only match a single id
+    //   - don't have the RTR or INV flag set
+    //
+    // The kernel will check the optimized filter lists last. I.e. it does not make sense
+    // to register a universal rule and additional specialized (optimized) subset of the rule,
+    // since the universal rule will be matched first.
+    //
+    // Hence we return early here when we can't fully replace this filter with optimized,
+    // single-id non-RTR non-INV rules.
+    if (types.asConst() != const {CanFrameType.data}) {
+      return rules;
+    }
+
+    if (formats.any((f) => maskForFormat(f) != fullMaskForFormat(f))) {
+      return rules;
+    }
+
+    if (invert) {
+      return rules;
+    }
+
+    return [
+      for (final format in formats)
+        CanFilterRule(
+          id: id,
+          mask: maskForFormat(format),
+          formats: format.toSet(),
+          types: const {CanFrameType.data},
+          invert: false,
+        ),
+    ];
+  }
+
+  @override
+  CanRuleCombinator? get ruleCombinator => null;
+
+  @override
+  Set<CanError> get errors => const {};
+}
+
+final class CanFilterErrorMatches extends CanFilter {
+  const CanFilterErrorMatches(Set<CanError> errors) : _errors = errors;
+
+  final Set<CanError> _errors;
+
+  @override
+  Set<CanError> get errors => _errors;
+
+  @override
+  CanRuleCombinator? get ruleCombinator => null;
+
+  @override
+  Iterable<CanFilterRule> get rules => Iterable.empty();
+}
+
+final class CanFilterNot extends CanFilter {
+  const CanFilterNot(this.operand);
+
+  final CanFilter operand;
+
+  @override
+  Set<CanError> get errors => CanError.values.toSet().difference(operand.errors);
+
+  @override
+  CanRuleCombinator? get ruleCombinator => switch (operand.ruleCombinator) {
+        null => null,
+        CanRuleCombinator.and => CanRuleCombinator.or,
+        CanRuleCombinator.or => CanRuleCombinator.and,
+      };
+
+  @override
+  Iterable<CanFilterRule> get rules => operand.rules.map(
+        (r) => r.copyWith(invert: !r.invert),
+      );
+}
+
+abstract base class CanFilterCombine extends CanFilter {
+  const CanFilterCombine.fromIterable(this.operands);
+
+  final Iterable<CanFilter> operands;
+}
+
+final class CanFilterOr extends CanFilterCombine {
+  const CanFilterOr.fromIterable(super.operands) : super.fromIterable();
+
+  @override
+  Set<CanError> get errors {
+    return {
+      for (final filter in operands) ...filter.errors,
+    };
+  }
+
+  @override
+  Iterable<CanFilterRule> get rules {
+    return operands.expand(
+      (filter) {
+        if (filter is CanFilterIdEquals) {
+          return filter.optimizedRules;
+        } else {
+          return filter.rules;
+        }
+      },
+    );
+  }
+
+  @override
+  CanRuleCombinator? get ruleCombinator {
+    if (operands.any((op) => op.ruleCombinator == CanRuleCombinator.and)) {
+      /// TODO: Can we support this somehow?
+      throw UnsupportedError(
+        'AND filters inside an OR filter are not supported right now.',
+      );
+    }
+
+    return CanRuleCombinator.or;
+  }
+}
+
+final class CanFilterAnd extends CanFilterCombine {
+  const CanFilterAnd.fromIterable(super.operands) : super.fromIterable();
+
+  static Set<T> intersection<T>(Set<T> a, Set<T> b) {
+    return a.intersection(b);
+  }
+
+  @override
+  Set<CanError> get errors {
+    return operands.map((f) => f.errors).reduce(intersection);
+  }
+
+  @override
+  Iterable<CanFilterRule> get rules {
+    return operands.expand((filter) => filter.rules);
+  }
+
+  @override
+  CanRuleCombinator? get ruleCombinator {
+    if (operands.isEmpty || operands.length == 1) {
+      return operands.singleOrNull?.ruleCombinator;
+    }
+
+    if (operands.any((op) => op.ruleCombinator == CanRuleCombinator.or)) {
+      /// TODO: Can we support this somehow?
+      throw UnsupportedError(
+        'OR filters inside an AND filter are not supported right now.',
+      );
+    }
+
+    return CanRuleCombinator.and;
   }
 }
