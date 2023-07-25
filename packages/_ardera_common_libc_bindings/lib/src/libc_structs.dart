@@ -45,6 +45,7 @@ export 'libc_arm.g.dart'
         can_device_stats,
         can_frame,
         canfd_frame,
+        can_filter,
         EPOLL_EVENTS;
 
 /// Hack to get make epoll_event work with dart FFI.
