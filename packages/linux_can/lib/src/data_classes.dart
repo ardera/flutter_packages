@@ -731,16 +731,15 @@ class CanInterfaceAttributes {
 }
 
 enum CanError {
-  txTimeout(0x1),
-  arbitrationLost(0x2),
-  controllerProblems(0x4),
-  protocolViolations(0x8),
-  transceiverStatus(0x10),
-  noAck(0x20),
-  busOff(0x40),
-  busError(0x80),
-  restarted(0x100),
-  count(0x200);
+  txTimeout(CAN_ERR_TX_TIMEOUT),
+  arbitrationLost(CAN_ERR_LOSTARB),
+  controllerProblems(CAN_ERR_CRTL),
+  protocolViolations(CAN_ERR_PROT),
+  transceiverStatus(CAN_ERR_TRX),
+  noAck(CAN_ERR_ACK),
+  busOff(CAN_ERR_BUSOFF),
+  busError(CAN_ERR_BUSERROR),
+  restarted(CAN_ERR_RESTARTED);
 
   const CanError(this.native);
 
