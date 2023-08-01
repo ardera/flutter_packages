@@ -1490,6 +1490,20 @@ const int GPIOLINE_CHANGED_RELEASED = 2;
 
 const int GPIOLINE_CHANGED_CONFIG = 3;
 
+const int CAN_RAW_FILTER = 1;
+
+const int CAN_RAW_ERR_FILTER = 2;
+
+const int CAN_RAW_LOOPBACK = 3;
+
+const int CAN_RAW_RECV_OWN_MSGS = 4;
+
+const int CAN_RAW_FD_FRAMES = 5;
+
+const int CAN_RAW_JOIN_FILTERS = 6;
+
+const int CAN_RAW_XL_FRAMES = 7;
+
 const int IFLA_UNSPEC = 0;
 
 const int IFLA_ADDRESS = 1;
@@ -3653,6 +3667,130 @@ const int CAN_INV_FILTER = 536870912;
 const int CAN_RAW_FILTER_MAX = 512;
 
 const int SOL_CAN_RAW = 101;
+
+const int CAN_ERR_DLC = 8;
+
+const int CAN_ERR_TX_TIMEOUT = 1;
+
+const int CAN_ERR_LOSTARB = 2;
+
+const int CAN_ERR_CRTL = 4;
+
+const int CAN_ERR_PROT = 8;
+
+const int CAN_ERR_TRX = 16;
+
+const int CAN_ERR_ACK = 32;
+
+const int CAN_ERR_BUSOFF = 64;
+
+const int CAN_ERR_BUSERROR = 128;
+
+const int CAN_ERR_RESTARTED = 256;
+
+const int CAN_ERR_CNT = 512;
+
+const int CAN_ERR_LOSTARB_UNSPEC = 0;
+
+const int CAN_ERR_CRTL_UNSPEC = 0;
+
+const int CAN_ERR_CRTL_RX_OVERFLOW = 1;
+
+const int CAN_ERR_CRTL_TX_OVERFLOW = 2;
+
+const int CAN_ERR_CRTL_RX_WARNING = 4;
+
+const int CAN_ERR_CRTL_TX_WARNING = 8;
+
+const int CAN_ERR_CRTL_RX_PASSIVE = 16;
+
+const int CAN_ERR_CRTL_TX_PASSIVE = 32;
+
+const int CAN_ERR_CRTL_ACTIVE = 64;
+
+const int CAN_ERR_PROT_UNSPEC = 0;
+
+const int CAN_ERR_PROT_BIT = 1;
+
+const int CAN_ERR_PROT_FORM = 2;
+
+const int CAN_ERR_PROT_STUFF = 4;
+
+const int CAN_ERR_PROT_BIT0 = 8;
+
+const int CAN_ERR_PROT_BIT1 = 16;
+
+const int CAN_ERR_PROT_OVERLOAD = 32;
+
+const int CAN_ERR_PROT_ACTIVE = 64;
+
+const int CAN_ERR_PROT_TX = 128;
+
+const int CAN_ERR_PROT_LOC_UNSPEC = 0;
+
+const int CAN_ERR_PROT_LOC_SOF = 3;
+
+const int CAN_ERR_PROT_LOC_ID28_21 = 2;
+
+const int CAN_ERR_PROT_LOC_ID20_18 = 6;
+
+const int CAN_ERR_PROT_LOC_SRTR = 4;
+
+const int CAN_ERR_PROT_LOC_IDE = 5;
+
+const int CAN_ERR_PROT_LOC_ID17_13 = 7;
+
+const int CAN_ERR_PROT_LOC_ID12_05 = 15;
+
+const int CAN_ERR_PROT_LOC_ID04_00 = 14;
+
+const int CAN_ERR_PROT_LOC_RTR = 12;
+
+const int CAN_ERR_PROT_LOC_RES1 = 13;
+
+const int CAN_ERR_PROT_LOC_RES0 = 9;
+
+const int CAN_ERR_PROT_LOC_DLC = 11;
+
+const int CAN_ERR_PROT_LOC_DATA = 10;
+
+const int CAN_ERR_PROT_LOC_CRC_SEQ = 8;
+
+const int CAN_ERR_PROT_LOC_CRC_DEL = 24;
+
+const int CAN_ERR_PROT_LOC_ACK = 25;
+
+const int CAN_ERR_PROT_LOC_ACK_DEL = 27;
+
+const int CAN_ERR_PROT_LOC_EOF = 26;
+
+const int CAN_ERR_PROT_LOC_INTERM = 18;
+
+const int CAN_ERR_TRX_UNSPEC = 0;
+
+const int CAN_ERR_TRX_CANH_NO_WIRE = 4;
+
+const int CAN_ERR_TRX_CANH_SHORT_TO_BAT = 5;
+
+const int CAN_ERR_TRX_CANH_SHORT_TO_VCC = 6;
+
+const int CAN_ERR_TRX_CANH_SHORT_TO_GND = 7;
+
+const int CAN_ERR_TRX_CANL_NO_WIRE = 64;
+
+const int CAN_ERR_TRX_CANL_SHORT_TO_BAT = 80;
+
+const int CAN_ERR_TRX_CANL_SHORT_TO_VCC = 96;
+
+const int CAN_ERR_TRX_CANL_SHORT_TO_GND = 112;
+
+const int CAN_ERR_TRX_CANL_SHORT_TO_CANH = 128;
+
+const int CAN_ERROR_WARNING_THRESHOLD = 96;
+
+const int CAN_ERROR_PASSIVE_THRESHOLD = 128;
+
+const int CAN_BUS_OFF_THRESHOLD = 256;
 
 const int NETLINK_ROUTE = 0;
 

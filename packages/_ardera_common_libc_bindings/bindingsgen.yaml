@@ -24,6 +24,7 @@ ffigen-options:
       - 'net/if.h'
       - 'linux/can.h'
       - 'linux/can/raw.h'
+      - 'linux/can/error.h'
       - 'linux/if_link.h'
       - 'linux/if_arp.h'
       - 'linux/rtnetlink.h'
@@ -166,6 +167,10 @@ ffigen-options:
       - 'GPIO.*'
       - 'IFLA_.*'
       - 'IFLA_CAN_.*'
+
+      # for CAN_RAW_FILTER, CAN_RAW_ERR_FILTER, CAN_RAW_LOOPBACK,
+      # CAN_RAW_RECV_OWN_MSGS, CAN_RAW_JOIN_FILTERS
+      - 'CAN_RAW_.*'
   globals:
     exclude:
       - '.*'
