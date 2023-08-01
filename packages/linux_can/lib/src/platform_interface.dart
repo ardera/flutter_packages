@@ -1209,6 +1209,45 @@ class PlatformInterface {
         native.ref.can_id = id;
         native.ref.can_mask = mask;
       }
+
+      final nativeErrMask = arena<ffi.Uint32>();
+      nativeErrMask.value = errors.fold(0, (acc, element) => acc | element.native);
+
+      final nativeJoinFilters = arena<ffi.Uint32>();
+      nativeJoinFilters.value = combinator == CanRuleCombinator.and ? 1 : 0;
+
+      var ok = libc.setsockopt(
+        fd,
+        SOL_CAN_RAW,
+        CAN_RAW_FILTER,
+        nativeRules.cast<ffi.Void>(),
+        rules.length * ffi.sizeOf<can_filter>(),
+      );
+      if (ok < 0) {
+        throw LinuxError('Could not set CAN Socket filter.', 'setsockopt', libc.errno);
+      }
+
+      ok = libc.setsockopt(
+        fd,
+        SOL_CAN_RAW,
+        CAN_RAW_ERR_FILTER,
+        nativeErrMask.cast<ffi.Void>(),
+        ffi.sizeOf<ffi.Uint32>(),
+      );
+      if (ok < 0) {
+        throw LinuxError('Could not set CAN Socket error filter.', 'setsockopt', libc.errno);
+      }
+
+      ok = libc.setsockopt(
+        fd,
+        SOL_CAN_RAW,
+        CAN_RAW_JOIN_FILTERS,
+        nativeJoinFilters.cast<ffi.Void>(),
+        ffi.sizeOf<ffi.Uint32>(),
+      );
+      if (ok < 0) {
+        throw LinuxError('Could not set CAN Socket rule combinator.', 'setsockopt', libc.errno);
+      }
     } finally {
       arena.releaseAll();
     }
