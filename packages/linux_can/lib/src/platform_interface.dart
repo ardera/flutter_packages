@@ -252,6 +252,21 @@ class PlatformInterface {
 
   static const _bufferSize = 16384;
   final _buffer = ffi.calloc.allocate<ffi.Void>(_bufferSize);
+  var _bufferLocked = false;
+
+  T _withBuffer<T>(T Function(ffi.Pointer<ffi.Void> buffer, int size) withBuffer) {
+    if (_bufferLocked) {
+      throw StateError('internal native memory buffer deadlock');
+    }
+
+    _bufferLocked = true;
+    try {
+      final result = withBuffer(_buffer, _bufferSize);
+      return result;
+    } finally {
+      _bufferLocked = false;
+    }
+  }
 
   final _debugOpenFds = <int>{};
 
@@ -380,23 +395,29 @@ class PlatformInterface {
   int getInterfaceMTU(String interfaceName) {
     _debugCheckOpenFd(_rtnetlinkFd);
 
-    final req = ffi.calloc<ifreq>();
+    return _withBuffer((buffer, size) {
+      assert(size >= ffi.sizeOf<ifreq>());
 
-    _writeStringToArrayHelper(interfaceName, IF_NAMESIZE, (index, byte) => req.ref.ifr_name[index] = byte);
+      final native = buffer.cast<ifreq>();
+      _memset(native, 0, ffi.sizeOf<ifreq>());
 
-    req.ref.ifr_ifindex = 0;
+      _writeStringToArrayHelper(
+        interfaceName,
+        IF_NAMESIZE,
+        (index, byte) => native.ref.ifr_name[index] = byte,
+      );
 
-    final ok = libc.ioctlPtr(_rtnetlinkFd, SIOCGIFMTU, req);
-    if (ok < 0) {
-      ffi.calloc.free(req);
-      throw LinuxError('Could not get CAN interface MTU.', 'ioctl', libc.errno);
-    }
+      native.ref.ifr_ifindex = 0;
 
-    final mtu = req.ref.ifr_mtu;
+      final ok = libc.ioctlPtr(_rtnetlinkFd, SIOCGIFMTU, native);
+      if (ok < 0) {
+        throw LinuxError('Could not get CAN interface MTU.', 'ioctl', libc.errno);
+      }
 
-    ffi.calloc.free(req);
+      final mtu = native.ref.ifr_mtu;
 
-    return mtu;
+      return mtu;
+    });
   }
 
   bool isFlexibleDatarateCapable(String interfaceName) {
@@ -404,20 +425,20 @@ class PlatformInterface {
   }
 
   void bind(int fd, int interfaceIndex) {
-    assert(_debugOpenFds.contains(fd));
+    _debugCheckOpenFd(fd);
 
-    final addr = ffi.calloc<sockaddr_can>();
-    try {
-      addr.ref.can_family = AF_CAN;
-      addr.ref.can_ifindex = interfaceIndex;
+    return _withBuffer((buffer, size) {
+      final native = buffer.cast<sockaddr_can>();
+      _memset(native, 0, ffi.sizeOf<sockaddr_can>());
 
-      final ok = libc.bind(fd, addr.cast<sockaddr>(), ffi.sizeOf<sockaddr_can>());
+      native.ref.can_family = AF_CAN;
+      native.ref.can_ifindex = interfaceIndex;
+
+      final ok = libc.bind(fd, native.cast<sockaddr>(), ffi.sizeOf<sockaddr_can>());
       if (ok < 0) {
         throw LinuxError('Couldn\'t bind socket to CAN interface.', 'bind', libc.errno);
       }
-    } finally {
-      ffi.calloc.free(addr);
-    }
+    });
   }
 
   void close(int fd) {
@@ -435,46 +456,47 @@ class PlatformInterface {
   void write(int fd, CanFrame frame, {bool block = true}) {
     _debugCheckOpenFd(fd);
 
-    final nativeFrame = ffi.calloc<can_frame>();
+    var id = frame.id;
 
-    switch (frame) {
-      case CanDataFrame(data: var data):
-        nativeFrame.ref.can_id = switch (frame) {
-          CanStandardDataFrame(id: var id) => id,
-          CanExtendedDataFrame(id: var id) => id | CAN_EFF_FLAG,
-        };
+    id |= switch (frame) {
+      CanBaseFrame _ => 0,
+      CanExtendedFrame _ => CAN_EFF_FLAG,
+    };
 
-        nativeFrame.ref.len = frame.data.length;
-        _writeBytesToArray(
-          data,
-          8,
-          (index, value) => nativeFrame.ref.data[index] = value,
-        );
-      case CanRemoteFrame _:
-        nativeFrame.ref.can_id = switch (frame) {
-          CanStandardRemoteFrame(id: var id) => id | CAN_RTR_FLAG,
-          CanExtendedRemoteFrame(id: var id) => id | CAN_RTR_FLAG | CAN_EFF_FLAG,
-        };
-        nativeFrame.ref.len = 0;
-      case CanErrorFrame _:
-        nativeFrame.ref.can_id = CAN_ERR_FLAG;
-        nativeFrame.ref.len = 0;
-    }
+    id |= switch (frame) {
+      CanDataFrame _ => 0,
+      CanRemoteFrame _ => CAN_RTR_FLAG,
+    };
 
-    /// TODO: use sendmsg and MSG_DONTWAIT for non-blocking sends, and make blocking sends block in the kernel
-    ///  instead of spinning here.
-    final ok = _retry(
-      () => libc.write(fd, nativeFrame.cast<ffi.Void>(), ffi.sizeOf<can_frame>()),
-      retryErrorCodes: {EINTR, if (block) EAGAIN},
-    );
+    final data = switch (frame) {
+      CanDataFrame _ => frame.data,
+      CanRemoteFrame _ => [],
+    };
 
-    ffi.calloc.free(nativeFrame);
+    return _withBuffer((buffer, size) {
+      final native = buffer.cast<can_frame>();
 
-    if (ok < 0) {
-      throw LinuxError('Couldn\'t write CAN frame to socket.', 'write', libc.errno);
-    } else if (ok != CAN_MTU) {
-      throw LinuxError('Incomplete write.', 'write');
-    }
+      // encode the native can_frame.
+      native.ref.can_id = id;
+      native.ref.len = data.length;
+      for (final (index, byte) in data.indexed) {
+        native.ref.data[index] = byte;
+      }
+
+      /// TODO: use sendmsg and MSG_DONTWAIT for non-blocking sends, and make blocking sends block in the kernel
+      ///  instead of spinning here.
+
+      // send the CAN frame.
+      final ok = _retry(
+        () => libc.write(fd, native.cast<ffi.Void>(), ffi.sizeOf<can_frame>()),
+        retryErrorCodes: {EINTR, if (block) EAGAIN},
+      );
+      if (ok < 0) {
+        throw LinuxError('Couldn\'t write CAN frame to socket.', 'write', libc.errno);
+      } else if (ok != CAN_MTU) {
+        throw LinuxError('Incomplete write.', 'write');
+      }
+    });
   }
 
   static CanFrame canFrameFromNative(can_frame native) {
@@ -521,6 +543,9 @@ class PlatformInterface {
     assert(bufferSize >= ffi.sizeOf<can_frame>());
     assert(CAN_MTU == ffi.sizeOf<can_frame>());
 
+    final native = buffer.cast<can_frame>();
+    _memset(native, 0, ffi.sizeOf<can_frame>());
+
     final ok = libc.read(fd, buffer, ffi.sizeOf<can_frame>());
     if (ok < 0 && libc.errno == EAGAIN) {
       // no frame available right now.
@@ -533,7 +558,7 @@ class PlatformInterface {
       throw LinuxError('Malformed CAN frame. Expected received frame to be $CAN_MTU bytes large, was: $ok.', 'read');
     }
 
-    return canFrameFromNative(buffer.cast<can_frame>().ref);
+    return canFrameFromNative(native.ref);
   }
 
   CanFrame? read(int fd) {
@@ -553,10 +578,10 @@ class PlatformInterface {
     _debugOpenFds.add(fd);
 
     try {
-      final sndbuf = ffi.malloc<ffi.Int>();
-      final rcvbuf = ffi.malloc<ffi.Int>();
+      _withBuffer((buffer, size) {
+        final sndbuf = buffer.cast<ffi.Int>();
+        final rcvbuf = sndbuf.elementAt(1);
 
-      try {
         sndbuf.value = 32768;
         rcvbuf.value = 32768;
 
@@ -569,15 +594,15 @@ class PlatformInterface {
         if (ok < 0) {
           throw LinuxError('Couldn\'t set netlink socket rcvbuf size.', 'setsockopt', libc.errno);
         }
-      } finally {
-        ffi.malloc.free(sndbuf);
-        ffi.malloc.free(rcvbuf);
-      }
+      });
 
-      final local = ffi.calloc<sockaddr_nl>();
+      _withBuffer((buffer, size) {
+        final local = buffer.cast<sockaddr_nl>();
+        _memset(buffer, 0, ffi.sizeOf<sockaddr_nl>());
 
-      try {
         local.ref.nl_family = AF_NETLINK;
+        local.ref.nl_pad = 0;
+        local.ref.nl_pid = 0;
         local.ref.nl_groups = 0;
 
         var ok = libc.bind(fd, local.cast<sockaddr>(), ffi.sizeOf<sockaddr_nl>());
@@ -585,32 +610,25 @@ class PlatformInterface {
           throw LinuxError('Could\'t bind netlink socket.', 'bind', libc.errno);
         }
 
-        final addrLen = ffi.calloc<ffi.UnsignedInt>();
+        final addrLen = local.elementAt(1).cast<ffi.UnsignedInt>();
 
-        try {
-          addrLen.value = ffi.sizeOf<sockaddr_nl>();
+        addrLen.value = ffi.sizeOf<sockaddr_nl>();
 
-          ok = libc.getsockname(fd, local.cast<sockaddr>(), addrLen);
-          if (ok < 0) {
-            throw LinuxError('Error', 'getsockname', libc.errno);
-          }
-
-          if (addrLen.value != ffi.sizeOf<sockaddr_nl>()) {
-            throw StateError('Invalid address length: ${addrLen.value}, should be: ${ffi.sizeOf<sockaddr_nl>()}');
-          }
-
-          if (local.ref.nl_family != AF_NETLINK) {
-            throw StateError('Invalid address family ${local.ref.nl_family}, should be: $AF_NETLINK');
-          }
-        } finally {
-          ffi.calloc.free(addrLen);
+        ok = libc.getsockname(fd, local.cast<sockaddr>(), addrLen);
+        if (ok < 0) {
+          throw LinuxError('Error', 'getsockname', libc.errno);
         }
-      } finally {
-        ffi.calloc.free(local);
-      }
+
+        if (addrLen.value != ffi.sizeOf<sockaddr_nl>()) {
+          throw LinuxError('Invalid address length: ${addrLen.value}, should be: ${ffi.sizeOf<sockaddr_nl>()}');
+        }
+
+        if (local.ref.nl_family != AF_NETLINK) {
+          throw LinuxError('Invalid address family ${local.ref.nl_family}, should be: $AF_NETLINK');
+        }
+      });
     } on Object {
-      libc.close(fd);
-      _debugOpenFds.remove(fd);
+      close(fd);
       rethrow;
     }
 
@@ -1105,32 +1123,40 @@ class PlatformInterface {
   }
 
   int getSendBufSize(int fd, {bool canfd = false}) {
-    final valuePtr = _buffer.cast<ffi.Int>();
-    final lengthPtr = valuePtr.elementAt(1).cast<ffi.UnsignedInt>();
+    return _withBuffer((buffer, size) {
+      assert(size >= ffi.sizeOf<ffi.Int>() + ffi.sizeOf<ffi.UnsignedInt>());
 
-    lengthPtr.value = ffi.sizeOf<ffi.Int>();
+      final valuePtr = buffer.cast<ffi.Int>();
+      final lengthPtr = valuePtr.elementAt(1).cast<ffi.UnsignedInt>();
 
-    final ok = libc.getsockopt(fd, SOL_SOCKET, SO_SNDBUF, valuePtr.cast<ffi.Void>(), lengthPtr);
-    if (ok < 0) {
-      throw LinuxError('Could not get SO_SNDBUF socket option.', 'getsockopt', libc.errno);
-    }
+      lengthPtr.value = ffi.sizeOf<ffi.Int>();
 
-    // According to the kernel docs: https://man7.org/linux/man-pages/man7/socket.7.html
-    // setsockopt(..., SO_SNDBUF, ...) actually doubles the value given to it to leave some space for kernel bookkeeping.
-    // To not totally confuse people, we divide by 2 here.
-    final workingMemory = valuePtr.value ~/ 2;
+      final ok = libc.getsockopt(fd, SOL_SOCKET, SO_SNDBUF, valuePtr.cast<ffi.Void>(), lengthPtr);
+      if (ok < 0) {
+        throw LinuxError('Could not get SO_SNDBUF socket option.', 'getsockopt', libc.errno);
+      }
 
-    return workingMemory;
+      // According to the kernel docs: https://man7.org/linux/man-pages/man7/socket.7.html
+      // setsockopt(..., SO_SNDBUF, ...) actually doubles the value given to it to leave some space for kernel bookkeeping.
+      // To not totally confuse people, we divide by 2 here.
+      final workingMemory = valuePtr.value ~/ 2;
+
+      return workingMemory;
+    });
   }
 
   void setSendBufSize(int fd, int size, {bool canfd = false}) {
-    final valuePtr = _buffer.cast<ffi.Int>();
-    valuePtr.value = size;
+    return _withBuffer((buffer, bufferSize) {
+      assert(bufferSize >= ffi.sizeOf<ffi.Int>());
 
-    final ok = libc.setsockopt(fd, SOL_SOCKET, SO_SNDBUF, valuePtr.cast<ffi.Void>(), ffi.sizeOf<ffi.Int>());
-    if (ok < 0) {
-      throw LinuxError('Could not set SO_SNDBUF socket option.', 'setsockopt', libc.errno);
-    }
+      final valuePtr = buffer.cast<ffi.Int>();
+      valuePtr.value = size;
+
+      final ok = libc.setsockopt(fd, SOL_SOCKET, SO_SNDBUF, valuePtr.cast<ffi.Void>(), ffi.sizeOf<ffi.Int>());
+      if (ok < 0) {
+        throw LinuxError('Could not set SO_SNDBUF socket option.', 'setsockopt', libc.errno);
+      }
+    });
   }
 
   void setFilter(int fd, CanFilter filter) {
