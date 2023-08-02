@@ -31,3 +31,13 @@ tags:
     #   sudo ip link set can1 up
     #   sudo ip link set can0 txqueuelen 1024
     #   ```
+
+  vcan:
+    # A special CAN test setup, requires an up & running vcan (Virtual CAN)
+    # interface called vcan0.
+    #
+    # ```
+    # sudo modprobe vcan
+    # sudo ip link add dev vcan0 type vcan
+    # sudo ip link set up vcan0
+    # ```
