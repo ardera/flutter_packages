@@ -8,12 +8,9 @@ import 'package:_ardera_common_libc_bindings/_ardera_common_libc_bindings.dart';
 import 'package:_ardera_common_libc_bindings/epoll_event_loop.dart';
 import 'package:_ardera_common_libc_bindings/linux_error.dart';
 import 'package:ffi/ffi.dart' as ffi;
+import 'package:either_dart/either.dart';
 import 'package:linux_can/src/can_device.dart';
 import 'package:linux_can/src/data_classes.dart';
-
-void _writeBytesToArray(List<int> bytes, int length, void Function(int index, int value) setElement) {
-  bytes.take(length).toList().asMap().forEach(setElement);
-}
 
 void _writeStringToArrayHelper(
   String str,
@@ -24,6 +21,11 @@ void _writeStringToArrayHelper(
   final untruncatedBytes = List.of(codec.encode(str))..addAll(List.filled(length, 0));
 
   untruncatedBytes.take(length).toList().asMap().forEach(setElement);
+}
+
+void _memset(ffi.Pointer pointer, int c, int nbytes) {
+  final list = pointer.cast<ffi.Uint8>().asTypedList(nbytes);
+  list.fillRange(0, list.length, 0);
 }
 
 List<T> _listFromArrayHelper<T>(int length, T Function(int index) getElement) {
@@ -243,6 +245,8 @@ final class NetlinkDataMessage extends NetlinkMessage {
   @override
   int get hashCode => nlh.hashCode ^ size.hashCode;
 }
+
+typedef CanFrameOrError = Either<List<CanError>, CanFrame>;
 
 class PlatformInterface {
   final libc = LibC(ffi.DynamicLibrary.open('libc.so.6'));
@@ -499,47 +503,107 @@ class PlatformInterface {
     });
   }
 
-  static CanFrame canFrameFromNative(can_frame native) {
+  static CanFrameOrError canFrameFromNative(can_frame native) {
     final eff = native.can_id & CAN_EFF_FLAG != 0;
     final rtr = native.can_id & CAN_RTR_FLAG != 0;
     final err = native.can_id & CAN_ERR_FLAG != 0;
 
+    final data = List.generate(
+      native.len,
+      (index) => native.data[index],
+      growable: false,
+    );
+
+    Iterable<CanControllerError> canControllerErrors() {
+      return [
+        if (native.can_id & CAN_ERR_CRTL != 0)
+          for (final controllerError in CanControllerError.values)
+            if (data[1] & controllerError.controllerErrorNative != 0) controllerError,
+      ];
+    }
+
+    Iterable<CanProtocolError> protocolErrors() {
+      return [
+        if (native.can_id & CAN_ERR_PROT != 0)
+          for (final protocolError in CanProtocolError.values)
+            if (data[2] & protocolError.protocolErrorNative != 0) protocolError,
+      ];
+    }
+
+    Iterable<CanWiringError> wiringErrors() {
+      final highNative = data[4] & 0x7;
+
+      late final CanWireStatus? high;
+      if (highNative == 0) {
+        high = null;
+      } else {
+        high = CanWireStatus.values.singleWhere((status) => highNative == status.native);
+      }
+
+      final lowNative = (data[4] >> 4) & 0x7;
+
+      late final CanWireStatus? low;
+      if (lowNative == 0) {
+        low = null;
+      } else {
+        low = CanWireStatus.values.singleWhere((status) => lowNative == status.native);
+      }
+
+      final crossShorted = data[4] & CAN_ERR_TRX_CANL_SHORT_TO_CANH != 0;
+
+      return [
+        CanWiringError(high, low, crossShorted),
+      ];
+    }
+
     if (err) {
-      return CanFrame.error();
+      final errors = [
+        if (native.can_id & CAN_ERR_TX_TIMEOUT != 0) CanError.txTimeout,
+        if (native.can_id & CAN_ERR_LOSTARB != 0) CanArbitrationLostError(data[0] == 0 ? null : data[0]),
+        ...canControllerErrors(),
+        ...protocolErrors(),
+        ...wiringErrors(),
+        if (native.can_id & CAN_ERR_ACK != 0) CanError.noAck,
+        if (native.can_id & CAN_ERR_BUSOFF != 0) CanError.busOff,
+        if (native.can_id & CAN_ERR_BUSERROR != 0) CanError.busError,
+        if (native.can_id & CAN_ERR_RESTARTED != 0) CanError.restarted,
+      ];
+
+      return Left(errors);
     } else if (eff) {
       final id = native.can_id & CAN_EFF_MASK;
 
       if (rtr) {
-        return CanFrame.extendedRemote(id: id);
+        return Right(CanFrame.extendedRemote(id: id));
       } else {
-        return CanFrame.extended(
+        return Right(CanFrame.extended(
           id: id,
           data: List.generate(
             native.len,
             (index) => native.data[index],
             growable: false,
           ),
-        );
+        ));
       }
     } else {
       final id = native.can_id & CAN_SFF_MASK;
 
       if (rtr) {
-        return CanFrame.standardRemote(id: id);
+        return Right(CanFrame.standardRemote(id: id));
       } else {
-        return CanFrame.standard(
+        return Right(CanFrame.standard(
           id: id,
           data: List.generate(
             native.len,
             (index) => native.data[index],
             growable: false,
           ),
-        );
+        ));
       }
     }
   }
 
-  static CanFrame? readStatic(LibC libc, int fd, ffi.Pointer<ffi.Void> buffer, int bufferSize) {
+  static CanFrameOrError? readStatic(LibC libc, int fd, ffi.Pointer<ffi.Void> buffer, int bufferSize) {
     assert(bufferSize >= ffi.sizeOf<can_frame>());
     assert(CAN_MTU == ffi.sizeOf<can_frame>());
 
@@ -561,9 +625,18 @@ class PlatformInterface {
     return canFrameFromNative(native.ref);
   }
 
-  CanFrame? read(int fd) {
-    _debugCheckOpenFd(fd);
-    return readStatic(libc, fd, _buffer, _bufferSize);
+  CanFrameOrError? read(int fd) {
+    return _withBuffer((buffer, size) {
+      return readStatic(libc, fd, buffer, size);
+    });
+  }
+
+  void drain(int fd) {
+    CanFrameOrError? frame;
+
+    do {
+      frame = read(fd);
+    } while (frame != null);
   }
 
   /// Opens an rtnetlink socket for kernel network interface manipulation.
@@ -1160,36 +1233,21 @@ class PlatformInterface {
   }
 
   void setFilter(int fd, CanFilter filter) {
-    final rules = filter.rules;
-    final combinator = filter.ruleCombinator;
-    final errors = filter.errors;
+    final (rules, combinator) = filter.rules;
 
     if (rules.length > CAN_RAW_FILTER_MAX) {
-      throw ArgumentError(
-          'The specified filter has too many rules. SocketCAN only accepts at max $CAN_RAW_FILTER_MAX rules per filter.');
+      throw CanFilterNotRepresentableException(
+        'The specified filter has too many rules. SocketCAN only accepts at max $CAN_RAW_FILTER_MAX rules per filter.',
+      );
     }
 
-    final arena = ffi.Arena();
+    return _withBuffer((buffer, size) {
+      assert(ffi.sizeOf<can_filter>() * CAN_RAW_FILTER_MAX <= size);
 
-    try {
-      final nativeRules = arena<can_filter>(rules.length);
+      final nativeRules = buffer.cast<can_filter>();
 
       for (final (index, rule) in rules.indexed) {
-        if (combinator == CanRuleCombinator.or) {
-          // Every rule must be disjoint with every other rule.
-          // Otherwise we might receive frames multiple times.
-          // This check is O(n^2) so only run it in debug mode.
-          assert(
-            rules.skip(index + 1).every((other) => rule.disjoint(other)),
-            'When using logical OR as the combining operator, '
-            'every filter rule must be disjoint with every other filter rule.'
-            'Disjoint in this context means, there is no CAN frame with a '
-            'specific id, frame type and frame format that satisfies both rules.'
-            'Otherwise, frames might be received multiple times.',
-          );
-        } else {
-          assert(combinator == CanRuleCombinator.and);
-
+        if (combinator == CanRuleCombinator.and) {
           /// TODO: Allow this?
           assert(
             rules.skip(index + 1).every((other) => rule.intersecting(other)),
@@ -1208,6 +1266,7 @@ class PlatformInterface {
         id &= CAN_EFF_MASK;
         mask &= CAN_EFF_MASK;
 
+        // apply EFF bit
         final (maskEffBit, idEffBit) = switch (rule.formats.asConst()) {
           const {} => (false, true),
           const {CanFrameFormat.base} => (true, false),
@@ -1219,6 +1278,7 @@ class PlatformInterface {
         mask |= maskEffBit ? CAN_EFF_FLAG : 0;
         id |= idEffBit ? CAN_EFF_FLAG : 0;
 
+        // apply RTR bit
         final (maskRtrBit, idRtrBit) = switch (rule.types.asConst()) {
           const {} => (false, true),
           const {CanFrameType.data} => (true, false),
@@ -1230,17 +1290,16 @@ class PlatformInterface {
         mask |= maskRtrBit ? CAN_RTR_FLAG : 0;
         id |= idRtrBit ? CAN_RTR_FLAG : 0;
 
+        // apply the INV bit
+        if (rule.invert) {
+          id |= CAN_INV_FILTER;
+        }
+
         final native = nativeRules.elementAt(index);
 
         native.ref.can_id = id;
         native.ref.can_mask = mask;
       }
-
-      final nativeErrMask = arena<ffi.Uint32>();
-      nativeErrMask.value = errors.fold(0, (acc, element) => acc | element.native);
-
-      final nativeJoinFilters = arena<ffi.Uint32>();
-      nativeJoinFilters.value = combinator == CanRuleCombinator.and ? 1 : 0;
 
       var ok = libc.setsockopt(
         fd,
@@ -1253,16 +1312,8 @@ class PlatformInterface {
         throw LinuxError('Could not set CAN Socket filter.', 'setsockopt', libc.errno);
       }
 
-      ok = libc.setsockopt(
-        fd,
-        SOL_CAN_RAW,
-        CAN_RAW_ERR_FILTER,
-        nativeErrMask.cast<ffi.Void>(),
-        ffi.sizeOf<ffi.Uint32>(),
-      );
-      if (ok < 0) {
-        throw LinuxError('Could not set CAN Socket error filter.', 'setsockopt', libc.errno);
-      }
+      final nativeJoinFilters = buffer.cast<ffi.Uint32>();
+      nativeJoinFilters.value = combinator == CanRuleCombinator.and ? 1 : 0;
 
       ok = libc.setsockopt(
         fd,
@@ -1274,8 +1325,49 @@ class PlatformInterface {
       if (ok < 0) {
         throw LinuxError('Could not set CAN Socket rule combinator.', 'setsockopt', libc.errno);
       }
-    } finally {
-      arena.releaseAll();
-    }
+    });
+  }
+
+  void setErrorReporting(int fd, bool reportErrors) {
+    return _withBuffer((buffer, size) {
+      assert(size >= ffi.sizeOf<ffi.Uint32>());
+
+      final native = buffer.cast<ffi.Uint32>();
+
+      if (reportErrors) {
+        native.value = CAN_ERR_TX_TIMEOUT |
+            CAN_ERR_LOSTARB |
+            CAN_ERR_CRTL |
+            CAN_ERR_PROT |
+            CAN_ERR_TRX |
+            CAN_ERR_ACK |
+            CAN_ERR_BUSOFF |
+            CAN_ERR_BUSERROR |
+            CAN_ERR_RESTARTED;
+
+        // TODO: Disable more errors classes.
+        //
+        // Ideally, the errors should be fully distinct, i.e. there's never more
+        // than one error emitted from a single SocketCAN error frame.
+        //
+        // For example, CAN_ERR_CNT disabled for now; it's only really a status update, not an error.
+        //
+        // For that, CAN_ERR_BUSERROR could be disabled, it's only reported together with CAN_ERR_PROT anyway.
+        // CAN_ERROR_BUSOFF and CAN_ERR_RESTARTED are (similarly) more status updates than real errors.
+      } else {
+        native.value = 0;
+      }
+
+      final ok = libc.setsockopt(
+        fd,
+        SOL_CAN_RAW,
+        CAN_RAW_ERR_FILTER,
+        native.cast<ffi.Void>(),
+        ffi.sizeOf<ffi.Uint32>(),
+      );
+      if (ok < 0) {
+        throw LinuxError('Could not set CAN error filter.', 'setsockopt', libc.errno);
+      }
+    });
   }
 }
