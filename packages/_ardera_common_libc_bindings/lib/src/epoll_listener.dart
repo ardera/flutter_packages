@@ -458,6 +458,15 @@ class EpollIsolate {
     ffi.calloc.free(_events);
   }
 
+  int _retry(int Function() syscall, {Set<int> retryErrorCodes = const {EINTR}}) {
+    late int result;
+    do {
+      result = syscall();
+    } while ((result < 0) && retryErrorCodes.contains(libc.errno));
+
+    return result;
+  }
+
   Future<void> run() async {
     assert(_epollFd > 0);
     assert(_eventFd > 0);
@@ -488,12 +497,12 @@ class EpollIsolate {
         break;
       }
 
-      final ok = libc.epoll_wait(
-        _epollFd,
-        _events,
-        _maxEvents,
-        -1, // wait indefinitely
-      );
+      final ok = _retry(() => libc.epoll_wait(
+            _epollFd,
+            _events,
+            _maxEvents,
+            -1, // wait indefinitely
+          ));
       if (ok < 0) {
         throw LinuxError('Could not wait for epoll events.', 'epoll_wait', libc.errno);
       }
@@ -697,6 +706,8 @@ class EpollEventLoop {
 
       _isolateError = msg[0];
       _isolateErrorStackTrace = msg[1];
+
+      throw RemoteError(_isolateError!, _isolateErrorStackTrace!);
     } else {
       assert(false);
     }
