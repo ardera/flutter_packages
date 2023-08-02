@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:_ardera_common_libc_bindings/_ardera_common_libc_bindings.dart';
 import 'package:collection/collection.dart';
 import 'package:quiver/collection.dart';
@@ -401,8 +402,17 @@ class CanTransmissionDelayCompensationLimits {
 }
 
 /// Classical CAN frame structure (aka CAN 2.0B)
-abstract class CanFrame {
+sealed class CanFrame {
   const CanFrame();
+
+  /// CAN ID of the frame.
+  int get id;
+
+  /// Frame format. (Base: 11bit id, Extended: 29bit id)
+  CanFrameFormat get format;
+
+  /// Frame type. (Data or Remote Transmission Request)
+  CanFrameType get type;
 
   /// Data frame,
   /// CAN 2.0B Standard Frame Format
@@ -428,78 +438,132 @@ abstract class CanFrame {
     return CanExtendedRemoteFrame(id: id);
   }
 
-  /// Error Frame
-  factory CanFrame.error() {
-    return CanErrorFrame();
-  }
+  @override
+  int get hashCode;
+
+  @override
+  bool operator ==(Object other);
+}
+
+sealed class CanBaseFrame extends CanFrame {
+  /// 11-bit CAN ID (base frame format) of this frame.
+  @override
+  int get id;
+}
+
+sealed class CanExtendedFrame extends CanFrame {
+  /// 29-bit CAN ID (extended frame format) of this frame.
+  @override
+  int get id;
 }
 
 sealed class CanDataFrame extends CanFrame {
-  const CanDataFrame({required this.id, required this.data}) : assert(0 <= data.length && data.length <= 8);
+  /// 0 to 8 byte CAN frame payload.
+  List<int> get data;
+}
 
-  /// CAN ID of the frame.
+sealed class CanRemoteFrame extends CanFrame {}
+
+class CanStandardDataFrame extends CanFrame implements CanBaseFrame, CanDataFrame {
+  const CanStandardDataFrame({required this.id, required this.data}) : assert(0 <= data.length && data.length <= 8);
+
+  @override
   final int id;
 
+  @override
   final List<int> data;
-}
-
-final class CanStandardDataFrame extends CanDataFrame {
-  const CanStandardDataFrame({required super.id, required super.data}) : assert(id & ~CAN_SFF_MASK == 0);
 
   @override
-  operator ==(Object other) {
-    return other is CanStandardDataFrame && other.id == id && listsEqual(other.data, data);
+  final CanFrameFormat format = CanFrameFormat.base;
+
+  @override
+  final CanFrameType type = CanFrameType.data;
+
+  @override
+  int get hashCode => Object.hash(id, data);
+
+  @override
+  bool operator ==(Object other) {
+    return other is CanStandardDataFrame && id == other.id && listsEqual(data, other.data);
   }
 
   @override
-  int get hashCode => Object.hash(id.hashCode, data.hashCode);
+  String toString() => 'CanStandardDataFrame(id: $id, data: $data)';
 }
 
-final class CanExtendedDataFrame extends CanDataFrame {
-  const CanExtendedDataFrame({required super.id, required super.data}) : assert(id & ~CAN_EFF_MASK == 0);
+class CanExtendedDataFrame extends CanFrame implements CanExtendedFrame, CanDataFrame {
+  const CanExtendedDataFrame({required this.id, required this.data}) : assert(id & ~CAN_EFF_MASK == 0);
 
   @override
-  operator ==(Object other) {
-    return other is CanExtendedDataFrame && other.id == id && listsEqual(other.data, data);
-  }
-
-  @override
-  int get hashCode => Object.hash(id.hashCode, data.hashCode);
-}
-
-sealed class CanRemoteFrame extends CanFrame {
-  const CanRemoteFrame({required this.id});
-
-  /// CAN ID of the frame.
   final int id;
-}
-
-final class CanStandardRemoteFrame extends CanRemoteFrame {
-  const CanStandardRemoteFrame({required super.id}) : assert(id & ~CAN_SFF_MASK == 0);
 
   @override
-  operator ==(Object other) {
-    return other is CanStandardRemoteFrame && other.id == id;
+  final List<int> data;
+
+  @override
+  final CanFrameFormat format = CanFrameFormat.extended;
+
+  @override
+  final CanFrameType type = CanFrameType.data;
+
+  @override
+  int get hashCode => Object.hash(id, data);
+
+  @override
+  bool operator ==(Object other) {
+    return other is CanExtendedDataFrame && id == other.id && listsEqual(data, other.data);
   }
 
   @override
-  int get hashCode => id.hashCode;
+  String toString() => 'CanExtendedDataFrame(id: $id, data: $data)';
 }
 
-final class CanExtendedRemoteFrame extends CanRemoteFrame {
-  const CanExtendedRemoteFrame({required super.id}) : assert(id & ~CAN_EFF_MASK == 0);
+class CanStandardRemoteFrame extends CanFrame implements CanBaseFrame, CanRemoteFrame {
+  const CanStandardRemoteFrame({required this.id}) : assert(id & ~CAN_SFF_MASK == 0);
 
   @override
-  operator ==(Object other) {
-    return other is CanExtendedRemoteFrame && other.id == id;
+  final int id;
+
+  @override
+  final CanFrameFormat format = CanFrameFormat.base;
+
+  @override
+  final CanFrameType type = CanFrameType.remote;
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
+  bool operator ==(Object other) {
+    return other is CanStandardRemoteFrame && id == other.id;
   }
 
   @override
-  int get hashCode => id.hashCode;
+  String toString() => 'CanStandardRemoteFrame(id: $id)';
 }
 
-final class CanErrorFrame extends CanFrame {
-  const CanErrorFrame();
+class CanExtendedRemoteFrame extends CanFrame implements CanExtendedFrame, CanRemoteFrame {
+  const CanExtendedRemoteFrame({required this.id}) : assert(id & ~CAN_EFF_MASK == 0);
+
+  @override
+  final int id;
+
+  @override
+  final CanFrameFormat format = CanFrameFormat.extended;
+
+  @override
+  final CanFrameType type = CanFrameType.remote;
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
+  bool operator ==(Object other) {
+    return other is CanExtendedRemoteFrame && id == other.id;
+  }
+
+  @override
+  String toString() => 'CanExtendedRemoteFrame(id: $id)';
 }
 
 /// The RFC2863 state of the network interface.
@@ -730,20 +794,133 @@ class CanInterfaceAttributes {
   }
 }
 
-enum CanError {
-  txTimeout(CAN_ERR_TX_TIMEOUT),
-  arbitrationLost(CAN_ERR_LOSTARB),
-  controllerProblems(CAN_ERR_CRTL),
-  protocolViolations(CAN_ERR_PROT),
-  transceiverStatus(CAN_ERR_TRX),
-  noAck(CAN_ERR_ACK),
-  busOff(CAN_ERR_BUSOFF),
-  busError(CAN_ERR_BUSERROR),
-  restarted(CAN_ERR_RESTARTED);
+base class CanError implements Exception {
+  const CanError(this.kindNative, this.description);
 
-  const CanError(this.native);
+  static const txTimeout = CanError(CAN_ERR_TX_TIMEOUT, 'driver transmit timeout');
+  static const noAck = CanError(CAN_ERR_ACK, 'received no ACK on transmission');
+  static const busOff = CanError(CAN_ERR_BUSOFF, 'bus off');
+  static const busError = CanError(CAN_ERR_BUSERROR, 'bus error');
+  static const restarted = CanError(CAN_ERR_RESTARTED, 'controller restarted');
+
+  final int kindNative;
+  final String description;
+
+  @override
+  String toString() {
+    return 'CAN error: $description';
+  }
+}
+
+final class CanArbitrationLostError extends CanError {
+  const CanArbitrationLostError(this.bit)
+      : assert(bit != 0),
+        super(
+          CAN_ERR_LOSTARB,
+          'Lost arbitration in ${bit != null ? 'bit $bit' : 'unspecified bit'}',
+        );
+
+  final int? bit;
+
+  @override
+  int get hashCode => bit.hashCode;
+
+  @override
+  bool operator ==(Object other) {
+    return other is CanArbitrationLostError && other.bit == bit;
+  }
+}
+
+final class CanProtocolError extends CanError {
+  const CanProtocolError(this.protocolErrorNative, String description) : super(CAN_ERR_PROT, description);
+
+  static const unspecified = CanProtocolError(CAN_ERR_PROT_UNSPEC, 'Unspecified protocol error');
+  static const bit = CanProtocolError(CAN_ERR_PROT_BIT, 'Single bit protocol violation');
+  static const format = CanProtocolError(CAN_ERR_PROT_FORM, 'Frame format protocol violation');
+  static const stuffing = CanProtocolError(CAN_ERR_PROT_STUFF, 'Bit stuffing protocol violation');
+  static const dominantBit = CanProtocolError(CAN_ERR_PROT_BIT0, 'Unable to send dominant bit');
+  static const recessiveBit = CanProtocolError(CAN_ERR_PROT_BIT1, 'Unable to send recessive bit');
+  static const overload = CanProtocolError(CAN_ERR_PROT_OVERLOAD, 'Bus overload');
+  static const tx = CanProtocolError(CAN_ERR_PROT_TX, 'Protocol error ocurred on transmission');
+
+  static const values = [unspecified, bit, format, stuffing, dominantBit, recessiveBit, overload, tx];
+
+  final int protocolErrorNative;
+}
+
+final class CanControllerError extends CanError {
+  const CanControllerError(this.controllerErrorNative, String description) : super(CAN_ERR_CRTL, description);
+
+  static const unspecified = CanControllerError(CAN_ERR_CRTL_UNSPEC, 'Unspecified controller error');
+  static const rxOverflow = CanControllerError(CAN_ERR_CRTL_RX_OVERFLOW, 'RX buffer overflow');
+  static const txOverflow = CanControllerError(CAN_ERR_CRTL_TX_OVERFLOW, 'TX buffer overflow');
+  static const rxWarning = CanControllerError(CAN_ERR_CRTL_RX_WARNING, 'reached warning level for RX errors');
+  static const txWarning = CanControllerError(CAN_ERR_CRTL_TX_WARNING, 'reached warning level for TX errors');
+  static const rxPassive = CanControllerError(CAN_ERR_CRTL_RX_PASSIVE, 'reached error passive status for RX');
+  static const txPassive = CanControllerError(CAN_ERR_CRTL_TX_PASSIVE, 'reached error passive status for TX');
+
+  static const values = [
+    unspecified,
+    rxOverflow,
+    txOverflow,
+    rxWarning,
+    txWarning,
+    rxPassive,
+    txPassive,
+  ];
+
+  final int controllerErrorNative;
+}
+
+enum CanWireStatus {
+  /// CAN H or CAN L is not connected.
+  /// This is the only wire status actually supported by any upstream kernel
+  /// driver at the moment. (By the ETAS ES58x driver)
+  notConnected(CAN_ERR_TRX_CANL_NO_WIRE, 'Not connected'),
+
+  /// CAN H or CAN L is shorted to BAT.
+  /// Not implemented by any upstream kernel drivers at the moment.
+  shortToBattery(CAN_ERR_TRX_CANL_SHORT_TO_BAT, 'Shorted to BAT'),
+
+  /// CAN H or CAN L is shorted to VCC.
+  /// Not implemented by any upstream kernel drivers at the moment.
+  shortToVCC(CAN_ERR_TRX_CANL_SHORT_TO_VCC, 'Shorted to VCC'),
+
+  /// CAN H or CAN L is shorted to GND.
+  /// Not implemented by any upstream kernel drivers at the moment.
+  shortToGND(CAN_ERR_TRX_CANL_SHORT_TO_GND, 'Shorted to GND');
+
+  const CanWireStatus(this.native, this.description);
 
   final int native;
+  final String description;
+}
+
+final class CanWiringError extends CanError {
+  const CanWiringError(this.canHigh, this.canLow, this.canHighShortedToCanLow) : super(CAN_ERR_TRX, '');
+
+  final CanWireStatus? canHigh;
+  final CanWireStatus? canLow;
+
+  /// True if CAN H and CAN L are shorted to each other.
+  /// Not implemented by any upstream kernel drivers at the moment.
+  final bool canHighShortedToCanLow;
+
+  /// Unspecified wiring error.
+  /// Not implemented by any upstream kernel drivers at the moment.
+  static const unspecified = CanWiringError(null, null, false);
+
+  @override
+  String get description {
+    final description = [
+      if (canHighShortedToCanLow) 'CAN H shorted to CAN L',
+      if (canHigh != null) 'CAN H: $canHigh',
+      if (canLow != null) 'CAN L: $canLow',
+      if (canHigh == null && canLow == null) 'Unspecified wiring error',
+    ].join(', ');
+
+    return description;
+  }
 }
 
 enum CanRuleCombinator { or, and }
@@ -807,6 +984,19 @@ class CanFilterRule {
   }
 
   bool intersecting(CanFilterRule other) => !disjoint(other);
+
+  @override
+  int get hashCode => Object.hash(id, mask, formats, types, invert);
+
+  @override
+  bool operator ==(Object other) {
+    return other is CanFilterRule &&
+        id == other.id &&
+        mask == other.mask &&
+        formats.asConst() == other.formats.asConst() &&
+        types.asConst() == other.types.asConst() &&
+        invert == other.invert;
+  }
 }
 
 enum CanFrameFormat {
@@ -885,8 +1075,49 @@ extension CanFrameTypeAsConstSet on Set<CanFrameType> {
   }
 }
 
+class CanFilterNotRepresentableException implements Exception {
+  const CanFilterNotRepresentableException(this.message);
+
+  final String? message;
+
+  @override
+  String toString() {
+    return 'CAN filter not representable as native SocketCAN filter rule list: $message';
+  }
+}
+
 abstract base class CanFilter {
   const CanFilter();
+
+  factory CanFilter.whitelist(
+    Iterable<int> ids, {
+    Set<CanFrameFormat> formats = const {CanFrameFormat.base, CanFrameFormat.extended},
+    Set<CanFrameType> types = const {CanFrameType.data},
+  }) {
+    return CanFilter.or([
+      for (final id in ids)
+        CanFilter.idEquals(
+          id,
+          formats: formats,
+          types: types,
+        ),
+    ]);
+  }
+
+  factory CanFilter.blacklist(
+    Iterable<int> ids, {
+    Set<CanFrameFormat> formats = const {CanFrameFormat.base, CanFrameFormat.extended},
+    Set<CanFrameType> types = const {CanFrameType.data, CanFrameType.remote},
+  }) {
+    return CanFilter.and([
+      for (final id in ids)
+        CanFilter.notIdEquals(
+          id,
+          formats: formats,
+          types: types,
+        ),
+    ]);
+  }
 
   const factory CanFilter.idEquals(
     int id, {
@@ -902,19 +1133,34 @@ abstract base class CanFilter {
     Set<CanFrameType> types,
   }) = CanFilterIdEquals.not;
 
-  const factory CanFilter.errorMatches(Set<CanError> errors) = CanFilterErrorMatches;
-
   const factory CanFilter.not(CanFilter operand) = CanFilterNot;
 
   const factory CanFilter.or(Iterable<CanFilter> operands) = CanFilterOr.fromIterable;
 
   const factory CanFilter.and(Iterable<CanFilter> operands) = CanFilterAnd.fromIterable;
 
-  Iterable<CanFilterRule> get rules;
+  /// Matches any CAN data or RTR frame with any id and any frame format (base or extended).
+  static const any = CanFilter.idEquals(
+    0,
+    mask: 0,
+    formats: {CanFrameFormat.base, CanFrameFormat.extended},
+    types: {CanFrameType.data, CanFrameType.remote},
+  );
 
-  Set<CanError> get errors;
+  /// Matches any CAN data frame with any id and any frame format (base or extended).
+  static const anyData = CanFilter.idEquals(
+    0,
+    mask: 0,
+    formats: {CanFrameFormat.base, CanFrameFormat.extended},
+    types: {CanFrameType.data},
+  );
 
-  CanRuleCombinator? get ruleCombinator;
+  /// Matches no frames at all.
+  static const none = CanFilter.or([]);
+
+  (Iterable<CanFilterRule>, CanRuleCombinator?) get rules;
+
+  bool matches(CanFrame frame);
 }
 
 final class CanFilterIdEquals extends CanFilter {
@@ -954,21 +1200,14 @@ final class CanFilterIdEquals extends CanFilter {
     );
   }
 
-  @override
-  Iterable<CanFilterRule> get rules {
-    return [
-      _getUniversal(),
-    ];
-  }
-
-  static int fullMaskForFormat(CanFrameFormat format) {
+  static int _fullMaskForFormat(CanFrameFormat format) {
     return switch (format) {
       CanFrameFormat.base => CAN_SFF_MASK,
       CanFrameFormat.extended => CAN_EFF_MASK,
     };
   }
 
-  int maskForFormat(CanFrameFormat format) {
+  int _maskForFormat(CanFrameFormat format) {
     final mask = this.mask;
 
     return switch (format) {
@@ -977,7 +1216,7 @@ final class CanFilterIdEquals extends CanFilter {
     };
   }
 
-  Iterable<CanFilterRule> get optimizedRules {
+  (Iterable<CanFilterRule>, CanRuleCombinator?) get optimizedRules {
     // We short-circuit here if we can't fully optimize the filter rules.
     // The kernel keeps special, optimized filter lists for rules that:
     //   - only match a single id
@@ -993,7 +1232,7 @@ final class CanFilterIdEquals extends CanFilter {
       return rules;
     }
 
-    if (formats.any((f) => maskForFormat(f) != fullMaskForFormat(f))) {
+    if (formats.any((f) => _maskForFormat(f) != _fullMaskForFormat(f))) {
       return rules;
     }
 
@@ -1001,38 +1240,45 @@ final class CanFilterIdEquals extends CanFilter {
       return rules;
     }
 
-    return [
+    final optimized = [
       for (final format in formats)
         CanFilterRule(
           id: id,
-          mask: maskForFormat(format),
+          mask: _maskForFormat(format),
           formats: format.toSet(),
           types: const {CanFrameType.data},
           invert: false,
         ),
     ];
+
+    return (
+      optimized,
+      optimized.length > 1 ? CanRuleCombinator.or : null,
+    );
   }
 
   @override
-  CanRuleCombinator? get ruleCombinator => null;
+  bool matches(CanFrame frame) {
+    var result = false;
+
+    if (formats.contains(frame.format) && types.contains(frame.type)) {
+      final mask = _maskForFormat(frame.format);
+      if (frame.id & mask == id) {
+        result = true;
+      }
+    }
+
+    if (invert) {
+      result = !result;
+    }
+
+    return result;
+  }
 
   @override
-  Set<CanError> get errors => const {};
-}
-
-final class CanFilterErrorMatches extends CanFilter {
-  const CanFilterErrorMatches(Set<CanError> errors) : _errors = errors;
-
-  final Set<CanError> _errors;
-
-  @override
-  Set<CanError> get errors => _errors;
-
-  @override
-  CanRuleCombinator? get ruleCombinator => null;
-
-  @override
-  Iterable<CanFilterRule> get rules => Iterable.empty();
+  (Iterable<CanFilterRule>, CanRuleCombinator?) get rules {
+    return ([_getUniversal()], null);
+  }
 }
 
 final class CanFilterNot extends CanFilter {
@@ -1041,19 +1287,25 @@ final class CanFilterNot extends CanFilter {
   final CanFilter operand;
 
   @override
-  Set<CanError> get errors => CanError.values.toSet().difference(operand.errors);
+  bool matches(CanFrame frame) {
+    return !operand.matches(frame);
+  }
 
   @override
-  CanRuleCombinator? get ruleCombinator => switch (operand.ruleCombinator) {
+  (Iterable<CanFilterRule>, CanRuleCombinator?) get rules {
+    final (rules, combinator) = operand.rules;
+
+    return (
+      rules.map(
+        (r) => r.copyWith(invert: !r.invert),
+      ),
+      switch (combinator) {
         null => null,
         CanRuleCombinator.and => CanRuleCombinator.or,
         CanRuleCombinator.or => CanRuleCombinator.and,
-      };
-
-  @override
-  Iterable<CanFilterRule> get rules => operand.rules.map(
-        (r) => r.copyWith(invert: !r.invert),
-      );
+      }
+    );
+  }
 }
 
 abstract base class CanFilterCombine extends CanFilter {
@@ -1066,35 +1318,30 @@ final class CanFilterOr extends CanFilterCombine {
   const CanFilterOr.fromIterable(super.operands) : super.fromIterable();
 
   @override
-  Set<CanError> get errors {
-    return {
-      for (final filter in operands) ...filter.errors,
-    };
+  bool matches(CanFrame frame) {
+    return operands.any((operand) => operand.matches(frame));
   }
 
   @override
-  Iterable<CanFilterRule> get rules {
-    return operands.expand(
-      (filter) {
-        if (filter is CanFilterIdEquals) {
-          return filter.optimizedRules;
-        } else {
-          return filter.rules;
-        }
-      },
-    );
-  }
-
-  @override
-  CanRuleCombinator? get ruleCombinator {
-    if (operands.any((op) => op.ruleCombinator == CanRuleCombinator.and)) {
+  (Iterable<CanFilterRule>, CanRuleCombinator?) get rules {
+    if (operands.any((op) => op.rules.$2 == CanRuleCombinator.and)) {
       /// TODO: Can we support this somehow?
-      throw UnsupportedError(
-        'AND filters inside an OR filter are not supported right now.',
+      throw CanFilterNotRepresentableException(
+        'AND filters inside an OR filter are representable.',
       );
     }
 
-    return CanRuleCombinator.or;
+    return (
+      operands.expand(
+        (filter) {
+          return switch (filter) {
+            CanFilterIdEquals _ => filter.optimizedRules.$1,
+            CanFilter _ => filter.rules.$1,
+          };
+        },
+      ).toSet(),
+      CanRuleCombinator.or,
+    );
   }
 }
 
@@ -1106,28 +1353,29 @@ final class CanFilterAnd extends CanFilterCombine {
   }
 
   @override
-  Set<CanError> get errors {
-    return operands.map((f) => f.errors).reduce(intersection);
+  bool matches(CanFrame frame) {
+    return operands.every((operand) => operand.matches(frame));
   }
 
   @override
-  Iterable<CanFilterRule> get rules {
-    return operands.expand((filter) => filter.rules);
-  }
-
-  @override
-  CanRuleCombinator? get ruleCombinator {
-    if (operands.isEmpty || operands.length == 1) {
-      return operands.singleOrNull?.ruleCombinator;
-    }
-
-    if (operands.any((op) => op.ruleCombinator == CanRuleCombinator.or)) {
+  (Iterable<CanFilterRule>, CanRuleCombinator?) get rules {
+    if (operands.length > 1 &&
+        operands.map((op) => op.rules.$2).any((combinator) => combinator == CanRuleCombinator.or)) {
       /// TODO: Can we support this somehow?
-      throw UnsupportedError(
-        'OR filters inside an AND filter are not supported right now.',
+      throw CanFilterNotRepresentableException(
+        'OR filters inside an AND filter are not representable.',
       );
     }
 
-    return CanRuleCombinator.and;
+    final combinator = switch (operands) {
+      List(isEmpty: true) => null,
+      List(length: 1) => operands.single.rules.$2,
+      _ => CanRuleCombinator.and,
+    };
+
+    return (
+      operands.expand((filter) => filter.rules.$1).toSet(),
+      combinator,
+    );
   }
 }

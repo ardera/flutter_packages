@@ -12,6 +12,7 @@ dev_dependencies:
 
 dependencies:
   _ardera_common_libc_bindings: ^0.3.1
-  collection: ^1.17.2
+  collection: ^1.17.0
+  either_dart: ^1.0.0
   ffi: ^2.0.1
   quiver: ^3.2.1

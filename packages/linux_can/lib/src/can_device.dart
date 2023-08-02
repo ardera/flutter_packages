@@ -8,6 +8,14 @@ import 'package:ffi/ffi.dart' as ffi;
 import 'package:linux_can/src/data_classes.dart';
 import 'package:linux_can/src/platform_interface.dart';
 
+A _fst<A, B>((A, B) pair) {
+  return pair.$1;
+}
+
+B _snd<A, B>((A, B) pair) {
+  return pair.$2;
+}
+
 /// CAN device
 class CanDevice {
   CanDevice({
@@ -222,6 +230,14 @@ class CanDevice {
     try {
       _platformInterface.bind(fd, networkInterface.index);
 
+      // Set no filter so we don't need to discard before receiving.
+      _platformInterface.setFilter(fd, CanFilter.none);
+
+      _platformInterface.setErrorReporting(fd, false);
+
+      // Drain all frames in case a frame arrived between bind and setFilter.
+      _platformInterface.drain(fd);
+
       return CanSocket(
         platformInterface: _platformInterface,
         fd: fd,
@@ -234,7 +250,11 @@ class CanDevice {
   }
 }
 
-class CanSocket {
+/// A CAN socket, a CAN device that's opened for reading and writing.
+///
+/// A CanSocket will not only receive frames incoming on the underlying CanDevice, but also frames outgoing on other
+/// CanSockets of the same CanDevice. (This behaviour is dictated by the kernel SocketCAN implementation)
+class CanSocket implements Sink<CanFrame> {
   CanSocket({
     required PlatformInterface platformInterface,
     required int fd,
@@ -290,48 +310,61 @@ class CanSocket {
   /// If [block] is true, and the kernel send-buffer is full, the send is re-attempted until it succeeds. This can
   /// happen when sending lots of frames in a short time period. If [block] is false, this will throw a [LinuxError]
   /// with errno [EWOULDBLOCK] (value 22) in this case.
-  void write(CanFrame frame, {bool block = true}) {
+  Future<void> send(CanFrame frame, {bool block = true}) async {
     _checkOpen();
 
+    // TODO: Do the blocking in the kernel or in a worker isolate
+    //  and remove the block parameter.
     _platformInterface.write(_fd, frame, block: block);
   }
 
-  /// Tries to receive a base/extended CAN 2.0 [CanFrame] using this socket.
+  /// Sends the base/extended CAN 2.0 frame [frame] using this socket.
   ///
-  /// This method will not wait for a frame to arrive. If no frame is available right now,
-  /// null is returned.
-  ///
-  /// The returned CanFrame might be a [CanDataFrame], [CanRemoteFrame] or [CanErrorFrame].
-  CanFrame? read() {
-    _checkOpen();
-    return _platformInterface.read(_fd);
+  /// If [block] is true, and the kernel send-buffer is full, the send is re-attempted until it succeeds. This can
+  /// happen when sending lots of frames in a short time period. If [block] is false, this will throw a [LinuxError]
+  /// with errno [EWOULDBLOCK] (value 22) in this case.
+  @override
+  Future<void> add(CanFrame data, {bool block = true}) async {
+    return send(data, block: block);
   }
 
-  /// Closes this CanSocket and releases all associated resources.
+  /// Receives a base/extended CAN 2.0 [CanFrame] using this socket.
+  ///
+  /// This method will wait for a frame to arrive. The returned future completes with
+  /// an error if the socket is closed before a frame was received.
+  ///
+  /// The returned CanFrame might be a [CanDataFrame] or [CanRemoteFrame].
+  Future<CanFrame> receiveSingle({bool emitErrors = false, CanFilter filter = CanFilter.anyData}) async {
+    _checkOpen();
+    return await receive(emitErrors: emitErrors, filter: filter).first;
+  }
+
+  /// Closes this [CanSocket] and releases all associated resources.
   ///
   /// The socket should not be used anymore after this function has started.
+  @override
   Future<void> close() async {
     _checkOpen();
 
     if (_listening) {
-      await _fdUnlisten();
+      await _socketUnlisten();
     }
 
-    await _controller.close();
+    await _socketController.close();
 
     assert(_open);
     _platformInterface.close(_fd);
     _open = false;
   }
 
-  static List<CanFrame>? _handleFdReady(EpollIsolate isolate, int fd, Set<EpollFlag> flags, dynamic bufferAddr) {
+  static List<CanFrameOrError>? _handleFdReady(EpollIsolate isolate, int fd, Set<EpollFlag> flags, dynamic bufferAddr) {
     assert(bufferAddr is int);
 
     final libc = isolate.libc;
 
     final buffer = ffi.Pointer<ffi.Void>.fromAddress(bufferAddr);
 
-    final frames = <CanFrame>[];
+    final frames = <CanFrameOrError>[];
     while (true) {
       final frame = PlatformInterface.readStatic(libc, fd, buffer, ffi.sizeOf<can_frame>());
       if (frame != null) {
@@ -344,8 +377,11 @@ class CanSocket {
     return frames.isEmpty ? null : frames;
   }
 
-  Future<void> _fdListen(
-    void Function(List<CanFrame>?) onFrame,
+  /// Listen to the underlying CAN socket.
+  ///
+  /// Will add data and errors to the [_socketController].
+  Future<void> _socketListen(
+    void Function(List<CanFrameOrError>?) onFrame,
     void Function(Object error, StackTrace? stackTrace) onError,
   ) async {
     _checkOpen();
@@ -362,7 +398,7 @@ class CanSocket {
       isolateCallback: _handleFdReady,
       isolateCallbackContext: _fdHandlerBuffer!.address,
       onValue: (value) {
-        assert(value is List<CanFrame>?);
+        assert(value is List<CanFrameOrError>?);
         onFrame(value);
       },
       onError: onError,
@@ -371,39 +407,191 @@ class CanSocket {
     _listening = true;
   }
 
-  Future<void> _fdUnlisten() async {
+  /// Unlisten from the underlying CAN socket.
+  ///
+  /// Once the future completes, no more data and errors will be added to the [_socketController].
+  Future<void> _socketUnlisten() async {
     _checkOpen();
 
     assert(_listening);
     assert(_fdListener != null);
     assert(_fdHandlerBuffer != null);
 
-    await _platformInterface.eventListener.delete(
-      listener: _fdListener!,
-    );
-
-    ffi.calloc.free(_fdHandlerBuffer!);
+    final buffer = _fdHandlerBuffer;
+    final listener = _fdListener;
 
     _fdHandlerBuffer = null;
     _fdListener = null;
     _listening = false;
+
+    await _platformInterface.eventListener.delete(
+      listener: listener!,
+    );
+
+    ffi.calloc.free(buffer!);
   }
 
-  late final StreamController<CanFrame> _controller = StreamController.broadcast(
+  /// The current CAN filter configured in the kernel for this socket.
+  ///
+  /// The default filter by the kernel uses mask 0 and can_id 0,
+  /// so it matches all frames.
+  /// We apply CanFilter.none in CanDevice.open though, so use CanFilter.none here.
+  var _socketFilter = CanFilter.none;
+
+  /// True if the kernel currently emits error frames on this socket.
+  ///
+  /// We set the error mask to 0 in CanDevice.open, so it's false
+  /// by default.
+  var _socketReportingErrors = false;
+
+  late final StreamController<CanFrame> _socketController = StreamController.broadcast(
     onListen: () {
-      _fdListen(
-        (frames) => frames?.forEach(_controller.add),
-        _controller.addError,
+      // we don't need to drain here since the filter was
+      // set to CanFilter.none directly after opening.
+      _socketListen(
+        (frames) {
+          frames?.forEach((frame) {
+            frame.either(
+              (errors) => errors.forEach(_socketController.addError),
+              _socketController.add,
+            );
+          });
+        },
+        _socketController.addError,
       );
     },
     onCancel: () {
-      _fdUnlisten();
+      if (_listening) {
+        _socketUnlisten();
+      }
     },
   );
 
-  /// Gets a broadcast stream of CanFrames arriving on this socket.
+  /// The CAN filters and 'emit errors' booleans for all streams listening to the socket right now.
+  ///
+  /// We use that to determine the "global" CAN filter and emit-errors boolean that should be applied to the whole
+  /// socket.
+  ///
+  /// For example, right now, if a single stream is listening, we just use whatever CAN filter and emit-errors value
+  /// that stream uses.
+  ///
+  /// If more streams are listening, we use CanFilter.any for the socket and manually filter in the stream, and use
+  /// the logical or of the emit-errors value and filter the errors in the stream as well.
+  var _socketFilters = <(CanFilter, bool)>[];
+
+  void _applySocketFilters(Iterable<(CanFilter, bool)> filters) {
+    late CanFilter filter;
+    if (filters.isEmpty) {
+      filter = CanFilter.none;
+    } else if (filters.length == 1) {
+      filter = filters.single.$1;
+    } else {
+      filter = CanFilter.or(filters.map(_fst));
+    }
+
+    final reportErrors = filters.map(_snd).fold(false, (value, element) {
+      return value || element;
+    });
+
+    final oldFilter = _socketFilter;
+    if (filter != _socketFilter) {
+      _platformInterface.setFilter(_fd, filter);
+      _socketFilter = filter;
+    }
+
+    try {
+      if (reportErrors != _socketReportingErrors) {
+        _platformInterface.setErrorReporting(_fd, reportErrors);
+        _socketReportingErrors = reportErrors;
+      }
+    } on Object {
+      if (oldFilter != _socketFilter) {
+        _platformInterface.setFilter(_fd, oldFilter);
+        _socketFilter = oldFilter;
+      }
+
+      rethrow;
+    }
+
+    _socketFilters = filters.toList();
+  }
+
+  void _addSocketFilter((CanFilter, bool) filter) {
+    _applySocketFilters(_socketFilters.followedBy([filter]));
+  }
+
+  void _removeSocketFilter((CanFilter, bool) filter) {
+    _applySocketFilters(
+      _socketFilters.toList()..remove(filter),
+    );
+  }
+
+  /// Gets a broadcast stream of [CanFrame]s arriving on this socket.
   ///
   /// The stream is only valid while this socket is open, i.e. before
   /// [CanSocket.close] is called.
-  Stream<CanFrame> get frames => _controller.stream;
+  ///
+  /// If [emitErrors] is true, all [CanError]s received from the kernel
+  /// will be added as errors to the stream.
+  /// If [emitErrors] is false, no errors will be emitted.
+  ///
+  /// If [filter] is given, only CAN frames that match the filter will be emitted on the stream.
+  /// The filtering will be done in the kernel, if possible.
+  Stream<CanFrame> receive({bool emitErrors = false, CanFilter filter = CanFilter.anyData}) {
+    final controller = StreamController<CanFrame>.broadcast(sync: true);
+
+    void addIfNotCanError(Object object, StackTrace? stackTrace) {
+      if (object is CanError) {
+        return;
+      }
+
+      controller.addError(object, stackTrace);
+    }
+
+    void addMaybeCheckFilterMatches(CanFrame frame) {
+      if (_socketFilter != filter) {
+        if (filter.matches(frame)) {
+          controller.add(frame);
+        }
+      } else {
+        controller.add(frame);
+      }
+    }
+
+    StreamSubscription<CanFrame>? subscription;
+
+    var filterEntry = (filter, emitErrors);
+
+    // We apply the filter and emitErrors in onListen and onCancel.
+    controller.onListen = () {
+      try {
+        _addSocketFilter(filterEntry);
+      } on CanFilterNotRepresentableException {
+        // If we can't apply the filter, because it violates some SocketCAN restrictions,
+        // we apply no filter at all and do the filtering in dart.
+        // Happens for example when having and AND filter inside on OR filter,
+        // or when we have too many rules.
+        filterEntry = (CanFilter.any, emitErrors);
+        _addSocketFilter(filterEntry);
+      }
+
+      subscription = _socketController.stream.listen(
+        addMaybeCheckFilterMatches,
+        onError: emitErrors ? controller.addError : addIfNotCanError,
+        onDone: controller.close,
+      );
+    };
+
+    controller.onCancel = () async {
+      await subscription!.cancel();
+      subscription = null;
+
+      // it's possible this is called after the socket is already closed.
+      if (_open) {
+        _removeSocketFilter(filterEntry);
+      }
+    };
+
+    return controller.stream;
+  }
 }
