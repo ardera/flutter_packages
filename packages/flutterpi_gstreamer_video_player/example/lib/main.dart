@@ -30,8 +30,8 @@ class _ExampleVideoPageState extends State<ExampleVideoPage> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.network(
-      'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+    _controller = VideoPlayerController.networkUrl(
+      Uri.parse('https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4'),
     );
 
     _chewieController = ChewieController(

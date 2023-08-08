@@ -64,7 +64,7 @@ class FlutterpiVideoPlayerController extends VideoPlayerController {
     super.closedCaptionFile,
     super.videoPlayerOptions,
     super.httpHeaders,
-  }) : super.network();
+  }) : super.networkUrl();
 
   factory FlutterpiVideoPlayerController.withGstreamerPipeline(
     String pipeline, {
@@ -79,7 +79,7 @@ class FlutterpiVideoPlayerController extends VideoPlayerController {
       Uri(
         scheme: FlutterpiVideoPlayer.pipelineUrlScheme,
         path: FlutterpiVideoPlayer.pipelineUrlCodec.encode(pipeline),
-      ).toString(),
+      ),
       formatHint: formatHint,
       closedCaptionFile: closedCaptionFile,
       videoPlayerOptions: videoPlayerOptions,
