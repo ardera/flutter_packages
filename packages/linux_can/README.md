@@ -42,25 +42,25 @@ print('CAN device hardware name: ${device.hardwareName}');
 final socket = device.open();
 
 // Send some example CAN frame.
-socket.write(CanFrame.standard(id: 0x123, data: [0x01, 0x02, 0x03, 0x04]));
+socket.send(CanFrame.standard(id: 0x123, data: [0x01, 0x02, 0x03, 0x04]));
 
-// Read a CAN frame. This is not blocking, i.e. if there's no frame available
-// right now it will just return null.
-final frame = socket.read();
-if (frame != null) {
-  // we actually received a frame.
-  switch (frame) {
-    case CanDataFrame(:final id, :final data):
-      print('received data frame with id $id and data $data');
-    case CanRemoteFrame _:
-      print('received remote frame $frame');
-    case CanErrorFrame _:
-      print('received error frame');
-  }
+// Read a CAN frame. This is blocking, i.e. it will wait for a frame to arrive.
+//
+// There's no internal queueing. receiveSingle() will only actually start listening
+// for a new frame inside this method.
+// If a frame arrived on the socket before we get to receiveSingle(), we won't receive it.
+final frame = await socket.receiveSingle();
+
+// We received a frame.
+switch (frame) {
+  case CanDataFrame(:final id, :final data):
+    print('received data frame with id $id and data $data');
+  case CanRemoteFrame _:
+    print('received remote frame $frame');
 }
 
 // Listen on a Stream of CAN frames
-await for (final frame in socket.frames) {
+await for (final frame in socket.receive()) {
   print('received frame $frame');
   break;
 }
