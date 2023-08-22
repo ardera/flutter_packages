@@ -56,8 +56,8 @@ void main() {
   }, skip: !isLinux ? 'Only applies to linux platforms.' : null);
 
   test('CAN binding', () {
-    expect(ffi.sizeOf<libc.can_frame>, libc.CAN_MTU);
-    expect(ffi.sizeOf<libc.canfd_frame>, libc.CANFD_MTU);
+    expect(ffi.sizeOf<libc.can_frame>(), libc.CAN_MTU);
+    expect(ffi.sizeOf<libc.canfd_frame>(), libc.CANFD_MTU);
 
     testOffset<libc.can_frame>(
       allocate: (alloc) => alloc(),
