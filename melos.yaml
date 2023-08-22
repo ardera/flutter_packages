@@ -42,14 +42,14 @@ scripts:
   test:dart:
     run: melos exec -c 1 --fail-fast -- dart test
     description: Run `dart test` in all pure-dart packages with a `test` folder.
-    selectPackage:
+    packageFilters:
       flutter: false
       dirExists: test
 
   test:flutter:
     run: melos exec -c 1 --fail-fast -- flutter test
     description: Run `flutter test` in all flutter packages with a `test` folder.
-    selectPackage:
+    packageFilters:
       flutter: true
       dirExists: test
 
@@ -68,13 +68,13 @@ scripts:
   analyze:dart:
     run: melos exec -c 1 "dart analyze --fatal-infos ."
     description: Run `dart analyze --fatal-infos` in all pure-dart packages.
-    selectPackage:
+    packageFilters:
       flutter: false
 
   analyze:flutter:
     run: melos exec -c 1 "flutter analyze --fatal-infos ."
     description: Run `flutter analyze --fatal-infos` in all flutter packages.
-    selectPackage:
+    packageFilters:
       flutter: true
   
   checkpubpoints:
