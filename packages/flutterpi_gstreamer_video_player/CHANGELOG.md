@@ -1,3 +1,7 @@
+## 0.1.1+1
+
+ - **FIX**(flutterpi_gstreamer_video_player): fix deprecations. ([74b8cb56](https://github.com/ardera/flutter_packages/commit/74b8cb562f0d60714580fd787f81f782d7a2e679))
+
 ## 0.1.1
 
  - **FEAT**(flutterpi_gstreamer_video_player_example): add exit button. ([7d4f37c6](https://github.com/ardera/flutter_packages/commit/7d4f37c678bea11d92975e3185f01f85b380e1b5))

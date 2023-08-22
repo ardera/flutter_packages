@@ -3,6 +3,54 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2023-08-22
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`linux_can` - `v0.2.0`](#linux_can---v020)
+
+Packages with other changes:
+
+ - [`_ardera_common_libc_bindings` - `v0.3.2`](#_ardera_common_libc_bindings---v032)
+ - [`flutterpi_gstreamer_video_player` - `v0.1.1+1`](#flutterpi_gstreamer_video_player---v0111)
+ - [`linux_serial` - `v0.2.3+5`](#linux_serial---v0235)
+ - [`linux_spidev` - `v0.2.1+5`](#linux_spidev---v0215)
+ - [`flutter_gpiod` - `v0.5.1+5`](#flutter_gpiod---v0515)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `linux_serial` - `v0.2.3+5`
+ - `linux_spidev` - `v0.2.1+5`
+ - `flutter_gpiod` - `v0.5.1+5`
+
+---
+
+#### `linux_can` - `v0.2.0`
+
+ - **REFACTOR**(linux_can): reuse memory internally. ([6a976d78](https://github.com/ardera/flutter_packages/commit/6a976d7898c4d0a065bb8e22e551de9870c392ed))
+ - **REFACTOR**(linux_can): Use `CAN_ERR_*` constants from bindings. ([0c4080eb](https://github.com/ardera/flutter_packages/commit/0c4080eb127e335b0a4d4f9b58110046eb83409a))
+ - **FEAT**(linux_can): Implement filters. ([520e658d](https://github.com/ardera/flutter_packages/commit/520e658dc731176438337eb70e33cd202f85a81a))
+ - **FEAT**(linux_can): Initial work on filter support. ([76335093](https://github.com/ardera/flutter_packages/commit/76335093ba113778630bbd6e96a50247dfd64433))
+ - **BREAKING** **FEAT**(linux_can): Implement CAN frame filtering. ([a2afcaa1](https://github.com/ardera/flutter_packages/commit/a2afcaa14e95ad7c73ff0c7ffe507ffd40051d2f))
+
+#### `_ardera_common_libc_bindings` - `v0.3.2`
+
+ - **FIX**(bindings): fix can bindings sizeOf test. ([ca53d245](https://github.com/ardera/flutter_packages/commit/ca53d245e465a8efb699c38a6c09577d629244ef))
+ - **FIX**(bindings): retry epoll_wait on EINTR. ([813b9944](https://github.com/ardera/flutter_packages/commit/813b9944f8309d484e6edb407abb88fd58e9e189))
+ - **FEAT**(bindingsgen): Add `linux/can/{raw,error}.h` bindings. ([24d027ac](https://github.com/ardera/flutter_packages/commit/24d027ac68c704ff697b8934e6c2e778de24fd40))
+ - **FEAT**(bindings): export can_filter struct. ([5f1fcb21](https://github.com/ardera/flutter_packages/commit/5f1fcb210150dc862bfc012b7770f622b1ad6d68))
+
+#### `flutterpi_gstreamer_video_player` - `v0.1.1+1`
+
+ - **FIX**(flutterpi_gstreamer_video_player): fix deprecations. ([74b8cb56](https://github.com/ardera/flutter_packages/commit/74b8cb562f0d60714580fd787f81f782d7a2e679))
+
+
 ## 2023-07-18
 
 ### Changes

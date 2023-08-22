@@ -1,3 +1,10 @@
+## 0.3.2
+
+ - **FIX**(bindings): fix can bindings sizeOf test. ([ca53d245](https://github.com/ardera/flutter_packages/commit/ca53d245e465a8efb699c38a6c09577d629244ef))
+ - **FIX**(bindings): retry epoll_wait on EINTR. ([813b9944](https://github.com/ardera/flutter_packages/commit/813b9944f8309d484e6edb407abb88fd58e9e189))
+ - **FEAT**(bindingsgen): Add `linux/can/{raw,error}.h` bindings. ([24d027ac](https://github.com/ardera/flutter_packages/commit/24d027ac68c704ff697b8934e6c2e778de24fd40))
+ - **FEAT**(bindings): export can_filter struct. ([5f1fcb21](https://github.com/ardera/flutter_packages/commit/5f1fcb210150dc862bfc012b7770f622b1ad6d68))
+
 ## 0.3.1
 
  - **FEAT**(bindings): add `ARPHRD_...` bindings. ([b123003f](https://github.com/ardera/flutter_packages/commit/b123003f7e08b6b3da220d5a95391735a1cefef7))
