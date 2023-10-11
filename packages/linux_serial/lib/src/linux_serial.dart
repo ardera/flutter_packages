@@ -8,6 +8,7 @@ import 'dart:typed_data';
 
 import 'package:computer/computer.dart';
 import 'package:meta/meta.dart';
+import 'package:collection/collection.dart';
 import 'package:ffi/ffi.dart' as ffi show Utf8, malloc, calloc;
 import 'package:path/path.dart';
 import 'package:tuple/tuple.dart';
@@ -839,30 +840,19 @@ class SerialPortHandle implements StringSink, StringReader {
     return result.then<void>((value) => null);
   }
 
-  Future<void> writeBytes(List<int> bytes) {
+  Future<void> writeBytes(Iterable<int> bytes) {
     assert(_isOpen);
 
     if (bytes.isEmpty) {
       return _writeLock.synchronized(() {});
     }
 
-    final subTransmissions = <Iterable<int>>[];
-    do {
-      subTransmissions.add(bytes.take(_bufferSize));
-      bytes = bytes.skip(_bufferSize) as List<int>;
-    } while (bytes.length > _bufferSize);
-
     return _writeLock.synchronized(() async {
       if (!_isOpen) return;
 
-      for (final subTransmission in subTransmissions) {
-        var index = 0;
-        for (final byte in subTransmission) {
-          _writeBufferAsTypedList[index] = byte;
-          index++;
-        }
-
-        await PlatformInterface.instance.write(_fd, _writeBuffer, subTransmission.length);
+      for (final slice in bytes.slices(_bufferSize)) {
+        _writeBufferAsTypedList.setAll(0, slice);
+        await PlatformInterface.instance.write(_fd, _writeBuffer, slice.length);
       }
     });
   }

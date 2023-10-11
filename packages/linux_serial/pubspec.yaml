@@ -16,3 +16,4 @@ dependencies:
   computer: ^3.2.1
   synchronized: ^3.0.0
   _ardera_common_libc_bindings: ^0.3.2
+  collection: ^1.18.0
