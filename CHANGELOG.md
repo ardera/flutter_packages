@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2023-10-11
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`linux_serial` - `v0.2.3+6`](#linux_serial---v0236)
+
+---
+
+#### `linux_serial` - `v0.2.3+6`
+
+ - **REFACTOR**(linux_serial): remove duplicate code. ([ab7b09d0](https://github.com/ardera/flutter_packages/commit/ab7b09d02d72aa07a906ded7743b2110f3cbed3e))
+ - **FIX**(linux_serial): fix incorrect list cast. ([9d130049](https://github.com/ardera/flutter_packages/commit/9d130049eae614ecc62aabae95fcdfdd4266c7c3))
+
+
 ## 2023-08-22
 
 ### Changes
