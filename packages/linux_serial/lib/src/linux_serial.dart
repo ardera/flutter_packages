@@ -9,24 +9,12 @@ import 'dart:typed_data';
 import 'package:computer/computer.dart';
 import 'package:meta/meta.dart';
 import 'package:collection/collection.dart';
-import 'package:ffi/ffi.dart' as ffi show Utf8, malloc, calloc;
+import 'package:ffi/ffi.dart' as ffi show StringUtf8Pointer, malloc, calloc;
 import 'package:path/path.dart';
 import 'package:tuple/tuple.dart';
 import 'package:async/async.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:_ardera_common_libc_bindings/_ardera_common_libc_bindings.dart';
-
-/// for whatever reason, importing ffi's StringUtf8Pointer does not work.
-extension StringUtf8Pointer on String {
-  ffi.Pointer<ffi.Utf8> toNativeUtf8({ffi.Allocator allocator = ffi.malloc}) {
-    final units = utf8.encode(this);
-    final ffi.Pointer<ffi.Uint8> result = allocator<ffi.Uint8>(units.length + 1);
-    final Uint8List nativeString = result.asTypedList(units.length + 1);
-    nativeString.setAll(0, units);
-    nativeString[units.length] = 0;
-    return result.cast();
-  }
-}
 
 @immutable
 class Baudrate {
