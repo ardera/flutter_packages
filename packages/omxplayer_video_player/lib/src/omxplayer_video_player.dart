@@ -82,7 +82,7 @@ class OmxplayerVideoPlayer extends VideoPlayerPlatform {
   /// is mounted in the widget tree at a time.
   /// When [strictViewBehaviour] is `false`, will try to work around that issue and
   /// only actually build the platform view for the last-recently registered element.
-  static void useAsImplementation({bool strictViewBehaviour: false}) {
+  static void useAsImplementation({bool strictViewBehaviour = false}) {
     VideoPlayerPlatform.instance = OmxplayerVideoPlayer._(strictViewBehaviour);
   }
 

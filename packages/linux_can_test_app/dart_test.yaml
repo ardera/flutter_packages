@@ -1,0 +1,43 @@
+tags:
+  pi3-can:
+    # A special CAN test setup, consisting of a Raspberry Pi 3
+    # and two MCP2515 CAN controllers connected via SPI.
+    #
+    # I have connected one controller to SPI0 and one to SPI1,
+    # so they don't have to share a SPI bus. SPI bus 1 has to
+    # be explicitly enabled with a user-chosen CS pin, see
+    # `/boot/config.txt` snippet below.
+    #
+    # The tests assume:
+    # Interface 3 is can0, Interface 4 is can1.
+    # Both CAN interfaces are on the same CAN bus,
+    # with no other device on the connected to that bus.
+    #
+    # The dtoverlay setup part in `/boot/config.txt` looks like this:
+    #   ```
+    #   dtoverlay=mcp2515,spi0-0,interrupt=6
+    # 
+    #   # spi1 needs to be explicitly enabled
+    #   dtoverlay=spi1-1cs,cs0_pin=18,cs0_spidev=disabled
+    #   dtoverlay=mcp2515,spi1-0,interrupt=5
+    #   ```
+    #
+    # Both CAN interfaces are up with a bitrate of 125000,
+    # and can0 should have a transmit queue length of at least 1024:
+    #   ```
+    #   sudo ip link set can0 type can bitrate 125000
+    #   sudo ip link set can1 type can bitrate 125000
+    #   sudo ip link set can0 up
+    #   sudo ip link set can1 up
+    #   sudo ip link set can0 txqueuelen 1024
+    #   ```
+
+  vcan:
+    # A special CAN test setup, requires an up & running vcan (Virtual CAN)
+    # interface called vcan0.
+    #
+    # ```
+    # sudo modprobe vcan
+    # sudo ip link add dev vcan0 type vcan
+    # sudo ip link set up vcan0
+    # ```

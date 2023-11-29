@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter_gpiod/flutter_gpiod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -76,6 +77,43 @@ Matcher isOwnedInputLine(Object? name, Object? consumer, {Object? bias, Object? 
 }
 
 void main() {
+  // In some cases when running on ODROID C4, the display doesn't initialize correctly
+  // and the window.physicalSize is zero.
+  //
+  // That'll cause this error later on:
+  //  ══╡ EXCEPTION CAUGHT BY SCHEDULER LIBRARY ╞═════════════════════════════════════════════════════════
+  //  The following assertion was thrown during a scheduler callback:
+  //  Matrix4 entries must be finite.
+  //  'dart:ui/painting.dart':
+  //  Failed assertion: line 46 pos 10: '<optimized out>'
+  //
+  //  Either the assertion indicates an error in the framework itself, or we should provide substantially
+  //  more information in this error message to help you determine and fix the underlying cause.
+  //  In either case, please report this assertion by filing a bug on GitHub:
+  //    https://github.com/flutter/flutter/issues/new?template=2_bug.md
+  //
+  //  When the exception was thrown, this was the stack:
+  //  #2      _matrix4IsValid (dart:ui/painting.dart:46:10)
+  //  #3      SceneBuilder.pushTransform (dart:ui/compositing.dart:326:12)
+  //  #4      TransformLayer.addToScene (package:flutter/src/rendering/layer.dart:1909:27)
+  //  #5      ContainerLayer.buildScene (package:flutter/src/rendering/layer.dart:1094:5)
+  //  #6      RenderView.compositeFrame (package:flutter/src/rendering/view.dart:236:37)
+  //  #7      RendererBinding.drawFrame (package:flutter/src/rendering/binding.dart:520:18)
+  //  #8      WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:865:13)
+  //  #9      RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:381:5)
+  //  #10     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1289:15)
+  //  #11     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1218:9)
+  //  #12     LiveTestWidgetsFlutterBinding.handleDrawFrame (package:flutter_test/src/binding.dart:1710:13)
+  //  #13     SchedulerBinding.scheduleWarmUpFrame.<anonymous closure> (package:flutter/src/scheduler/binding.dart:942:7)
+  //  #28     _RawReceivePort._handleMessage (dart:isolate-patch/isolate_patch.dart:192:26)
+  //  (elided 16 frames from class _AssertionError, class _Timer, dart:async, dart:async-patch, and package:stack_trace)
+  //  ════════════════════════════════════════════════════════════════════════════════════════════════════
+  //
+  // We can't override the widgets binding so we can't really do anything about it. Maybe we can fix it
+  // in the android subproject.
+  // assert here so we at least fail early.
+  assert(PlatformDispatcher.instance.implicitView!.physicalSize != Size.zero);
+
   group('test gpio on pi 4', () {
     testWidgets('test pi 4 general gpio', (_) async {
       final gpio = FlutterGpiod.instance;
@@ -676,9 +714,7 @@ void main() {
         // wait for some time so the edge event arrives
 
         //await tester.pump(const Duration(seconds: 5));
-        (TestWidgetsFlutterBinding.ensureInitialized() as TestWidgetsFlutterBinding)
-            .delayed(const Duration(seconds: 5))
-            .then((value) {
+        TestWidgetsFlutterBinding.ensureInitialized().delayed(const Duration(seconds: 5)).then((value) {
           if (!completer.isCompleted) {
             completer.completeError(TimeoutException('Waiting for signal edge timed out.', const Duration(seconds: 5)));
           }
@@ -704,5 +740,136 @@ void main() {
         release(gpiox0);
       }, tags: ['odroidc4']);
     });
+  });
+
+  group('test gpio on lattepanda', () {
+    // $ uname -a
+    // Linux panda 5.15.0-69-generic #76~20.04.1-Ubuntu SMP Mon Mar 20 15:54:19 UTC 2023 x86_64 x86_64 x86_64 GNU/Linux
+
+    testWidgets(
+      'test lattepanda general gpio',
+      (_) async {
+        final gpio = FlutterGpiod.instance;
+
+        expect(gpio.supportsBias, isFalse);
+        expect(gpio.supportsLineReconfiguration, isFalse);
+
+        final chips = gpio.chips;
+        expect(chips, hasLength(5));
+      },
+      tags: ['panda'],
+    );
+
+    testWidgets('test lattepanda first gpio chip', (_) async {
+      final chip = FlutterGpiod.instance.chips[0];
+      expect(chip.index, 0);
+      expect(chip.name, 'gpiochip0');
+      expect(chip.label, 'aobus-banks');
+
+      final lines = chip.lines;
+      expect(lines, hasLength(98));
+
+      expect(lines.getRange(0, 78), everyElement(isFreeInputLine(unnamed)));
+      expect(lines[78], isKernelInputLine(unnamed, 'volume_up'));
+      expect(lines[79], isFreeInputLine(unnamed));
+      expect(lines[80], isKernelInputLine(unnamed, 'volume_down'));
+      expect(lines.getRange(81, 98), everyElement(isFreeInputLine(unnamed)));
+    }, tags: ['panda']);
+
+    testWidgets('test lattepanda second gpio chip', (_) async {
+      final chip = FlutterGpiod.instance.chips[1];
+      expect(chip.index, 1);
+      expect(chip.name, 'gpiochip1');
+      expect(chip.label, 'aobus-banks');
+
+      final lines = chip.lines;
+      expect(lines, hasLength(73));
+
+      expect(lines[0], isFreeOutputLine(unnamed));
+      expect(lines[1], isFreeInputLine(unnamed));
+      expect(lines[2], isFreeOutputLine(unnamed));
+      expect(lines[3], isKernelInputLine(unnamed, 'id'));
+      expect(lines[4], isFreeOutputLine(unnamed));
+      expect(lines[5], isFreeInputLine(unnamed));
+      expect(lines[6], isFreeOutputLine(unnamed));
+      expect(lines.getRange(7, 15), everyElement(isFreeInputLine(unnamed)));
+      expect(lines[15], isKernelInputLine(unnamed, 'interrupt'));
+      expect(lines.getRange(16, 24), everyElement(isFreeInputLine(unnamed)));
+      expect(lines[24], isFreeOutputLine(unnamed));
+      expect(lines[25], isFreeOutputLine(unnamed));
+      expect(lines.getRange(26, 47), everyElement(isFreeInputLine(unnamed)));
+      expect(lines[47], isFreeOutputLine(unnamed));
+      expect(lines.getRange(48, 55), everyElement(isFreeInputLine(unnamed)));
+      expect(lines[55], isFreeOutputLine(unnamed));
+      expect(lines.getRange(56, 60), everyElement(isFreeInputLine(unnamed)));
+      expect(lines[60], isFreeOutputLine(unnamed));
+      expect(lines[61], isFreeInputLine(unnamed));
+      expect(lines[62], isFreeInputLine(unnamed));
+      expect(lines[63], isFreeOutputLine(unnamed));
+      expect(lines[64], isFreeInputLine(unnamed));
+      expect(lines[65], isFreeOutputLine(unnamed));
+      expect(lines[66], isFreeOutputLine(unnamed));
+      expect(lines[67], isFreeInputLine(unnamed));
+      expect(lines[68], isFreeInputLine(unnamed));
+      expect(lines[69], isFreeOutputLine(unnamed));
+      expect(lines[70], isFreeOutputLine(unnamed));
+      expect(lines[71], isFreeInputLine(unnamed));
+      expect(lines[72], isFreeOutputLine(unnamed));
+    }, tags: ['panda']);
+
+    testWidgets('test lattepanda third gpio chip', (_) async {
+      final chip = FlutterGpiod.instance.chips[2];
+      expect(chip.index, 2);
+      expect(chip.name, 'gpiochip2');
+      expect(chip.label, 'aobus-banks');
+
+      final lines = chip.lines;
+      expect(lines, hasLength(27));
+
+      expect(lines.getRange(0, 8), everyElement(isFreeInputLine(unnamed)));
+      expect(lines[8], isKernelInputLine(unnamed, 'power', activeState: ActiveState.low));
+      expect(lines.getRange(9, 16), everyElement(isFreeInputLine(unnamed)));
+      expect(lines[16], isKernelOutputLine(unnamed, 'ACPI:OpRegion'));
+      expect(lines.getRange(17, 24), everyElement(isFreeInputLine(unnamed)));
+      expect(lines[24], isFreeOutputLine(unnamed));
+      expect(lines[25], isFreeInputLine(unnamed));
+      expect(lines[26], isFreeInputLine(unnamed));
+    }, tags: ['panda']);
+
+    testWidgets('test lattepanda fourth gpio chip', (_) async {
+      final chip = FlutterGpiod.instance.chips[3];
+      expect(chip.index, 3);
+      expect(chip.name, 'gpiochip3');
+      expect(chip.label, 'aobus-banks');
+
+      final lines = chip.lines;
+      expect(lines, hasLength(86));
+
+      expect(lines.getRange(0, 46), everyElement(isFreeInputLine(unnamed)));
+      expect(lines[46], isKernelOutputLine(unnamed, 'vbus'));
+      expect(lines.getRange(47, 78), everyElement(isFreeInputLine(unnamed)));
+      expect(lines[78], isFreeOutputLine(unnamed));
+      expect(lines[79], isKernelInputLine(unnamed, 'interrupt'));
+      expect(lines[80], isFreeInputLine(unnamed));
+      expect(lines[81], isKernelInputLine(unnamed, '80860F14:01', activeState: ActiveState.low));
+      expect(lines[82], isFreeInputLine(unnamed));
+      expect(lines[83], isFreeInputLine(unnamed));
+      expect(lines[84], isFreeInputLine(unnamed));
+      expect(lines[85], isFreeOutputLine(unnamed));
+    }, tags: ['panda']);
+
+    testWidgets('test lattepanda fifth gpio chip', (_) async {
+      final chip = FlutterGpiod.instance.chips[4];
+      expect(chip.index, 4);
+      expect(chip.name, 'gpiochip4');
+      expect(chip.label, 'aobus-banks');
+
+      final lines = chip.lines;
+      expect(lines, hasLength(3));
+
+      expect(lines[0], isFreeInputLine(unnamed));
+      expect(lines[1], isFreeInputLine(unnamed));
+      expect(lines[2], isKernelInputLine(unnamed, 'ACPI:Event'));
+    }, tags: ['panda']);
   });
 }

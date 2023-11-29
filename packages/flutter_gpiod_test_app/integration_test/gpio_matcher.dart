@@ -71,9 +71,9 @@ class _LineInfoHasActiveState extends CustomMatcher {
   featureValueOf(actual) => (actual as LineInfo).activeState;
 }
 
-late final Matcher noConsumer = anyOf(isNull, equals(''));
+final Matcher noConsumer = anyOf(isNull, equals(''));
 
-late final Matcher unnamed = anyOf(isNull, equals(''));
+final Matcher unnamed = anyOf(isNull, equals(''));
 
 Matcher matchLineInfo(
   Object? name,

@@ -1,20 +1,24 @@
 name: _ardera_common_libc_bindings
 description: |
   Some common libc bindings. (ioctl, gpio, stuff like that)
-  
-version: 0.0.1
+
+version: 0.3.2
 repository: https://github.com/ardera/flutter_packages/
 
 environment:
-  sdk: '>=2.15.1 <3.0.0'
+  sdk: '>=2.17.0 <3.0.0'
 
 dev_dependencies:
-  lints: ^1.0.0
-  _ardera_libc_bindings_generator:
-    path: ../_ardera_libc_bindings_generator
-  test: ^1.20.1
-    
-dependencies: 
+  lints: ^2.0.0
+  test: ^1.21.0
+  ffigen: ^7.2.10
+  dart_style: ^2.3.0
+  path: ^1.8.3
+  yaml: ^3.1.1
+
+dependencies:
   build_runner: ^2.1.7
   ffi: ^2.0.1
   meta: ^1.7.0
+  quiver: ^3.2.1
+  tuple: ^2.0.1

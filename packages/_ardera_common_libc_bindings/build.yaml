@@ -258,3 +258,7 @@ targets:
                 - 'SPI_IOC_WR_MAX_SPEED_HZ'
                 - 'SPI_IOC_RD_MODE32'
                 - 'SPI_IOC_WR_MODE32'
+              exclude:
+                # somehow these have different values depending on ABI.
+                - 'O_NOFOLLOW'
+                - 'O_DIRECTORY'

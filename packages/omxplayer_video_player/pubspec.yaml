@@ -1,6 +1,6 @@
 name: omxplayer_video_player
 description: A package that implements video_player_platform_interface using omxplayer and platform views.
-version: 2.0.0+2
+version: 2.1.1
 homepage: https://ardera.dev
 repository: https://github.com/ardera/flutter_packages
 
@@ -8,7 +8,7 @@ environment:
   sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
-  video_player_platform_interface: ^4.0.0
+  video_player_platform_interface: ^5.1.3
   flutter:
     sdk: flutter
 

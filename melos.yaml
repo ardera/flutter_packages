@@ -12,6 +12,8 @@ command:
     branch: main
     # Additionally build a changelog at the root of the workspace.
     workspaceChangelog: true
+  bootstrap:
+    usePubspecOverrides: true
 
 scripts:
   pubget:
@@ -40,16 +42,16 @@ scripts:
   test:dart:
     run: melos exec -c 1 --fail-fast -- dart test
     description: Run `dart test` in all pure-dart packages with a `test` folder.
-    select-package:
+    packageFilters:
       flutter: false
-      dir-exists: test
+      dirExists: test
 
   test:flutter:
     run: melos exec -c 1 --fail-fast -- flutter test
     description: Run `flutter test` in all flutter packages with a `test` folder.
-    select-package:
+    packageFilters:
       flutter: true
-      dir-exists: test
+      dirExists: test
 
   checkformat:
     run: melos exec -c 1 "dart format --line-length=120 --output=none --set-exit-if-changed ."
@@ -66,11 +68,14 @@ scripts:
   analyze:dart:
     run: melos exec -c 1 "dart analyze --fatal-infos ."
     description: Run `dart analyze --fatal-infos` in all pure-dart packages.
-    select-package:
+    packageFilters:
       flutter: false
 
   analyze:flutter:
     run: melos exec -c 1 "flutter analyze --fatal-infos ."
     description: Run `flutter analyze --fatal-infos` in all flutter packages.
-    select-package:
+    packageFilters:
       flutter: true
+  
+  checkpubpoints:
+    run: melos exec -c 1 "cp -r "

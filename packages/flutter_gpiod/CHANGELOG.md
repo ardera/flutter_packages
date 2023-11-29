@@ -1,3 +1,32 @@
+## 0.5.1+5
+
+ - Update a dependency to the latest release.
+
+## 0.5.1+4
+
+ - Update a dependency to the latest release.
+
+## 0.5.1+3
+
+ - **FIX**: don't block infinitely waiting for gpio events. ([81123cfe](https://github.com/ardera/flutter_packages/commit/81123cfe0acc75a0512f43cb7131abc3fb4cecb4))
+
+## 0.5.1+2
+
+ - Update a dependency to the latest release.
+
+## 0.5.1+1
+
+ - **FIX**: use dart 2.17 for `dart:ffi` abi-specific integer types. ([79e410a2](https://github.com/ardera/flutter_packages/commit/79e410a2c08e114c4afee8312aefb9ba493048d7))
+ - **FIX**: invoke libc.errno_location as a function. ([896af01e](https://github.com/ardera/flutter_packages/commit/896af01e5323e2a959df454e71671d126a8c6f20))
+
+## 0.5.1
+
+ - **FEAT**: use newly generated libc bindings in dependants. ([14972b55](https://github.com/ardera/flutter_packages/commit/14972b5560d1e6e0cfd748cb47936e6696577c0e))
+
+## 0.5.0
+
+ - upgrade ffi to 2.0.0
+
 ## [0.4.0]
 
 * fix some smaller issues

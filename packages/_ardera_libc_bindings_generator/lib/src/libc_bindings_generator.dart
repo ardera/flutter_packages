@@ -2,10 +2,7 @@
 
 import 'dart:io';
 
-import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
-import 'package:code_builder/code_builder.dart';
-import 'package:code_builder/src/visitors.dart';
 import 'package:logging/logging.dart';
 import 'package:source_gen/source_gen.dart' show Generator, LibraryReader;
 import 'package:yaml/yaml.dart';
@@ -85,142 +82,6 @@ class LibCPlatformBackend {
   }
 }
 
-class FrontendLibrary implements Spec {
-  final Set<LibCPlatformBackend> backends;
-  late Library library = Library(_build);
-
-  FrontendLibrary(this.backends);
-
-  void _build([LibraryBuilder? bNullable]) {
-    final b = bNullable!;
-
-    final classes = <LibCPlatformBackend, ClassElement>{};
-    final structs = <String, Map<LibCPlatformBackend, ClassElement>>{};
-    final constants = <String, Map<LibCPlatformBackend, TopLevelVariableElement>>{};
-    final enums = <String, Map<LibCPlatformBackend, ClassElement>>{};
-
-    for (final backend in backends) {
-      for (final element in backend.reader!.allElements) {
-        if (element is ClassElement) {
-          if (element.supertype?.element.isDartCoreObject == true) {
-            if (element.isEnum) {
-              classes[backend] = element;
-            } else {
-              enums.putIfAbsent(element.name, () => {});
-              enums[element.name]![backend] = element;
-            }
-          } else if (element.supertype?.element.name == 'Struct') {
-            structs.putIfAbsent(element.name, () => {});
-            structs[element.name]![backend] = element;
-          }
-        } else if (element is TopLevelVariableElement) {
-          if (element.isConst) {
-            constants.putIfAbsent(element.name, () => {});
-            constants[element.name]![backend] = element;
-          }
-        } else if (element is TypeAliasElement) {}
-      }
-    }
-
-    final firstBackendWithoutAnFfiClass = backends.cast<LibCPlatformBackend?>().firstWhere(
-          (backend) => !classes.containsKey(backend),
-          orElse: () => null,
-        );
-
-    if (firstBackendWithoutAnFfiClass != null) {
-      throw StateError(
-        'Not all backends have an FFI class defined.',
-      );
-    }
-
-    final firstStructWithoutAnElementForEachBackend = structs.entries
-        .cast<MapEntry<String, Map<LibCPlatformBackend, ClassElement>>?>()
-        .firstWhere(
-          (entry) => !backends.every((backend) => entry!.value.containsKey(backend)),
-          orElse: () => null,
-        )
-        ?.key;
-
-    if (firstStructWithoutAnElementForEachBackend != null) {
-      throw StateError(
-        'Not all backends have an implementation for struct $firstStructWithoutAnElementForEachBackend.',
-      );
-    }
-
-    final firstConstantWithoutAnElementForEachBackend = constants.entries
-        .cast<MapEntry<String, Map<LibCPlatformBackend, TopLevelVariableElement>>?>()
-        .firstWhere(
-          (entry) => !backends.every((backend) => entry!.value.containsKey(backend)),
-          orElse: () => null,
-        )
-        ?.key;
-
-    if (firstConstantWithoutAnElementForEachBackend != null) {
-      throw StateError(
-        'Not all backends have an implementation for constant $firstConstantWithoutAnElementForEachBackend.',
-      );
-    }
-
-    final firstEnumWithoutAnElementForEachBackend = enums.entries
-        .cast<MapEntry<String, Map<LibCPlatformBackend, ClassElement>>?>()
-        .firstWhere(
-          (entry) => !backends.every((backend) => entry!.value.containsKey(backend)),
-          orElse: () => null,
-        )
-        ?.key;
-
-    if (firstEnumWithoutAnElementForEachBackend != null) {
-      throw StateError(
-        'Not all backends have an implementation for enum $firstEnumWithoutAnElementForEachBackend.',
-      );
-    }
-
-    b
-      ..directives.addAll(
-        [
-          Directive.import('dart:ffi', as: 'ffi'),
-        ],
-      )
-      ..body.addAll(
-        [],
-      );
-  }
-
-  @override
-  R accept<R>(SpecVisitor<R> visitor, [R? context]) {
-    return library.accept(visitor, context);
-  }
-}
-
-class LibCBindingsGenerator extends Generator {
-  LibCBindingsGenerator({
-    required Map<String, dynamic> options,
-    required Logger logger,
-  });
-
-  Future<String> _generateFrontend({
-    required Set<LibCPlatformBackend> backends,
-    required BuildStep step,
-  }) async {
-    final emitter = DartEmitter(
-      allocator: Allocator.none,
-      orderDirectives: true,
-      useNullSafetySyntax: true,
-    );
-    final frontendLib = FrontendLibrary(backends);
-    return DartFormatter().format('${frontendLib.accept(emitter)}');
-  }
-
-  @override
-  Future<String> generate(library, buildStep) async {
-    return _generateFrontend(
-      /// TODO
-      backends: {},
-      step: buildStep,
-    );
-  }
-}
-
 class LibCPlatformBackendGenerator extends Generator {
   LibCPlatformBackendGenerator({
     required Map<String, dynamic> options,
@@ -248,7 +109,7 @@ class LibCPlatformBackendGenerator extends Generator {
     } else if (Platform.isLinux) {
       return _linuxLlvmPath;
     } else {
-      throw FallThroughError();
+      throw UnsupportedError('Unsupported platform');
     }
   }
 
@@ -421,18 +282,71 @@ class LibCPlatformBackendGenerator extends Generator {
 //      ffigen.memberRename: {},
 //      ffigen.symbolAddress: {},
 //    },
-      ffigen.sizemap: YamlMap.wrap({
-        ffigen.SChar: arch.charSize,
-        ffigen.UChar: arch.unsignedCharSize,
-        ffigen.Short: arch.shortSize,
-        ffigen.UShort: arch.unsignedShortSize,
-        ffigen.Int: arch.intSize,
-        ffigen.UInt: arch.unsignedIntSize,
-        ffigen.Long: arch.longSize,
-        ffigen.ULong: arch.unsignedLongSize,
-        ffigen.LongLong: arch.longLongSize,
-        ffigen.ULongLong: arch.unsignedLongLongSize,
-        ffigen.Enum: arch.enumSize,
+//    ffigen.sizemap_native_mapping: YamlMap.wrap({
+//      ffigen.SChar: arch.charSize,
+//      ffigen.UChar: arch.unsignedCharSize,
+//      ffigen.Short: arch.shortSize,
+//      ffigen.UShort: arch.unsignedShortSize,
+//      ffigen.Int: arch.intSize,
+//      ffigen.UInt: arch.unsignedIntSize,
+//      ffigen.Long: arch.longSize,
+//      ffigen.ULong: arch.unsignedLongSize,
+//      ffigen.LongLong: arch.longLongSize,
+//      ffigen.ULongLong: arch.unsignedLongLongSize,
+//      ffigen.Enum: arch.enumSize,
+//    }),
+      ffigen.useSupportedTypedefs: true,
+      ffigen.libraryImports: YamlMap.wrap({
+        'pkg_ssizet': 'ssize_t.dart',
+      }),
+      ffigen.typeMap: YamlMap.wrap({
+        ffigen.typeMapTypedefs: YamlMap.wrap({
+          '__u8': YamlMap.wrap({
+            ffigen.lib: 'ffi',
+            ffigen.cType: 'Uint8',
+            ffigen.dartType: 'int',
+          }),
+          '__u16': YamlMap.wrap({
+            ffigen.lib: 'ffi',
+            ffigen.cType: 'Uint16',
+            ffigen.dartType: 'int',
+          }),
+          '__u32': YamlMap.wrap({
+            ffigen.lib: 'ffi',
+            ffigen.cType: 'Uint32',
+            ffigen.dartType: 'int',
+          }),
+          '__u64': YamlMap.wrap({
+            ffigen.lib: 'ffi',
+            ffigen.cType: 'Uint64',
+            ffigen.dartType: 'int',
+          }),
+          '__s8': YamlMap.wrap({
+            ffigen.lib: 'ffi',
+            ffigen.cType: 'Int8',
+            ffigen.dartType: 'int',
+          }),
+          '__s16': YamlMap.wrap({
+            ffigen.lib: 'ffi',
+            ffigen.cType: 'Int16',
+            ffigen.dartType: 'int',
+          }),
+          '__s32': YamlMap.wrap({
+            ffigen.lib: 'ffi',
+            ffigen.cType: 'Int32',
+            ffigen.dartType: 'int',
+          }),
+          '__s64': YamlMap.wrap({
+            ffigen.lib: 'ffi',
+            ffigen.cType: 'Int64',
+            ffigen.dartType: 'int',
+          }),
+          'ssize_t': YamlMap.wrap({
+            ffigen.lib: 'pkg_ssizet',
+            ffigen.cType: 'SSize',
+            ffigen.dartType: 'int',
+          }),
+        }),
       }),
 //    ffigen.typedefmap: {},
       ffigen.sort: false,
@@ -442,7 +356,7 @@ class LibCPlatformBackendGenerator extends Generator {
       ffigen.name: classname,
       ffigen.description: 'libc backend for ${arch.name}',
       ffigen.preamble:
-          '// ignore_for_file: constant_identifier_names, non_constant_identifier_names, camel_case_types, unnecessary_brace_in_string_interps, unused_element\n'
+          '// ignore_for_file: constant_identifier_names, non_constant_identifier_names, camel_case_types, unnecessary_brace_in_string_interps, unused_element, no_leading_underscores_for_local_identifiers\n'
 //    ffigen.useDartHandle: true,
     }));
 

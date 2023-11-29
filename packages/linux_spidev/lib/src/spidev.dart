@@ -573,7 +573,7 @@ class SpidevPlatformInterface {
   }
 
   static int _staticIoctl(LibC libc, int fd, int request, ffi.Pointer argp) {
-    final result = libc.ioctl_ptr(fd, request, argp.cast<ffi.Void>());
+    final result = libc.ioctlPtr(fd, request, argp.cast<ffi.Void>());
     if (result < 0) {
       throw OSError("Spidev ioctl failed");
     }
@@ -586,7 +586,7 @@ class SpidevPlatformInterface {
   int open(String path) {
     final nativePath = path.toNativeUtf8();
 
-    final result = libc.open(nativePath.cast<ffi.Int8>(), O_RDWR | O_CLOEXEC);
+    final result = libc.open(nativePath.cast<ffi.Char>(), O_RDWR | O_CLOEXEC);
 
     ffi.malloc.free(nativePath);
 

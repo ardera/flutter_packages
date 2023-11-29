@@ -156,52 +156,32 @@ typedef dart_read64 = dart_read;
 typedef native_errno_location = ffi.NativeFunction<ffi.Pointer<ffi.Int32> Function()>;
 typedef dart_errno_location = ffi.Pointer<ffi.Int32> Function();
 
-void _eventIsolateEntry2(List args) {
+Future<void> _eventIsolateEntry2(List args) async {
   int ok;
 
   final sendPort = args[0] as SendPort;
   final epollFd = args[1] as int;
-
-  final epollWaitAddr = args[2] as int;
-  final epollWaitRaw = ffi.Pointer.fromAddress(epollWaitAddr).cast<native_epoll_wait>().asFunction<dart_epoll_wait>();
-  int epollWait(int epfd, epoll_event_ptr events, int maxevents, int timeout) {
-    return epollWaitRaw(epfd, events.backing, maxevents, timeout);
-  }
-
-  final readAddr = args[3] as int?;
-  final readAddr64 = args[4] as int?;
-  late final dart_read read;
-  if (readAddr != null) {
-    read = ffi.Pointer.fromAddress(readAddr).cast<native_read>().asFunction();
-  } else if (readAddr64 != null) {
-    read = ffi.Pointer.fromAddress(readAddr64).cast<native_read64>().asFunction();
-  } else {
-    throw ArgumentError("Either `args[4]` (readAddr) or `args[5]` (readAddr64) must be non-null.");
-  }
-
-  final getErrnoLocationAddr = args[5] as int;
-  final getErrnoLocation =
-      ffi.Pointer.fromAddress(getErrnoLocationAddr).cast<native_errno_location>().asFunction<dart_errno_location>();
-
-  final errnoPtr = getErrnoLocation();
+  final libc = LibC(ffi.DynamicLibrary.process());
 
   final maxEpollEvents = 64;
-  final epollEvents = epoll_event_ptr.allocate(allocator: ffi.calloc, count: maxEpollEvents);
+  final epollEvents = ffi.calloc.allocate<epoll_event>(ffi.sizeOf<epoll_event>() * maxEpollEvents);
 
   final maxEvents = 16;
   final events = newGpioEventData(count: maxEvents);
 
   while (true) {
+    await Future.delayed(Duration.zero);
+
     ok = _syscall4(
-      errnoPtr,
-      epollWait,
+      libc.errno_location(),
+      libc.epoll_wait,
       epollFd,
       epollEvents,
       maxEpollEvents,
-      -1,
+      200,
     );
     if (ok < 0) {
-      epollEvents.free();
+      freeStruct(epollEvents, allocator: ffi.calloc);
       freeStruct(events);
       throw LinuxError("Could not wait for GPIO events", "epoll_wait", -ok);
     }
@@ -210,28 +190,33 @@ void _eventIsolateEntry2(List args) {
     var nReady = ok;
     for (var i = 0; i < maxEpollEvents && nReady > 0; i++) {
       final epollEvent = epollEvents.elementAt(i);
-      if (epollEvent.events != 0) {
+      if (epollEvent.ref.events != 0) {
         ok = _syscall3(
-          errnoPtr,
-          read,
-          epollEvent.u64,
+          libc.errno_location(),
+          libc.read,
+          epollEvent.ref.data.u64,
           events.cast<ffi.Void>(),
           maxEvents * ffi.sizeOf<gpioevent_data>(),
         );
         if (ok < 0) {
-          epollEvents.free();
+          freeStruct(epollEvents, allocator: ffi.calloc);
           freeStruct(events);
           throw LinuxError("Could not read GPIO events from event line fd", "read", -ok);
         } else if (ok == 0) {
           throw LinuxError(
-            'read(${epollEvent.u64}, ${events}, ${maxEvents * ffi.sizeOf<gpioevent_data>()}) returned 0',
+            'read(${epollEvent.ref.data.u64}, ${events}, ${maxEvents * ffi.sizeOf<gpioevent_data>()}) returned 0',
           );
         }
 
         final nEventsRead = ok / ffi.sizeOf<gpioevent_data>();
         for (var j = 0; j < nEventsRead; j++) {
           final event = events.elementAt(j).ref;
-          convertedEvents.add(<int>[epollEvent.u64, event.id, event.timestamp, DateTime.now().microsecondsSinceEpoch]);
+          convertedEvents.add(<int>[
+            epollEvent.ref.data.u64,
+            event.id,
+            event.timestamp,
+            DateTime.now().microsecondsSinceEpoch,
+          ]);
         }
 
         nReady--;
@@ -272,7 +257,7 @@ class PlatformInterface {
     for (var i = 0; i < numChips; i++) {
       final pathPtr = '/dev/gpiochip$i'.toNativeUtf8();
 
-      final fd = libc.open(pathPtr.cast<ffi.Int8>(), O_RDWR | O_CLOEXEC);
+      final fd = libc.open(pathPtr.cast<ffi.Char>(), O_RDWR | O_CLOEXEC);
 
       ffi.malloc.free(pathPtr);
 
@@ -292,19 +277,19 @@ class PlatformInterface {
     final receivePort = ReceivePort();
     final errorReceivePort = ReceivePort();
 
+    print('before isolate.spawn');
+
     Isolate.spawn(
       _eventIsolateEntry2,
       [
         receivePort.sendPort,
         epollFd,
-        libc.addresses.epoll_wait.address,
-        Arch.isArm || Arch.isI386 ? libc.addresses.read.address : null,
-        Arch.isArm64 || Arch.isAmd64 ? libc.addresses.read.address : null,
-        libc.errno_location_symbol_address.address,
       ],
       onError: errorReceivePort.sendPort,
       debugName: 'flutter_gpiod event listener',
     );
+
+    print('after isolate.spawn');
 
     errorReceivePort.listen((message) {
       throw RemoteError(message[0], message[1]);
@@ -334,7 +319,7 @@ class PlatformInterface {
   }
 
   void _ioctl(int fd, int request, ffi.Pointer argp) {
-    final result = libc.ioctl_ptr(fd, request, argp.cast<ffi.Void>());
+    final result = libc.ioctlPtr(fd, request, argp.cast<ffi.Void>());
     if (result < 0) {
       throw LinuxError("GPIO ioctl failed", "ioctl", libc.errno);
     }
@@ -570,11 +555,11 @@ class PlatformInterface {
         _requestedLines.add(lineHandle);
         _lineHandleToLineEventFd[lineHandle] = request.fd;
 
-        final epollEvent = epoll_event_ptr.allocate();
-        epollEvent.events = EPOLL_EVENTS.EPOLLIN | EPOLL_EVENTS.EPOLLPRI;
-        epollEvent.u64 = request.fd;
+        final epollEvent = ffi.calloc.allocate<epoll_event>(ffi.sizeOf<epoll_event>());
+        epollEvent.ref.events = EPOLL_EVENTS.EPOLLIN | EPOLL_EVENTS.EPOLLPRI;
+        epollEvent.ref.data.u64 = request.fd;
         final result = libc.epoll_ctl(_epollFd, EPOLL_CTL_ADD, request.fd, epollEvent);
-        epollEvent.free();
+        ffi.calloc.free(epollEvent);
 
         if (result < 0) {
           final errno = libc.errno;

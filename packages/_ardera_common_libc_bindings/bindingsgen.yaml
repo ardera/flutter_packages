@@ -1,0 +1,359 @@
+ffigen-options:
+  headers:
+    entry-points:
+      - 'errno.h'
+      - 'fcntl.h'
+      - 'unistd.h'
+      - 'sys/ioctl.h'
+      - 'sys/types.h'
+      - 'sys/stat.h'
+      - 'sys/epoll.h'
+      - 'sys/eventfd.h'
+
+      # flutter_gpiod
+      - 'linux/gpio.h'
+
+      # linux_serial
+      - 'termios.h'
+
+      # linux_spidev
+      - 'linux/spi/spidev.h'
+
+      # linux_can
+      - 'sys/socket.h'
+      - 'net/if.h'
+      - 'linux/can.h'
+      - 'linux/can/raw.h'
+      - 'linux/can/error.h'
+      - 'linux/if_link.h'
+      - 'linux/if_arp.h'
+      - 'linux/rtnetlink.h'
+      - 'linux/netlink.h'
+      - 'linux/can/netlink.h'
+
+  functions:
+    include:
+      - ioctl
+      - epoll_create
+      - epoll_create1
+      - epoll_ctl
+      - epoll_wait
+      - __errno_location
+      - open
+      - close
+      - read
+      - eventfd
+
+      # linux_serial
+      - cfgetispeed
+      - cfgetospeed
+      - cfsetispeed
+      - cfsetospeed
+      - tcdrain
+      - tcflow
+      - tcflush
+      - tcgetattr
+      - tcgetsid
+      - tcsendbreak
+      - tcsetattr
+
+      # linux_can
+      - socket
+      - setsockopt
+      - getsockopt
+      - getsockname
+      - bind
+      - send
+      - sendmsg
+      - recvmsg
+      - if_nametoindex
+      - if_indextoname
+      - if_nameindex
+      - if_freenameindex
+      - write
+    rename:
+      '__errno_location': 'errno_location'
+    symbol-address:
+      include:
+        - epoll_ctl
+        - epoll_wait
+        - __errno_location
+        - read
+        - ioctl
+    leaf:
+      exclude:
+        - 'epoll_wait'
+        - 'read'
+        - 'send'
+        - 'sendmsg'
+        - 'recvmsg'
+        - 'write'
+  structs:
+    include:
+
+      # flutter_gpiod
+      - gpiochip_info
+      - gpio_v2_line_values
+      - gpio_v2_line_attribute
+      - gpio_v2_line_config_attribute
+      - gpio_v2_line_config
+      - gpio_v2_line_request
+      - gpio_v2_line_info
+      - gpio_v2_line_info_changes
+      - gpio_v2_line_event
+      - gpioline_info
+      - gpioline_info_changed
+      - gpiohandle_request
+      - gpiohandle_config
+      - gpiohandle_data
+      - gpioevent_request
+      - gpioevent_data
+
+      # linux_serial
+      - termios
+
+      # linux_spidev
+      - spi_ioc_transfer
+
+      # flutter_gpiod, linux_serial, linux_spidev
+      - epoll_event
+      - epoll_data
+
+      # linux_can
+      - ifreq
+      - sockaddr_can
+      - sockaddr
+      - if_nameindex
+      - sockaddr_nl
+      - nlmsghdr
+      - nlmsgerr
+      - ifinfomsg
+      - rtattr
+      - rtmsg
+      - iovec
+      - msghdr
+      - can_.*
+      - canfd_.*
+      
+      # SOCKET
+      # - 'sockaddr',
+      # - 'sockaddr_storage',
+      # - 'msghdr',
+      # - 'cmsghdr',
+      # - 'linger',
+      # - 'iovec',
+      # - 'if_nameindex',
+      # - 'ifaddr',
+      # - 'ifmap',
+      # - 'ifreq',
+      # - 'ifconf',
+      # CAN
+      # - 'can_frame',
+      # - 'canfd_frame',
+      # - 'sockaddr_can',
+      # - 'can_filter'
+    dependency-only: opaque
+  unions:
+    include:
+      - epoll_data
+  enums:
+    include:
+      - 'EPOLL_EVENTS'
+      - 'can_state'
+  unnamed-enums: 
+    include:
+      - 'EPOLL.*'
+      - 'O_.*'
+      - 'GPIO.*'
+      - 'IFLA_.*'
+      - 'IFLA_CAN_.*'
+
+      # for CAN_RAW_FILTER, CAN_RAW_ERR_FILTER, CAN_RAW_LOOPBACK,
+      # CAN_RAW_RECV_OWN_MSGS, CAN_RAW_JOIN_FILTERS
+      - 'CAN_RAW_.*'
+  globals:
+    exclude:
+      - '.*'
+  typedefs:
+    include: []
+  macros:
+    include:
+      # open flags
+      - 'O_.*'
+      # errno error codes
+      - 'E[^_]*'
+      # epoll operations
+      - 'EPOLL_.*'
+      # epoll flags
+      - 'EPOLL[^_]*'
+      # eventfd flags
+      - 'EFD_.*'
+
+      # flutter_gpiod
+      - 'GPIO.*'
+
+      # linux_serial
+      # termios structure
+      # array subscripts for termios c_cc
+      - 'NCCS'
+      - 'VEOF'
+      - 'VEOL'
+      - 'VINTR'
+      - 'VKILL'
+      - 'VQUIT'
+      - 'VSTART'
+      - 'VSTOP'
+      - 'VSUSP'
+      - 'VTIME'
+      - 'VMIN'
+      # input modes
+      # termios c_iflag
+      - 'BRKINT'
+      - 'ICRNL'
+      - 'INLCR'
+      - 'IGNBRK'
+      - 'IGNCR'
+      - 'IGNPAR'
+      - 'INPCK'
+      - 'ISTRIP'
+      - 'IXANY'
+      - 'IXOFF'
+      - 'IXON'
+      - 'PARMRK'
+      # output modes
+      # termios c_oflag
+      - 'OPOST'
+      - 'ONLCR'
+      - 'OCRNL'
+      - 'ONOCR'
+      - 'ONLRET'
+      - 'OFDEL'
+      - 'OFILL'
+      - 'NLDLY'
+      - 'NL0'
+      - 'NL1'
+      - 'CRDLY'
+      - 'CR0'
+      - 'CR1'
+      - 'CR2'
+      - 'CR3'
+      - 'TABDLY'
+      - 'TAB0'
+      - 'TAB1'
+      - 'TAB2'
+      - 'TAB3'
+      - 'BSDLY'
+      - 'BS0'
+      - 'BS1'
+      - 'VTDLY'
+      - 'VT0'
+      - 'VT1'
+      - 'FFDLY'
+      - 'FF0'
+      - 'FF1'
+      # baud rate selection
+      - 'B[0-9]+'
+      # control modes
+      # termios c_cflag
+      - 'CSIZE'
+      - 'CS[0-9]'
+      - 'CSTOPB'
+      - 'CREAD'
+      - 'PARENB'
+      - 'PARODD'
+      - 'HUPCL'
+      - 'CLOCAL'
+      # local modes
+      # termios c_lflag
+      - 'ECHO'
+      - 'ECHOE'
+      - 'ECHOK'
+      - 'ECHONL'
+      - 'ICANON'
+      - 'IEXTEN'
+      - 'ISIG'
+      - 'NOFLSH'
+      - 'TOSTOP'
+      # attribute selection
+      # tcsetattr
+      - 'TCSANOW'
+      - 'TCSADRAIN'
+      - 'TCSAFLUSH'
+      # line control
+      # tcflush
+      - 'TCIFLUSH'
+      - 'TCIOFLUSH'
+      - 'TCOFLUSH'
+      # tcflow
+      - 'TCIOFF'
+      - 'TCION'
+      - 'TCOOFF'
+      - 'TCOON'
+      
+      # linux_spidev
+      - 'SPI_CPHA'
+      - 'SPI_CPOL'
+      - 'SPI_MODE_0'
+      - 'SPI_MODE_1'
+      - 'SPI_MODE_2'
+      - 'SPI_MODE_3'
+      - 'SPI_MODE_X_MASK'
+      - 'SPI_CS_HIGH'
+      - 'SPI_LSB_FIRST'
+      - 'SPI_3WIRE'
+      - 'SPI_LOOP'
+      - 'SPI_NO_CS'
+      - 'SPI_READY'
+      - 'SPI_TX_DUAL'
+      - 'SPI_TX_QUAD'
+      - 'SPI_RX_DUAL'
+      - 'SPI_RX_QUAD'
+      - 'SPI_CS_WORD'
+      - 'SPI_TX_OCTAL'
+      - 'SPI_RX_OCTAL'
+      - 'SPI_3WIRE_HIZ'
+      - 'SPI_MSGSIZE'
+      - 'SPI_IOC_MAGIC'
+      - 'SPI_IOC_MESSAGE'
+      - 'SPI_IOC_RD_MODE'
+      - 'SPI_IOC_WR_MODE'
+      - 'SPI_IOC_RD_LSB_FIRST'
+      - 'SPI_IOC_WR_LSB_FIRST'
+      - 'SPI_IOC_RD_BITS_PER_WORD'
+      - 'SPI_IOC_WR_BITS_PER_WORD'
+      - 'SPI_IOC_RD_MAX_SPEED_HZ'
+      - 'SPI_IOC_WR_MAX_SPEED_HZ'
+      - 'SPI_IOC_RD_MODE32'
+      - 'SPI_IOC_WR_MODE32'
+
+      # linux_can
+      
+      # PF_.* is a bit wide, let's only specify PF_CAN for now
+      # - 'PF_.*'
+      - 'PF_CAN'
+
+      # AF_.* is a bit wide as well
+      # - 'AF_.*'
+      - 'AF_CAN'
+      - 'AF_NETLINK'
+      - 'SOCK_.*'
+      - 'SIOC.*'
+      - 'SOL_.*'
+      - 'SO_.*'
+      - 'CAN_.*'
+      - 'CANFD_.*'
+      - 'IFNAMSIZ'
+      - 'IF_NAMESIZE'
+      - 'NETLINK_.*'
+      - 'NLM_.*'
+      - 'NLMSG_.*'
+      - 'MSG_.*'
+      - 'RTA_.*'
+      - 'RTM_.*'
+      - 'IFF_.*'
+      - 'IFLA_.*'
+      - 'ARPHRD_.*'
+    exclude:
+      # somehow these have different values depending on ABI.
+      - 'O_NOFOLLOW'
+      - 'O_DIRECTORY'
