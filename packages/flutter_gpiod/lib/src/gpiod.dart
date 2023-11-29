@@ -277,8 +277,6 @@ class PlatformInterface {
     final receivePort = ReceivePort();
     final errorReceivePort = ReceivePort();
 
-    print('before isolate.spawn');
-
     Isolate.spawn(
       _eventIsolateEntry2,
       [
@@ -288,8 +286,6 @@ class PlatformInterface {
       onError: errorReceivePort.sendPort,
       debugName: 'flutter_gpiod event listener',
     );
-
-    print('after isolate.spawn');
 
     errorReceivePort.listen((message) {
       throw RemoteError(message[0], message[1]);
