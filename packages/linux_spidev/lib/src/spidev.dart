@@ -394,7 +394,7 @@ void spiTransferExecutorEntry(Tuple2<int, SendPort> channel) async {
 
         sendPort.send(Tuple3<int, dynamic, StackTrace?>(transferId, null, null));
       } on OSError catch (e) {
-        sendPort.send(Tuple3<int, dynamic, StackTrace>(transferId, e, StackTrace.current));
+        sendPort.send(Tuple3<int, dynamic, StackTrace?>(transferId, e, StackTrace.current));
       }
     } else {
       throw StateError("Invalid packet received from receivePort in SpiTransferExecutor isolate: $untypedTransfer");
@@ -463,7 +463,7 @@ class SpiTransferExecutor {
   int _nextTransferId = 0;
 
   void _onIsolateData(dynamic untypedData) {
-    final data = untypedData as Tuple3<int, dynamic, StackTrace>;
+    final data = untypedData as Tuple3<int, dynamic, StackTrace?>;
 
     final transferId = data.item1;
     final error = data.item2;
