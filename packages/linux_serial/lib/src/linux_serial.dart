@@ -106,7 +106,7 @@ void epollerEntry(Tuple2<SendPort, int> arg) {
       final collected = <int>[];
 
       for (var i = 0; i < result; i++) {
-        final epollEvent = epollEventsPtr.elementAt(i);
+        final epollEvent = epollEventsPtr + i;
         collected.add(epollEvent.ref.data.u64);
       }
 

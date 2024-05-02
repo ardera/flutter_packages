@@ -111,7 +111,7 @@ class TypedDataSpiTransferData extends SpiTransferData {
     final allocatedPtrs = <ffi.Pointer>{ptr};
 
     data.forEach((element) {
-      ptrMap[element] = ptr.elementAt(element.offsetInBytes - start);
+      ptrMap[element] = ptr + element.offsetInBytes - start;
     });
 
     final result = Tuple2(ptrMap, allocatedPtrs);
@@ -525,7 +525,7 @@ class SpiTransferExecutor {
     final pointer = ffi.malloc.allocate<spi_ioc_transfer>(ffi.sizeOf<spi_ioc_transfer>() * transfers.length);
 
     transfers.asMap().forEach((key, value) {
-      final struct = pointer.elementAt(key).ref;
+      final struct = (pointer + key).ref;
       value.data._writeToStruct(struct);
       value.properties._writeToStruct(struct);
     });

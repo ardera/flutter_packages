@@ -189,7 +189,7 @@ Future<void> _eventIsolateEntry2(List args) async {
     final convertedEvents = <List<int>>[];
     var nReady = ok;
     for (var i = 0; i < maxEpollEvents && nReady > 0; i++) {
-      final epollEvent = epollEvents.elementAt(i);
+      final epollEvent = epollEvents + i;
       if (epollEvent.ref.events != 0) {
         ok = _syscall3(
           libc.errno_location(),
@@ -210,7 +210,7 @@ Future<void> _eventIsolateEntry2(List args) async {
 
         final nEventsRead = ok / ffi.sizeOf<gpioevent_data>();
         for (var j = 0; j < nEventsRead; j++) {
-          final event = events.elementAt(j).ref;
+          final event = (events + j).ref;
           convertedEvents.add(<int>[
             epollEvent.ref.data.u64,
             event.id,

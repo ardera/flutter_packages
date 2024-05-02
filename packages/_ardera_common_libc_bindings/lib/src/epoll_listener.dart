@@ -510,7 +510,7 @@ class EpollIsolate {
       if (ok > 0) {
         // process any epoll events
         for (var i = 0; i < ok; i++) {
-          final event = _events.elementAt(i);
+          final event = _events + i;
 
           final capability = _capabilityMap[event.ref.data.u64]!;
 
@@ -621,7 +621,7 @@ class EpollEventLoop {
       },
     );
 
-    _notifyBuffer.elementAt(0).value = 0x01;
+    (_notifyBuffer + 0).value = 0x01;
 
     _receivePortSubscription = _receivePort.listen(_onReceivePortMessage);
 

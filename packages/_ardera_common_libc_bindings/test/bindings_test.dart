@@ -13,7 +13,7 @@ void testOffset<T extends ffi.NativeType>({
 }) {
   final memory = allocate(allocator);
 
-  memory.cast<ffi.Uint8>().elementAt(offset).value = 0xFF;
+  (memory.cast<ffi.Uint8>() + offset).value = 0xFF;
   expect(memory, predicate(check, 'has field $fieldName at offset $offset'));
 
   allocator.free(memory);
@@ -33,25 +33,25 @@ void main() {
 
       var ptr = ffi.Pointer<libc.epoll_event>.fromAddress(0);
       expect(ptr.address, 0);
-      expect(ptr.elementAt(1).address, 16);
+      expect((ptr + 1).address, 16);
     } else if (isLinuxArm64) {
       expect(ffi.sizeOf<libc.epoll_event>(), 16);
 
       var ptr = ffi.Pointer<libc.epoll_event>.fromAddress(0);
       expect(ptr.address, 0);
-      expect(ptr.elementAt(1).address, 16);
+      expect((ptr + 1).address, 16);
     } else if (isLinuxIA32) {
       expect(ffi.sizeOf<libc.epoll_event>(), 12);
 
       var ptr = ffi.Pointer<libc.epoll_event>.fromAddress(0);
       expect(ptr.address, 0);
-      expect(ptr.elementAt(1).address, 12);
+      expect((ptr + 1).address, 12);
     } else if (isLinuxX64) {
       expect(ffi.sizeOf<libc.epoll_event>(), 12);
 
       var ptr = ffi.Pointer<libc.epoll_event>.fromAddress(0);
       expect(ptr.address, 0);
-      expect(ptr.elementAt(1).address, 12);
+      expect((ptr + 1).address, 12);
     }
   }, skip: !isLinux ? 'Only applies to linux platforms.' : null);
 

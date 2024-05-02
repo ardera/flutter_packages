@@ -348,8 +348,8 @@ class PlatformInterface {
 
     try {
       final interfaces = <NetworkInterface>[];
-      for (var offset = 0; nameindex.elementAt(offset).ref.if_index != 0; offset++) {
-        final element = nameindex.elementAt(offset);
+      for (var offset = 0; (nameindex + offset).ref.if_index != 0; offset++) {
+        final element = (nameindex + offset);
 
         interfaces.add(
           NetworkInterface(
@@ -653,7 +653,7 @@ class PlatformInterface {
     try {
       _withBuffer((buffer, size) {
         final sndbuf = buffer.cast<ffi.Int>();
-        final rcvbuf = sndbuf.elementAt(1);
+        final rcvbuf = (sndbuf + 1);
 
         sndbuf.value = 32768;
         rcvbuf.value = 32768;
@@ -683,7 +683,7 @@ class PlatformInterface {
           throw LinuxError('Could\'t bind netlink socket.', 'bind', libc.errno);
         }
 
-        final addrLen = local.elementAt(1).cast<ffi.UnsignedInt>();
+        final addrLen = (local + 1).cast<ffi.UnsignedInt>();
 
         addrLen.value = ffi.sizeOf<sockaddr_nl>();
 
@@ -1200,7 +1200,7 @@ class PlatformInterface {
       assert(size >= ffi.sizeOf<ffi.Int>() + ffi.sizeOf<ffi.UnsignedInt>());
 
       final valuePtr = buffer.cast<ffi.Int>();
-      final lengthPtr = valuePtr.elementAt(1).cast<ffi.UnsignedInt>();
+      final lengthPtr = (valuePtr + 1).cast<ffi.UnsignedInt>();
 
       lengthPtr.value = ffi.sizeOf<ffi.Int>();
 
@@ -1295,7 +1295,7 @@ class PlatformInterface {
           id |= CAN_INV_FILTER;
         }
 
-        final native = nativeRules.elementAt(index);
+        final native = nativeRules + index;
 
         native.ref.can_id = id;
         native.ref.can_mask = mask;
