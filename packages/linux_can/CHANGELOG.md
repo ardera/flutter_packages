@@ -1,3 +1,7 @@
+## 0.2.0+1
+
+ - **FIX**: deprecated use of `dart:ffi` `Pointer.elementAt`. ([0a3213e5](https://github.com/ardera/flutter_packages/commit/0a3213e501c0dbf13667ab1aa6ea4fd635c0ee95))
+
 ## 0.2.0
 
 > Note: This release has breaking changes.

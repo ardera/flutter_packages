@@ -3,6 +3,47 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2024-05-02
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`_ardera_common_libc_bindings` - `v0.3.2+1`](#_ardera_common_libc_bindings---v0321)
+ - [`flutter_gpiod` - `v0.5.1+6`](#flutter_gpiod---v0516)
+ - [`linux_can` - `v0.2.0+1`](#linux_can---v0201)
+ - [`linux_serial` - `v0.2.3+7`](#linux_serial---v0237)
+ - [`linux_spidev` - `v0.2.1+6`](#linux_spidev---v0216)
+
+---
+
+#### `_ardera_common_libc_bindings` - `v0.3.2+1`
+
+ - **FIX**: deprecated use of `dart:ffi` `Pointer.elementAt`. ([0a3213e5](https://github.com/ardera/flutter_packages/commit/0a3213e501c0dbf13667ab1aa6ea4fd635c0ee95))
+
+#### `flutter_gpiod` - `v0.5.1+6`
+
+ - **FIX**: deprecated use of `dart:ffi` `Pointer.elementAt`. ([0a3213e5](https://github.com/ardera/flutter_packages/commit/0a3213e501c0dbf13667ab1aa6ea4fd635c0ee95))
+
+#### `linux_can` - `v0.2.0+1`
+
+ - **FIX**: deprecated use of `dart:ffi` `Pointer.elementAt`. ([0a3213e5](https://github.com/ardera/flutter_packages/commit/0a3213e501c0dbf13667ab1aa6ea4fd635c0ee95))
+
+#### `linux_serial` - `v0.2.3+7`
+
+ - **FIX**: deprecated use of `dart:ffi` `Pointer.elementAt`. ([0a3213e5](https://github.com/ardera/flutter_packages/commit/0a3213e501c0dbf13667ab1aa6ea4fd635c0ee95))
+
+#### `linux_spidev` - `v0.2.1+6`
+
+ - **FIX**: deprecated use of `dart:ffi` `Pointer.elementAt`. ([0a3213e5](https://github.com/ardera/flutter_packages/commit/0a3213e501c0dbf13667ab1aa6ea4fd635c0ee95))
+
+
 ## 2023-10-11
 
 ### Changes

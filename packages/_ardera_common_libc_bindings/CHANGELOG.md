@@ -1,3 +1,7 @@
+## 0.3.2+1
+
+ - **FIX**: deprecated use of `dart:ffi` `Pointer.elementAt`. ([0a3213e5](https://github.com/ardera/flutter_packages/commit/0a3213e501c0dbf13667ab1aa6ea4fd635c0ee95))
+
 ## 0.3.2
 
  - **FIX**(bindings): fix can bindings sizeOf test. ([ca53d245](https://github.com/ardera/flutter_packages/commit/ca53d245e465a8efb699c38a6c09577d629244ef))
