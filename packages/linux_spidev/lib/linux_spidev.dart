@@ -1,3 +1,5 @@
 library spidev;
 
-export 'src/spidev.dart' show SpiMode, SpiFlag, Spidevs, Spidev, SpidevHandle, SpiTransfer, SpiTransferProperties;
+export 'src/transfer.dart' show SpiTransfer;
+export 'src/spidev.dart' show Spidevs, Spidev, SpidevHandle;
+export 'src/data.dart' show SpiMode, SpiFlag, SpiTransferProperties;
