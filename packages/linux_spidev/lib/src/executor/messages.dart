@@ -3,13 +3,11 @@ import 'dart:ffi' as ffi;
 
 import 'package:_ardera_common_libc_bindings/_ardera_common_libc_bindings.dart';
 
-sealed class Message {}
+sealed class ToExecutorMessage {}
 
-sealed class ToExecutorMessage extends Message {}
+sealed class FromExecutorMessage {}
 
-sealed class FromExecutorMessage extends Message {}
-
-final class StartTransferMessage extends ToExecutorMessage {
+final class StartTransferMessage implements ToExecutorMessage {
   StartTransferMessage({
     required this.id,
     required this.nTransfers,
@@ -23,7 +21,7 @@ final class StartTransferMessage extends ToExecutorMessage {
   ffi.Pointer<spi_ioc_transfer> get pointer => ffi.Pointer.fromAddress(address);
 }
 
-final class TransferCompleteMessage extends FromExecutorMessage {
+final class TransferCompleteMessage implements FromExecutorMessage {
   TransferCompleteMessage.success({
     required this.id,
   })  : errorMessage = null,
@@ -41,10 +39,10 @@ final class TransferCompleteMessage extends FromExecutorMessage {
   final String? stackTrace;
 }
 
-final class SendPortMessage extends FromExecutorMessage {
+final class SendPortMessage implements FromExecutorMessage {
   SendPortMessage(this.sendPort);
 
   final SendPort sendPort;
 }
 
-final class StopExecutorMessage extends ToExecutorMessage {}
+final class StopExecutorMessage implements ToExecutorMessage {}

@@ -7,10 +7,43 @@ import 'package:linux_spidev/src/data.dart';
 typedef NativeSpiData = (ffi.Pointer tx, ffi.Pointer rx, int length);
 
 abstract class SpiTransfer {
+  const SpiTransfer.construct();
+
+  factory SpiTransfer.native({
+    required ffi.Pointer tx,
+    required ffi.Pointer rx,
+    required int length,
+    SpiTransferProperties? properties,
+  }) = NativeSpiTransfer;
+
+  factory SpiTransfer.typedData({
+    required Uint8List tx,
+    required Uint8List rx,
+    SpiTransferProperties? properties,
+    ffi.Allocator allocator,
+  }) = TypedDataSpiTransfer;
+
+  factory SpiTransfer({
+    List<int>? tx,
+    List<int>? rx,
+    SpiTransferProperties? properties,
+    ffi.Allocator allocator,
+  }) = ByteListSpiTransfer;
+
   SpiTransferProperties get properties;
 
+  /// Used by the spidev handle to initiate the transfer.
+  ///
+  /// The spidev platform interface only works with native memory, so every
+  /// transfer has to be converted to a native memory representation before
+  /// it can be used.
   (ffi.Pointer tx, ffi.Pointer rx, int length) startTransfer();
 
+  /// Called by the spidev handle after the transfer has been completed
+  /// (either sucessfully or with an error)
+  ///
+  /// Copying data to non-native buffers (e.g. Dart lists) and freeing
+  /// allocated memory should be done here.
   void postTransfer(ffi.Pointer tx, ffi.Pointer rx, int length);
 }
 
@@ -21,7 +54,8 @@ class NativeSpiTransfer extends SpiTransfer {
     required this.length,
     SpiTransferProperties? properties,
   })  : assert(tx != ffi.nullptr || rx != ffi.nullptr),
-        properties = properties ?? SpiTransferProperties.defaultProperties;
+        properties = properties ?? SpiTransferProperties.defaultProperties,
+        super.construct();
 
   final ffi.Pointer tx;
   final ffi.Pointer rx;
@@ -57,7 +91,8 @@ class TypedDataSpiTransfer extends SpiTransfer {
             'Overlapping transmit and receive buffers are not supported.'),
         _allocator = allocator,
         properties = properties ?? SpiTransferProperties.defaultProperties,
-        length = tx?.length ?? rx!.length;
+        length = tx?.length ?? rx!.length,
+        super.construct();
 
   static bool _overlaps(Uint8List a, Uint8List b) {
     return (a.buffer == b.buffer) &&
@@ -131,10 +166,11 @@ class ByteListSpiTransfer extends SpiTransfer {
         assert((tx == null || rx == null) || (tx.length == rx.length)),
         length = tx?.length ?? rx!.length,
         properties = properties ?? SpiTransferProperties.defaultProperties,
-        _allocator = allocator;
+        _allocator = allocator,
+        super.construct();
 
   /// data to be written. can be [null]
-  final List<int>? tx;
+  final Iterable<int>? tx;
 
   /// data to be read. can be [null]
   final List<int>? rx;
@@ -152,7 +188,7 @@ class ByteListSpiTransfer extends SpiTransfer {
   NativeSpiData startTransfer() {
     final txPointer = switch (tx) {
       null => ffi.nullptr,
-      List<int> tx => _allocator<ffi.Uint8>(length)
+      Iterable<int> tx => _allocator<ffi.Uint8>(length)
         ..asTypedList(length).setAll(0, tx),
     };
 

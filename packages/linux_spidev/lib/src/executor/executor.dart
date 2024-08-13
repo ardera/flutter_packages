@@ -3,19 +3,22 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:isolate';
 
-import 'package:_ardera_common_libc_bindings/_ardera_common_libc_bindings.dart';
 import 'dart:ffi' as ffi;
+import 'package:_ardera_common_libc_bindings/_ardera_common_libc_bindings.dart'
+    as bindings;
+
 import 'package:ffi/ffi.dart' as ffi;
 import 'package:linux_spidev/linux_spidev.dart';
 import 'package:linux_spidev/src/data.dart';
 import 'package:linux_spidev/src/executor/messages.dart';
+import 'package:linux_spidev/src/libc.dart';
+import 'package:linux_spidev/src/native.dart';
 
-import 'package:linux_spidev/src/spidev.dart';
 import 'package:linux_spidev/src/util.dart';
 import 'package:meta/meta.dart';
 
 extension WritePropsToStruct on SpiTransferProperties {
-  void writeToStruct(spi_ioc_transfer struct) {
+  void writeToStruct(bindings.spi_ioc_transfer struct) {
     struct.speed_hz = speedHz ?? 0;
     struct.delay_usecs = delay.inMicroseconds;
     struct.bits_per_word = bitsPerWord ?? 0;
@@ -32,15 +35,14 @@ extension WritePropsToStruct on SpiTransferProperties {
   }
 }
 
-void spiTransferExecutorEntry((int, SendPort) channel) async {
+void executorEntry((int, SendPort) channel) async {
   final (fd, sendPort) = channel;
 
   final receivePort = ReceivePort();
 
   sendPort.send(SendPortMessage(receivePort.sendPort));
 
-  final dylib = ffi.DynamicLibrary.open("libc.so.6");
-  final libc = LibC(dylib);
+  final libc = LibC.open('libc.so.6');
 
   await for (final ToExecutorMessage message in receivePort) {
     switch (message) {
@@ -77,8 +79,19 @@ void spiTransferExecutorEntry((int, SendPort) channel) async {
   }
 }
 
-class SpiTransferExecutor {
-  SpiTransferExecutor(
+abstract class SpiTransferExecutor {
+  factory SpiTransferExecutor(
+    int fd, {
+    ffi.Allocator allocator,
+  }) = IsolateSpiTransferExecutor;
+
+  Future<void> transfer(Iterable<SpiTransfer> transfers);
+
+  Future<void> close();
+}
+
+class IsolateSpiTransferExecutor implements SpiTransferExecutor {
+  IsolateSpiTransferExecutor(
     this.fd, {
     ffi.Allocator allocator = ffi.malloc,
   }) : _allocator = allocator {
@@ -92,7 +105,7 @@ class SpiTransferExecutor {
 
   final int fd;
 
-  var _running = false;
+  var _running = true;
   bool get running => _running;
 
   var _nextTransferId = 0;
@@ -109,7 +122,7 @@ class SpiTransferExecutor {
     final exitPort = ReceivePort()..listen(_onIsolateFinished);
 
     Isolate.spawn(
-      spiTransferExecutorEntry,
+      executorEntry,
       (
         fd,
         fromExecutor.sendPort,
@@ -169,7 +182,9 @@ class SpiTransferExecutor {
     }
 
     _running = false;
-    _finished.complete();
+    if (!_finished.isCompleted) {
+      _finished.complete();
+    }
   }
 
   void _onIsolateSpawnError(dynamic error) {
@@ -178,7 +193,9 @@ class SpiTransferExecutor {
     _toExecutorCompleter.completeError(error as Object);
 
     _running = false;
-    _finished.complete();
+    if (!_finished.isCompleted) {
+      _finished.complete();
+    }
   }
 
   void _onIsolateFinished(dynamic result) {
@@ -196,7 +213,9 @@ class SpiTransferExecutor {
     }
 
     _running = false;
-    _finished.complete();
+    if (!_finished.isCompleted) {
+      _finished.complete();
+    }
   }
 
   Future<void> transfer(Iterable<SpiTransfer> transfers) async {
@@ -214,7 +233,7 @@ class SpiTransferExecutor {
     final completer = Completer<void>.sync();
 
     // write all our transfers to a native spi_ioc_transfer array
-    final pointer = _allocator<spi_ioc_transfer>(transfers.length);
+    final pointer = _allocator<bindings.spi_ioc_transfer>(transfers.length);
 
     try {
       for (final (index, transfer) in transfers.indexed) {
@@ -240,7 +259,7 @@ class SpiTransferExecutor {
 
       await sendMessage(message);
 
-      return completer.future;
+      await completer.future;
     } finally {
       _allocator.free(pointer);
     }
