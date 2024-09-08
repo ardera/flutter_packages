@@ -414,6 +414,9 @@ sealed class CanFrame {
   /// Frame type. (Data or Remote Transmission Request)
   CanFrameType get type;
 
+  /// CAN FD Frame flags. (CANFD_BRS, CANFD_ESI, CANFD_FDF)
+  int get flags;
+
   /// Data frame,
   /// CAN 2.0B Standard Frame Format
   factory CanFrame.standard({required int id, required List<int> data}) {
@@ -436,6 +439,22 @@ sealed class CanFrame {
   /// CAN 2.0B Extended Frame Format
   factory CanFrame.extendedRemote({required int id}) {
     return CanExtendedRemoteFrame(id: id);
+  }
+
+  /// CAN FD Data frame,
+  /// Standard Frame Format with Flexible Data-rate (CAN FD)
+  factory CanFrame.standardFd(
+      {required int id, required List<int> data, bool switchBitRate = false, bool errorStateIndicator = false}) {
+    return CanFdFrame(
+        id: id, data: data, flags: CANFD_FDF | (switchBitRate ? CANFD_BRS : 0) | (errorStateIndicator ? CANFD_ESI : 0));
+  }
+
+  /// CAN FD Data frame,
+  /// Extended Frame Format with Flexible Data-rate (CAN FD)
+  factory CanFrame.extendedFd(
+      {required int id, required List<int> data, bool switchBitRate = false, bool errorStateIndicator = false}) {
+    return CanFdFrameExtended(
+        id: id, data: data, flags: CANFD_FDF | (switchBitRate ? CANFD_BRS : 0) | (errorStateIndicator ? CANFD_ESI : 0));
   }
 
   @override
@@ -480,6 +499,9 @@ class CanStandardDataFrame extends CanFrame implements CanBaseFrame, CanDataFram
   final CanFrameType type = CanFrameType.data;
 
   @override
+  int get flags => 0;
+
+  @override
   int get hashCode => Object.hash(id, data);
 
   @override
@@ -507,6 +529,9 @@ class CanExtendedDataFrame extends CanFrame implements CanExtendedFrame, CanData
   final CanFrameType type = CanFrameType.data;
 
   @override
+  int get flags => 0;
+
+  @override
   int get hashCode => Object.hash(id, data);
 
   @override
@@ -529,6 +554,9 @@ class CanStandardRemoteFrame extends CanFrame implements CanBaseFrame, CanRemote
 
   @override
   final CanFrameType type = CanFrameType.remote;
+
+  @override
+  int get flags => 0;
 
   @override
   int get hashCode => id.hashCode;
@@ -555,6 +583,9 @@ class CanExtendedRemoteFrame extends CanFrame implements CanExtendedFrame, CanRe
   final CanFrameType type = CanFrameType.remote;
 
   @override
+  int get flags => 0;
+
+  @override
   int get hashCode => id.hashCode;
 
   @override
@@ -564,6 +595,86 @@ class CanExtendedRemoteFrame extends CanFrame implements CanExtendedFrame, CanRe
 
   @override
   String toString() => 'CanExtendedRemoteFrame(id: $id)';
+}
+
+class CanFdFrame extends CanFrame implements CanBaseFrame, CanDataFrame {
+  const CanFdFrame({required this.id, required this.data, required this.flags})
+      : assert(0 <= data.length &&
+            data.length <= 64 &&
+            (data.length <= 8 ||
+                data.length == 12 ||
+                data.length == 16 ||
+                data.length == 20 ||
+                data.length == 24 ||
+                data.length == 32 ||
+                data.length == 48 ||
+                data.length == 64));
+
+  @override
+  final int id;
+
+  @override
+  final List<int> data;
+
+  @override
+  final int flags;
+
+  @override
+  final CanFrameFormat format = CanFrameFormat.base;
+
+  @override
+  final CanFrameType type = CanFrameType.data;
+
+  @override
+  int get hashCode => Object.hash(id, data);
+
+  @override
+  bool operator ==(Object other) {
+    return other is CanFdFrame && id == other.id && listsEqual(data, other.data);
+  }
+
+  @override
+  String toString() => 'CanFdFrame(id: $id, data: $data)';
+}
+
+class CanFdFrameExtended extends CanFrame implements CanExtendedFrame, CanDataFrame {
+  const CanFdFrameExtended({required this.id, required this.data, required this.flags})
+      : assert(0 <= data.length &&
+            data.length <= 64 &&
+            (data.length <= 8 ||
+                data.length == 12 ||
+                data.length == 16 ||
+                data.length == 20 ||
+                data.length == 24 ||
+                data.length == 32 ||
+                data.length == 48 ||
+                data.length == 64));
+
+  @override
+  final int id;
+
+  @override
+  final List<int> data;
+
+  @override
+  final int flags;
+
+  @override
+  final CanFrameFormat format = CanFrameFormat.extended;
+
+  @override
+  final CanFrameType type = CanFrameType.data;
+
+  @override
+  int get hashCode => Object.hash(id, data);
+
+  @override
+  bool operator ==(Object other) {
+    return other is CanFdFrameExtended && id == other.id && listsEqual(data, other.data);
+  }
+
+  @override
+  String toString() => 'CanFdFrameExtended(id: $id, data: $data)';
 }
 
 /// The RFC2863 state of the network interface.

@@ -7,8 +7,8 @@ import 'dart:typed_data';
 import 'package:_ardera_common_libc_bindings/_ardera_common_libc_bindings.dart';
 import 'package:_ardera_common_libc_bindings/epoll_event_loop.dart';
 import 'package:_ardera_common_libc_bindings/linux_error.dart';
-import 'package:ffi/ffi.dart' as ffi;
 import 'package:either_dart/either.dart';
+import 'package:ffi/ffi.dart' as ffi;
 import 'package:linux_can/src/can_device.dart';
 import 'package:linux_can/src/data_classes.dart';
 
@@ -385,10 +385,29 @@ class PlatformInterface {
     return result;
   }
 
-  int createCanSocket() {
+  int createCanSocket(bool isFlexibleDataRate) {
     final socket = _retry(() => libc.socket(PF_CAN, SOCK_RAW | SOCK_CLOEXEC | SOCK_NONBLOCK, CAN_RAW));
     if (socket < 0) {
       throw LinuxError('Could not create CAN socket.', 'socket', libc.errno);
+    }
+    if (isFlexibleDataRate) {
+      _withBuffer((buffer, size) {
+        assert(size >= ffi.sizeOf<ffi.Uint32>());
+
+        final native = buffer.cast<ffi.Uint32>();
+        native.value = 1;
+
+        final ok = libc.setsockopt(
+          socket,
+          SOL_CAN_RAW,
+          CAN_RAW_FD_FRAMES,
+          native.cast<ffi.Void>(),
+          ffi.sizeOf<ffi.Uint32>(),
+        );
+        if (ok < 0) {
+          throw LinuxError('Could not set CAN FD socket option.', 'setsockopt', libc.errno);
+        }
+      });
     }
 
     _debugOpenFds.add(socket);
@@ -424,7 +443,7 @@ class PlatformInterface {
     });
   }
 
-  bool isFlexibleDatarateCapable(String interfaceName) {
+  bool isFlexibleDataRateCapable(String interfaceName) {
     return getInterfaceMTU(interfaceName) == CANFD_MTU;
   }
 
@@ -477,14 +496,33 @@ class PlatformInterface {
       CanRemoteFrame _ => [],
     };
 
-    return _withBuffer((buffer, size) {
-      final native = buffer.cast<can_frame>();
+    final isCanFd = frame.flags & CANFD_FDF != 0;
 
-      // encode the native can_frame.
-      native.ref.can_id = id;
-      native.ref.len = data.length;
-      for (final (index, byte) in data.indexed) {
-        native.ref.data[index] = byte;
+    return _withBuffer((buffer, size) {
+      var mtu = CAN_MTU;
+      ffi.Pointer<ffi.Void> ref;
+      if (isCanFd) {
+        final native = buffer.cast<canfd_frame>();
+        mtu = CANFD_MTU;
+
+        // encode the native canfd_frame.
+        native.ref.can_id = id;
+        native.ref.len = data.length;
+        native.ref.flags = frame.flags;
+        for (final (index, byte) in data.indexed) {
+          native.ref.data[index] = byte;
+        }
+        ref = native.cast<ffi.Void>();
+      } else {
+        final native = buffer.cast<can_frame>();
+
+        // encode the native can_frame.
+        native.ref.can_id = id;
+        native.ref.len = data.length;
+        for (final (index, byte) in data.indexed) {
+          native.ref.data[index] = byte;
+        }
+        ref = native.cast<ffi.Void>();
       }
 
       /// TODO: use sendmsg and MSG_DONTWAIT for non-blocking sends, and make blocking sends block in the kernel
@@ -492,31 +530,52 @@ class PlatformInterface {
 
       // send the CAN frame.
       final ok = _retry(
-        () => libc.write(fd, native.cast<ffi.Void>(), ffi.sizeOf<can_frame>()),
+        () => libc.write(fd, ref, mtu),
         retryErrorCodes: {EINTR, if (block) EAGAIN},
       );
       if (ok < 0) {
         throw LinuxError('Couldn\'t write CAN frame to socket.', 'write', libc.errno);
-      } else if (ok != CAN_MTU) {
+      } else if (ok != mtu) {
         throw LinuxError('Incomplete write.', 'write');
       }
     });
   }
 
-  static CanFrameOrError canFrameFromNative(can_frame native) {
-    final eff = native.can_id & CAN_EFF_FLAG != 0;
-    final rtr = native.can_id & CAN_RTR_FLAG != 0;
-    final err = native.can_id & CAN_ERR_FLAG != 0;
-
-    final data = List.generate(
-      native.len,
-      (index) => native.data[index],
-      growable: false,
-    );
+  static CanFrameOrError canFrameFromNative(ffi.Pointer<ffi.Uint8> native) {
+    final flags = native[5];
+    bool canFd = flags & CANFD_FDF != 0;
+    var canId = 0;
+    var data = <int>[];
+    var eff = false;
+    var rtr = false;
+    var err = false;
+    if (canFd) {
+      final frame = native.cast<canfd_frame>().ref;
+      canId = frame.can_id;
+      eff = canId & CAN_EFF_FLAG != 0;
+      rtr = canId & CAN_RTR_FLAG != 0;
+      err = canId & CAN_ERR_FLAG != 0;
+      data = List.generate(
+        frame.len,
+        (index) => frame.data[index],
+        growable: false,
+      );
+    } else {
+      final frame = native.cast<can_frame>().ref;
+      canId = frame.can_id;
+      eff = canId & CAN_EFF_FLAG != 0;
+      rtr = canId & CAN_RTR_FLAG != 0;
+      err = canId & CAN_ERR_FLAG != 0;
+      data = List.generate(
+        frame.len,
+        (index) => frame.data[index],
+        growable: false,
+      );
+    }
 
     Iterable<CanControllerError> canControllerErrors() {
       return [
-        if (native.can_id & CAN_ERR_CRTL != 0)
+        if (canId & CAN_ERR_CRTL != 0)
           for (final controllerError in CanControllerError.values)
             if (data[1] & controllerError.controllerErrorNative != 0) controllerError,
       ];
@@ -524,7 +583,7 @@ class PlatformInterface {
 
     Iterable<CanProtocolError> protocolErrors() {
       return [
-        if (native.can_id & CAN_ERR_PROT != 0)
+        if (canId & CAN_ERR_PROT != 0)
           for (final protocolError in CanProtocolError.values)
             if (data[2] & protocolError.protocolErrorNative != 0) protocolError,
       ];
@@ -558,47 +617,39 @@ class PlatformInterface {
 
     if (err) {
       final errors = [
-        if (native.can_id & CAN_ERR_TX_TIMEOUT != 0) CanError.txTimeout,
-        if (native.can_id & CAN_ERR_LOSTARB != 0) CanArbitrationLostError(data[0] == 0 ? null : data[0]),
+        if (canId & CAN_ERR_TX_TIMEOUT != 0) CanError.txTimeout,
+        if (canId & CAN_ERR_LOSTARB != 0) CanArbitrationLostError(data[0] == 0 ? null : data[0]),
         ...canControllerErrors(),
         ...protocolErrors(),
         ...wiringErrors(),
-        if (native.can_id & CAN_ERR_ACK != 0) CanError.noAck,
-        if (native.can_id & CAN_ERR_BUSOFF != 0) CanError.busOff,
-        if (native.can_id & CAN_ERR_BUSERROR != 0) CanError.busError,
-        if (native.can_id & CAN_ERR_RESTARTED != 0) CanError.restarted,
+        if (canId & CAN_ERR_ACK != 0) CanError.noAck,
+        if (canId & CAN_ERR_BUSOFF != 0) CanError.busOff,
+        if (canId & CAN_ERR_BUSERROR != 0) CanError.busError,
+        if (canId & CAN_ERR_RESTARTED != 0) CanError.restarted,
       ];
 
       return Left(errors);
     } else if (eff) {
-      final id = native.can_id & CAN_EFF_MASK;
-
+      final id = canId & CAN_EFF_MASK;
       if (rtr) {
         return Right(CanFrame.extendedRemote(id: id));
       } else {
-        return Right(CanFrame.extended(
-          id: id,
-          data: List.generate(
-            native.len,
-            (index) => native.data[index],
-            growable: false,
-          ),
-        ));
+        if (canFd) {
+          return Right(CanFdFrameExtended(id: id, data: data, flags: flags));
+        } else {
+          return Right(CanFrame.extended(id: id, data: data));
+        }
       }
     } else {
-      final id = native.can_id & CAN_SFF_MASK;
-
+      final id = canId & CAN_SFF_MASK;
       if (rtr) {
         return Right(CanFrame.standardRemote(id: id));
       } else {
-        return Right(CanFrame.standard(
-          id: id,
-          data: List.generate(
-            native.len,
-            (index) => native.data[index],
-            growable: false,
-          ),
-        ));
+        if (canFd) {
+          return Right(CanFdFrame(id: id, data: data, flags: flags));
+        } else {
+          return Right(CanFrame.standard(id: id, data: data));
+        }
       }
     }
   }
@@ -606,11 +657,12 @@ class PlatformInterface {
   static CanFrameOrError? readStatic(LibC libc, int fd, ffi.Pointer<ffi.Void> buffer, int bufferSize) {
     assert(bufferSize >= ffi.sizeOf<can_frame>());
     assert(CAN_MTU == ffi.sizeOf<can_frame>());
+    assert(CANFD_MTU == ffi.sizeOf<canfd_frame>());
 
-    final native = buffer.cast<can_frame>();
-    _memset(native, 0, ffi.sizeOf<can_frame>());
+    final native = buffer.cast<ffi.Uint8>();
+    _memset(native, 0, bufferSize);
 
-    final ok = libc.read(fd, buffer, ffi.sizeOf<can_frame>());
+    final ok = libc.read(fd, buffer, bufferSize);
     if (ok < 0 && libc.errno == EAGAIN) {
       // no frame available right now.
       return null;
@@ -618,11 +670,12 @@ class PlatformInterface {
       throw LinuxError('Could not read CAN frame.', 'read', libc.errno);
     }
 
-    if (ok != CAN_MTU) {
-      throw LinuxError('Malformed CAN frame. Expected received frame to be $CAN_MTU bytes large, was: $ok.', 'read');
+    if (ok != CANFD_MTU && ok != CAN_MTU) {
+      throw LinuxError(
+          'Malformed CAN frame. Expected received frame to be $CANFD_MTU or $CAN_MTU bytes large, was: $ok.', 'read');
     }
 
-    return canFrameFromNative(native.ref);
+    return canFrameFromNative(native);
   }
 
   CanFrameOrError? read(int fd) {
@@ -1370,4 +1423,52 @@ class PlatformInterface {
       }
     });
   }
+
+//   static int lengthToDlc(int dataLength) {
+//     if (dataLength < 0 || dataLength > 64) {
+//       throw RangeError.range(dataLength, 0, 64);
+//     }
+//     if (dataLength <= 8) {
+//       return dataLength;
+//     } else if (dataLength <= 12) {
+//       return 9;
+//     } else if (dataLength <= 16) {
+//       return 10;
+//     } else if (dataLength <= 20) {
+//       return 11;
+//     } else if (dataLength <= 24) {
+//       return 12;
+//     } else if (dataLength <= 32) {
+//       return 13;
+//     } else if (dataLength <= 48) {
+//       return 14;
+//     } else {
+// // dataLength <= 64
+//       return 15;
+//     }
+//   }
+//
+//   static int dlcToLength(int dlc) {
+//     if (dlc < 0 || dlc > 15) {
+//       throw RangeError.range(dlc, 0, 15);
+//     }
+//     switch (dlc) {
+//       case 9:
+//         return 12;
+//       case 10:
+//         return 16;
+//       case 11:
+//         return 20;
+//       case 12:
+//         return 24;
+//       case 13:
+//         return 32;
+//       case 14:
+//         return 48;
+//       case 15:
+//         return 64;
+//       default:
+//         return dlc;
+//     }
+//   }
 }

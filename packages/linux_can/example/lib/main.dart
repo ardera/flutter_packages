@@ -23,8 +23,15 @@ Future<void> main() async {
   // Actually open the device, so we can send/receive frames.
   final socket = device.open();
 
-  // Send some example CAN frame.
-  socket.send(CanFrame.standard(id: 0x123, data: [0x01, 0x02, 0x03, 0x04]));
+  if (socket.isFlexibleDataRate) {
+    socket.send(CanFrame.standardFd(
+        id: 0x123,
+        data: [0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x10, 0x11, 0x12],
+        switchBitRate: true));
+  } else {
+    // Send some example CAN frame.
+    socket.send(CanFrame.standard(id: 0x123, data: [0x01, 0x02, 0x03, 0x04]));
+  }
 
   // Read a CAN frame. This is blocking, i.e. it will wait for a frame to arrive.
   //
