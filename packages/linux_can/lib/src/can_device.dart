@@ -315,7 +315,9 @@ class CanSocket implements Sink<CanFrame> {
   /// happen when sending lots of frames in a short time period. If [block] is false, this will throw a [LinuxError]
   /// with errno [EWOULDBLOCK] (value 22) in this case.
   Future<void> send(CanFrame frame, {bool block = true}) async {
-    assert(isFlexibleDataRate || frame is! CanFdFrame || frame is! CanFdFrameExtended);
+    if (!isFlexibleDataRate && frame is CanFdFrame) {
+      throw ArgumentError.value(frame, 'frame', 'CAN controller does not support CAN FD.');
+    }
     _checkOpen();
 
     // TODO: Do the blocking in the kernel or in a worker isolate

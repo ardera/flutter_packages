@@ -597,7 +597,14 @@ class CanExtendedRemoteFrame extends CanFrame implements CanExtendedFrame, CanRe
   String toString() => 'CanExtendedRemoteFrame(id: $id)';
 }
 
-class CanFdFrame extends CanFrame implements CanBaseFrame, CanDataFrame {
+/// TODO: Make all legacy frames implement this marker type
+abstract class CanLegacyFrame extends CanFrame {}
+
+abstract class CanFdFrame extends CanFrame {
+  int get flags;
+}
+
+class CanFdBaseFrame extends CanFrame implements CanBaseFrame, CanDataFrame, CanFdFrame {
   const CanFdFrame({required this.id, required this.data, required this.flags})
       : assert(0 <= data.length &&
             data.length <= 64 &&
@@ -626,18 +633,18 @@ class CanFdFrame extends CanFrame implements CanBaseFrame, CanDataFrame {
   final CanFrameType type = CanFrameType.data;
 
   @override
-  int get hashCode => Object.hash(id, data);
+  int get hashCode => Object.hash(id, flags, data);
 
   @override
   bool operator ==(Object other) {
-    return other is CanFdFrame && id == other.id && listsEqual(data, other.data);
+    return other is CanFdFrame && id == other.id && flags == other.flags && listsEqual(data, other.data);
   }
 
   @override
-  String toString() => 'CanFdFrame(id: $id, data: $data)';
+  String toString() => 'CanFdFrame(id: $id, flags: $flags, data: $data)';
 }
 
-class CanFdFrameExtended extends CanFrame implements CanExtendedFrame, CanDataFrame {
+class CanFdFrameExtended extends CanFrame implements CanExtendedFrame, CanDataFrame, CanFdFrame {
   const CanFdFrameExtended({required this.id, required this.data, required this.flags})
       : assert(0 <= data.length &&
             data.length <= 64 &&
@@ -666,15 +673,15 @@ class CanFdFrameExtended extends CanFrame implements CanExtendedFrame, CanDataFr
   final CanFrameType type = CanFrameType.data;
 
   @override
-  int get hashCode => Object.hash(id, data);
+  int get hashCode => Object.hash(id, flags, data);
 
   @override
   bool operator ==(Object other) {
-    return other is CanFdFrameExtended && id == other.id && listsEqual(data, other.data);
+    return other is CanFdFrameExtended && id == other.id && flags == other.flags && listsEqual(data, other.data);
   }
 
   @override
-  String toString() => 'CanFdFrameExtended(id: $id, data: $data)';
+  String toString() => 'CanFdFrameExtended(id: $id, flags: $flags, data: $data)';
 }
 
 /// The RFC2863 state of the network interface.
