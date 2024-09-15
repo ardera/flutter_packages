@@ -495,30 +495,13 @@ class PlatformInterface {
     final isCanFd = frame is CanFdFrame;
 
     return _withBuffer((buffer, size) {
-      var mtu = CAN_MTU;
-      ffi.Pointer<ffi.Void> ref;
-      if (isCanFd) {
-        final native = buffer.cast<canfd_frame>();
-        mtu = CANFD_MTU;
-
-        // encode the native canfd_frame.
-        native.ref.can_id = id;
-        native.ref.len = data.length;
-        native.ref.flags = frame.flags;
-        for (final (index, byte) in data.indexed) {
-          native.ref.data[index] = byte;
-        }
-        ref = native.cast<ffi.Void>();
-      } else {
-        final native = buffer.cast<can_frame>();
-
-        // encode the native can_frame.
-        native.ref.can_id = id;
-        native.ref.len = data.length;
-        for (final (index, byte) in data.indexed) {
-          native.ref.data[index] = byte;
-        }
-        ref = native.cast<ffi.Void>();
+      final mtu = isCanFd ? CANFD_MTU : CAN_MTU;
+      final native = buffer.cast<canfd_frame>();
+      native.ref.can_id = id;
+      native.ref.len = data.length;
+      native.ref.flags = isCanFd ? frame.flags : 0;
+      for (final (index, byte) in data.indexed) {
+        native.ref.data[index] = byte;
       }
 
       /// TODO: use sendmsg and MSG_DONTWAIT for non-blocking sends, and make blocking sends block in the kernel
@@ -526,7 +509,7 @@ class PlatformInterface {
 
       // send the CAN frame.
       final ok = _retry(
-        () => libc.write(fd, ref, mtu),
+        () => libc.write(fd, native as ffi.Pointer<ffi.Void>, mtu),
         retryErrorCodes: {EINTR, if (block) EAGAIN},
       );
       if (ok < 0) {
