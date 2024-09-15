@@ -70,6 +70,11 @@ class CanDevice {
   /// True if the network interface is up, i.e. [operationalState] is [NetInterfaceOperState.up].
   bool get isUp => operationalState == NetInterfaceOperState.up;
 
+  /// True if the [NetInterfaceFlag.up] exists in network interface flags.
+  /// This is helpful to check the state of virtual CAN interface state as the
+  /// [operationalState] is always [NetInterfaceOperState.unknown] for virtual CAN.
+  bool get isInterfaceUp => interfaceFlags.contains(NetInterfaceFlag.up);
+
   /// Some general statistics for this network interface.
   ///
   /// Not yet implemented.
