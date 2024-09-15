@@ -480,26 +480,36 @@ class PlatformInterface {
 
     var id = frame.id;
 
-    id |= switch (frame.format) {
-      CanFrameFormat.base => 0,
-      CanFrameFormat.extended => CAN_EFF_FLAG,
+    id |= switch (frame) {
+      CanBaseFrame _ => 0,
+      CanExtendedFrame _ => CAN_EFF_FLAG,
     };
 
-    id |= switch (frame.type) {
-      CanFrameType.data => 0,
-      CanFrameType.remote => CAN_RTR_FLAG,
+    id |= switch (frame) {
+      CanDataFrame _ => 0,
+      CanRemoteFrame _ => CAN_RTR_FLAG,
     };
 
-    final data = frame is CanDataFrame ? frame.data : [];
+    final data = switch (frame) {
+      CanDataFrame _ => frame.data,
+      CanRemoteFrame _ => [],
+    };
 
-    final isCanFd = frame is CanFdFrame;
+    final flags = switch (frame) {
+      CanFdFrame _ => frame.flags,
+      CanLegacyFrame _ => 0,
+    };
+
+    final mtu = switch (frame) {
+      CanFdFrame _ => CANFD_MTU,
+      CanLegacyFrame _ => CAN_MTU,
+    };
 
     return _withBuffer((buffer, size) {
-      final mtu = isCanFd ? CANFD_MTU : CAN_MTU;
       final native = buffer.cast<canfd_frame>();
       native.ref.can_id = id;
       native.ref.len = data.length;
-      native.ref.flags = isCanFd ? frame.flags : 0;
+      native.ref.flags = flags;
       for (final (index, byte) in data.indexed) {
         native.ref.data[index] = byte;
       }
@@ -509,7 +519,7 @@ class PlatformInterface {
 
       // send the CAN frame.
       final ok = _retry(
-        () => libc.write(fd, native as ffi.Pointer<ffi.Void>, mtu),
+        () => libc.write(fd, native.cast<ffi.Void>(), mtu),
         retryErrorCodes: {EINTR, if (block) EAGAIN},
       );
       if (ok < 0) {

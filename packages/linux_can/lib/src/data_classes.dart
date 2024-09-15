@@ -478,9 +478,9 @@ sealed class CanDataFrame extends CanFrame {
   List<int> get data;
 }
 
-abstract class CanLegacyFrame extends CanFrame {}
+sealed class CanLegacyFrame extends CanFrame {}
 
-abstract class CanFdFrame extends CanFrame {
+sealed class CanFdFrame extends CanFrame {
   int get flags;
 }
 
