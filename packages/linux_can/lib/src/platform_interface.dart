@@ -385,30 +385,29 @@ class PlatformInterface {
     return result;
   }
 
-  int createCanSocket(bool isFlexibleDataRate) {
+  int createCanSocket() {
     final socket = _retry(() => libc.socket(PF_CAN, SOCK_RAW | SOCK_CLOEXEC | SOCK_NONBLOCK, CAN_RAW));
     if (socket < 0) {
       throw LinuxError('Could not create CAN socket.', 'socket', libc.errno);
     }
-    if (isFlexibleDataRate) {
-      _withBuffer((buffer, size) {
-        assert(size >= ffi.sizeOf<ffi.Uint32>());
 
-        final native = buffer.cast<ffi.Uint32>();
-        native.value = 1;
+    _withBuffer((buffer, size) {
+      assert(size >= ffi.sizeOf<ffi.Uint32>());
 
-        final ok = libc.setsockopt(
-          socket,
-          SOL_CAN_RAW,
-          CAN_RAW_FD_FRAMES,
-          native.cast<ffi.Void>(),
-          ffi.sizeOf<ffi.Uint32>(),
-        );
-        if (ok < 0) {
-          throw LinuxError('Could not set CAN FD socket option.', 'setsockopt', libc.errno);
-        }
-      });
-    }
+      final native = buffer.cast<ffi.Uint32>();
+      native.value = 1;
+
+      final ok = libc.setsockopt(
+        socket,
+        SOL_CAN_RAW,
+        CAN_RAW_FD_FRAMES,
+        native.cast<ffi.Void>(),
+        ffi.sizeOf<ffi.Uint32>(),
+      );
+      if (ok < 0) {
+        throw LinuxError('Could not set CAN FD socket option.', 'setsockopt', libc.errno);
+      }
+    });
 
     _debugOpenFds.add(socket);
 
@@ -481,25 +480,19 @@ class PlatformInterface {
 
     var id = frame.id;
 
-    id |= switch (frame) {
-      CanBaseFrame _ => 0,
-      CanExtendedFrame _ => CAN_EFF_FLAG,
+    id |= switch (frame.format) {
+      CanFrameFormat.base => 0,
+      CanFrameFormat.extended => CAN_EFF_FLAG,
     };
 
-    id |= switch (frame) {
-      CanDataFrame _ => 0,
-      CanRemoteFrame _ => CAN_RTR_FLAG,
+    id |= switch (frame.type) {
+      CanFrameType.data => 0,
+      CanFrameType.remote => CAN_RTR_FLAG,
     };
 
-    final data = switch (frame) {
-      CanDataFrame _ => frame.data,
-      CanRemoteFrame _ => [],
-    };
+    final data = frame is CanDataFrame ? frame.data : [];
 
-    final isCanFd = switch (frame) {
-      CanLegacyFrame _ => false,
-      CanFdFrame _ => true,
-    };
+    final isCanFd = frame is CanFdFrame;
 
     return _withBuffer((buffer, size) {
       var mtu = CAN_MTU;
@@ -544,30 +537,29 @@ class PlatformInterface {
     });
   }
 
-  static CanFrameOrError canFrameFromNative(ffi.Pointer<canfd_frame> native, {required bool canFd}) {
+  static CanFrameOrError canFrameFromNative(ffi.Pointer<canfd_frame> native, {required bool isCanFd}) {
     final frame = native.ref;
-    
-    // canfd_frame and can_frame intentionally share the same layout.
+
     final canId = frame.can_id;
     final eff = canId & CAN_EFF_FLAG != 0;
     final rtr = canId & CAN_RTR_FLAG != 0;
     final err = canId & CAN_ERR_FLAG != 0;
-    
-    // frame.flags is undefined if this is actually a `can_frame`, not a `canfd_frame`.
-    final canFd = canFd && frame.flags & CANFD_FDF != 0;
-   
-    // some sanity checks.
+
+    final canFd = isCanFd && frame.flags & CANFD_FDF != 0;
+
     if (!canFd && frame.len > CAN_MAX_DLEN) {
-      throw LinuxError('Malformed CAN frame. Expected CAN frame length to be at most $CAN_MAX_DLEN, but was: ${frame.len}', 'read');
+      throw LinuxError(
+          'Malformed CAN frame. Expected CAN frame length to be at most $CAN_MAX_DLEN, but was: ${frame.len}', 'read');
     } else if (frame.len > CANFD_MAX_DLEN) {
-      throw LinuxError('Malformed CAN FD frame. Expected CAN FD frame length to be at most $CANFD_MAX_DLEN, but was: ${frame.len}', 'read');
+      throw LinuxError(
+          'Malformed CAN FD frame. Expected CAN FD frame length to be at most $CANFD_MAX_DLEN, but was: ${frame.len}',
+          'read');
     }
-    
-    // Content can be handled independently of whether this is a canfd_frame or can_frame.
+
     final data = List.generate(
-        frame.len,
-        (index) => frame.data[index],
-        growable: false,
+      frame.len,
+      (index) => frame.data[index],
+      growable: false,
     );
 
     Iterable<CanControllerError> canControllerErrors() {
@@ -632,7 +624,7 @@ class PlatformInterface {
         return Right(CanFrame.extendedRemote(id: id));
       } else {
         if (canFd) {
-          return Right(CanFdFrameExtended(id: id, data: data, flags: flags));
+          return Right(CanFdFrameExtended(id: id, data: data, flags: frame.flags));
         } else {
           return Right(CanFrame.extended(id: id, data: data));
         }
@@ -643,7 +635,7 @@ class PlatformInterface {
         return Right(CanFrame.standardRemote(id: id));
       } else {
         if (canFd) {
-          return Right(CanFdFrame(id: id, data: data, flags: flags));
+          return Right(CanFdBaseFrame(id: id, data: data, flags: frame.flags));
         } else {
           return Right(CanFrame.standard(id: id, data: data));
         }
@@ -653,12 +645,10 @@ class PlatformInterface {
 
   static CanFrameOrError? readStatic(LibC libc, int fd, ffi.Pointer<ffi.Void> buffer, int bufferSize) {
     assert(bufferSize >= ffi.sizeOf<canfd_frame>());
-    // don't check if can_frame fits in the buffer because canfd_frame is larger anyway
-    // assert(bufferSize >= ffi.sizeOf<can_frame>());
     assert(CAN_MTU == ffi.sizeOf<can_frame>());
     assert(CANFD_MTU == ffi.sizeOf<canfd_frame>());
 
-    final native = buffer.cast<ffi.Uint8>();
+    final native = buffer.cast<canfd_frame>();
     _memset(native, 0, bufferSize);
 
     final ok = libc.read(fd, buffer, ffi.sizeOf<canfd_frame>());
@@ -674,7 +664,7 @@ class PlatformInterface {
           'Malformed CAN frame. Expected received frame to be $CANFD_MTU or $CAN_MTU bytes large, was: $ok.', 'read');
     }
 
-    return canFrameFromNative(native, canFd: ok == CANFD_MTU);
+    return canFrameFromNative(native, isCanFd: ok == CANFD_MTU);
   }
 
   CanFrameOrError? read(int fd) {

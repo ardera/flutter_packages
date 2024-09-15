@@ -414,9 +414,6 @@ sealed class CanFrame {
   /// Frame type. (Data or Remote Transmission Request)
   CanFrameType get type;
 
-  /// CAN FD Frame flags. (CANFD_BRS, CANFD_ESI, CANFD_FDF)
-  int get flags;
-
   /// Data frame,
   /// CAN 2.0B Standard Frame Format
   factory CanFrame.standard({required int id, required List<int> data}) {
@@ -445,7 +442,7 @@ sealed class CanFrame {
   /// Standard Frame Format with Flexible Data-rate (CAN FD)
   factory CanFrame.standardFd(
       {required int id, required List<int> data, bool switchBitRate = false, bool errorStateIndicator = false}) {
-    return CanFdFrame(
+    return CanFdBaseFrame(
         id: id, data: data, flags: CANFD_FDF | (switchBitRate ? CANFD_BRS : 0) | (errorStateIndicator ? CANFD_ESI : 0));
   }
 
@@ -477,13 +474,19 @@ sealed class CanExtendedFrame extends CanFrame {
 }
 
 sealed class CanDataFrame extends CanFrame {
-  /// 0 to 8 byte CAN frame payload.
+  /// 0 to 8 byte CAN frame payload, or 0 to 64 bytes CAN FD frame payload.
   List<int> get data;
+}
+
+abstract class CanLegacyFrame extends CanFrame {}
+
+abstract class CanFdFrame extends CanFrame {
+  int get flags;
 }
 
 sealed class CanRemoteFrame extends CanFrame {}
 
-class CanStandardDataFrame extends CanFrame implements CanBaseFrame, CanDataFrame {
+class CanStandardDataFrame extends CanFrame implements CanLegacyFrame, CanBaseFrame, CanDataFrame {
   const CanStandardDataFrame({required this.id, required this.data}) : assert(0 <= data.length && data.length <= 8);
 
   @override
@@ -499,9 +502,6 @@ class CanStandardDataFrame extends CanFrame implements CanBaseFrame, CanDataFram
   final CanFrameType type = CanFrameType.data;
 
   @override
-  int get flags => 0;
-
-  @override
   int get hashCode => Object.hash(id, data);
 
   @override
@@ -513,7 +513,7 @@ class CanStandardDataFrame extends CanFrame implements CanBaseFrame, CanDataFram
   String toString() => 'CanStandardDataFrame(id: $id, data: $data)';
 }
 
-class CanExtendedDataFrame extends CanFrame implements CanExtendedFrame, CanDataFrame {
+class CanExtendedDataFrame extends CanFrame implements CanLegacyFrame, CanExtendedFrame, CanDataFrame {
   const CanExtendedDataFrame({required this.id, required this.data}) : assert(id & ~CAN_EFF_MASK == 0);
 
   @override
@@ -529,9 +529,6 @@ class CanExtendedDataFrame extends CanFrame implements CanExtendedFrame, CanData
   final CanFrameType type = CanFrameType.data;
 
   @override
-  int get flags => 0;
-
-  @override
   int get hashCode => Object.hash(id, data);
 
   @override
@@ -543,7 +540,7 @@ class CanExtendedDataFrame extends CanFrame implements CanExtendedFrame, CanData
   String toString() => 'CanExtendedDataFrame(id: $id, data: $data)';
 }
 
-class CanStandardRemoteFrame extends CanFrame implements CanBaseFrame, CanRemoteFrame {
+class CanStandardRemoteFrame extends CanFrame implements CanLegacyFrame, CanBaseFrame, CanRemoteFrame {
   const CanStandardRemoteFrame({required this.id}) : assert(id & ~CAN_SFF_MASK == 0);
 
   @override
@@ -554,9 +551,6 @@ class CanStandardRemoteFrame extends CanFrame implements CanBaseFrame, CanRemote
 
   @override
   final CanFrameType type = CanFrameType.remote;
-
-  @override
-  int get flags => 0;
 
   @override
   int get hashCode => id.hashCode;
@@ -570,7 +564,7 @@ class CanStandardRemoteFrame extends CanFrame implements CanBaseFrame, CanRemote
   String toString() => 'CanStandardRemoteFrame(id: $id)';
 }
 
-class CanExtendedRemoteFrame extends CanFrame implements CanExtendedFrame, CanRemoteFrame {
+class CanExtendedRemoteFrame extends CanFrame implements CanLegacyFrame, CanExtendedFrame, CanRemoteFrame {
   const CanExtendedRemoteFrame({required this.id}) : assert(id & ~CAN_EFF_MASK == 0);
 
   @override
@@ -581,9 +575,6 @@ class CanExtendedRemoteFrame extends CanFrame implements CanExtendedFrame, CanRe
 
   @override
   final CanFrameType type = CanFrameType.remote;
-
-  @override
-  int get flags => 0;
 
   @override
   int get hashCode => id.hashCode;
@@ -597,15 +588,8 @@ class CanExtendedRemoteFrame extends CanFrame implements CanExtendedFrame, CanRe
   String toString() => 'CanExtendedRemoteFrame(id: $id)';
 }
 
-/// TODO: Make all legacy frames implement this marker type
-abstract class CanLegacyFrame extends CanFrame {}
-
-abstract class CanFdFrame extends CanFrame {
-  int get flags;
-}
-
 class CanFdBaseFrame extends CanFrame implements CanBaseFrame, CanDataFrame, CanFdFrame {
-  const CanFdFrame({required this.id, required this.data, required this.flags})
+  const CanFdBaseFrame({required this.id, required this.data, required this.flags})
       : assert(0 <= data.length &&
             data.length <= 64 &&
             (data.length <= 8 ||
@@ -637,16 +621,17 @@ class CanFdBaseFrame extends CanFrame implements CanBaseFrame, CanDataFrame, Can
 
   @override
   bool operator ==(Object other) {
-    return other is CanFdFrame && id == other.id && flags == other.flags && listsEqual(data, other.data);
+    return other is CanFdBaseFrame && id == other.id && flags == other.flags && listsEqual(data, other.data);
   }
 
   @override
-  String toString() => 'CanFdFrame(id: $id, flags: $flags, data: $data)';
+  String toString() => 'CanFdBaseFrame(id: $id, flags: $flags, data: $data)';
 }
 
 class CanFdFrameExtended extends CanFrame implements CanExtendedFrame, CanDataFrame, CanFdFrame {
   const CanFdFrameExtended({required this.id, required this.data, required this.flags})
-      : assert(0 <= data.length &&
+      : assert(id & ~CAN_EFF_MASK == 0 &&
+            0 <= data.length &&
             data.length <= 64 &&
             (data.length <= 8 ||
                 data.length == 12 ||

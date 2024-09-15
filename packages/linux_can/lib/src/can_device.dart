@@ -227,7 +227,7 @@ class CanDevice {
   /// Creates a new CanSocket for sending/receiving frames on this CAN device.
   CanSocket open() {
     bool isFlexibleDataRate = _platformInterface.isFlexibleDataRateCapable(networkInterface.name);
-    final fd = _platformInterface.createCanSocket(isFlexibleDataRate);
+    final fd = _platformInterface.createCanSocket();
     try {
       _platformInterface.bind(fd, networkInterface.index);
 
