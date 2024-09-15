@@ -41,10 +41,11 @@ Future<void> main() async {
   final frame = await socket.receiveSingle();
 
   // We received a frame.
-  if (frame is CanDataFrame) {
-    print('received ${frame.runtimeType} with id ${frame.id} and data ${frame.data}');
-  } else {
-    print('received remote frame $frame');
+  switch (frame) {
+    case CanDataFrame(:final id, :final data):
+      print('received data frame with id $id and data $data');
+    case CanRemoteFrame _:
+      print('received remote frame $frame');
   }
 
   // Listen on a Stream of CAN frames
