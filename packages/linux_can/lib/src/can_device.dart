@@ -67,9 +67,12 @@ class CanDevice {
     return _queryAttribute(CanInterfaceAttribute.operState).operState!;
   }
 
-  /// True if the network interface is up, i.e. [operationalState] is [NetInterfaceOperState.up].
-  bool get isUp => operationalState == NetInterfaceOperState.up;
-
+  /// True if the network interface is up and running.
+  bool get isUp => switch (operationalState) {
+    NetInterfaceOperState.up => true,
+    NetInterfaceOperState.unknown => interfaceFlags.containsAll({NetInterfaceFlag.up, NetInterfaceFlag.running}),
+    _ => false,
+  };
   /// Some general statistics for this network interface.
   ///
   /// Not yet implemented.
@@ -226,6 +229,7 @@ class CanDevice {
 
   /// Creates a new CanSocket for sending/receiving frames on this CAN device.
   CanSocket open() {
+    bool isFlexibleDataRate = _platformInterface.isFlexibleDataRateCapable(networkInterface.name);
     final fd = _platformInterface.createCanSocket();
     try {
       _platformInterface.bind(fd, networkInterface.index);
@@ -242,6 +246,7 @@ class CanDevice {
         platformInterface: _platformInterface,
         fd: fd,
         networkInterface: networkInterface,
+        isFlexibleDataRate: isFlexibleDataRate,
       );
     } on Object {
       _platformInterface.close(fd);
@@ -259,17 +264,19 @@ class CanSocket implements Sink<CanFrame> {
     required PlatformInterface platformInterface,
     required int fd,
     required this.networkInterface,
+    required this.isFlexibleDataRate,
   })  : _fd = fd,
         _platformInterface = platformInterface;
 
   final PlatformInterface _platformInterface;
   final int _fd;
   final NetworkInterface networkInterface;
+  final bool isFlexibleDataRate;
   var _open = true;
 
   var _listening = false;
   FdHandler? _fdListener;
-  ffi.Pointer<can_frame>? _fdHandlerBuffer;
+  ffi.Pointer<canfd_frame>? _fdHandlerBuffer;
 
   void _checkOpen() {
     if (!_open) {
@@ -311,6 +318,9 @@ class CanSocket implements Sink<CanFrame> {
   /// happen when sending lots of frames in a short time period. If [block] is false, this will throw a [LinuxError]
   /// with errno [EWOULDBLOCK] (value 22) in this case.
   Future<void> send(CanFrame frame, {bool block = true}) async {
+    if (!isFlexibleDataRate && frame is CanFdFrame) {
+      throw ArgumentError.value(frame, 'frame', 'CAN controller does not support CAN FD.');
+    }
     _checkOpen();
 
     // TODO: Do the blocking in the kernel or in a worker isolate
@@ -366,7 +376,7 @@ class CanSocket implements Sink<CanFrame> {
 
     final frames = <CanFrameOrError>[];
     while (true) {
-      final frame = PlatformInterface.readStatic(libc, fd, buffer, ffi.sizeOf<can_frame>());
+      final frame = PlatformInterface.readStatic(libc, fd, buffer, ffi.sizeOf<canfd_frame>());
       if (frame != null) {
         frames.add(frame);
       } else {
@@ -390,7 +400,7 @@ class CanSocket implements Sink<CanFrame> {
     assert(_fdListener == null);
     assert(_fdHandlerBuffer == null);
 
-    _fdHandlerBuffer = ffi.calloc<can_frame>();
+    _fdHandlerBuffer = ffi.calloc<canfd_frame>();
 
     _fdListener = await _platformInterface.eventListener.add(
       fd: _fd,
