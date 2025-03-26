@@ -247,15 +247,19 @@ class PlatformInterface {
       libc = LibC(ffi.DynamicLibrary.open("libc.so.6"));
     }
 
-    final numChips = Directory('/dev')
+    final deviceType = 'gpiochip';
+
+    final chips = Directory('/dev')
         .listSync(followLinks: false, recursive: false)
-        .where((element) => basename(element.path).startsWith('gpiochip'))
-        .length;
+        .where((element) => basename(element.path).startsWith(deviceType))
+        .toList();
+
 
     final chipIndexToFd = <int, int>{};
 
-    for (var i = 0; i < numChips; i++) {
-      final pathPtr = '/dev/gpiochip$i'.toNativeUtf8();
+    for (var i = 0; i < chips.length; i++) {
+      final path = chips[i].absolute.path;
+      final pathPtr = path.toNativeUtf8();
 
       final fd = libc.open(pathPtr.cast<ffi.Char>(), O_RDWR | O_CLOEXEC);
 
@@ -263,7 +267,10 @@ class PlatformInterface {
 
       if (fd < 0) {
         chipIndexToFd.values.forEach((fd) => libc.close(fd));
-        throw FileSystemException('Could not open GPIO chip $i', '/dev/gpiochip$i');
+
+        final chipNumber = basename(path).substring(deviceType.length);
+        throw FileSystemException(
+            'Could not open GPIO chip $chipNumber', path);
       }
 
       chipIndexToFd[i] = fd;
@@ -291,7 +298,7 @@ class PlatformInterface {
       throw RemoteError(message[0], message[1]);
     });
 
-    return PlatformInterface._construct(libc, numChips, chipIndexToFd, epollFd, receivePort);
+    return PlatformInterface._construct(libc, chips.length, chipIndexToFd, epollFd, receivePort);
   }
 
   final LibC libc;
