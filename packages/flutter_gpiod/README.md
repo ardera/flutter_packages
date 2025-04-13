@@ -2,6 +2,9 @@
 - migrated to null-safety
 - `SignalEvent`'s `time` property is no-longer that accurate, but instead two new properties, `timestampNanos` and `timestamp` are now provided which are super accurate. (This is because of changes in the kernel) 
 - Raspberry Pi's main GPIO chip is no longer called `pinctrl-bcm2835` on Pi 4's with latest kernel version. Instead its called `pinctrl-bcm2711`.
+- Raspberry Pi's kernel changed so that its GPIO indexes are no longer a perfect sequence. 
+  Two different device files may now refer to the same GPIO chip.
+  Therefore, a map represents this relationship instead of a list going forward.
 
 # flutter_gpiod
 
@@ -9,18 +12,18 @@ A dart package for GPIO access on linux / Android (*root required*) using the li
 
 ## Getting Started
 
-Then, you can retrieve the list of GPIO chips attached to
+Then, you can retrieve the map of GPIO chips attached to
 your system using [FlutterGpiod.chips]. Each chip has a name,
-label and a number of GPIO lines associated with it.
+label, and a number of GPIO lines associated with it.
 ```dart
 final chips = FlutterGpiod.instance.chips;
 
-for (final chip in chips) {
-    print("chip name: ${chip.name}, chip label: ${chip.label}");
+for (final chip in chips.values) {
+  print("chip name: ${chip.name}, chip label: ${chip.label}");
 
-    for (final line in chip.lines) {
-        print("  line: $line");
-    }
+  for (final line in chip.lines) {
+    print("  line: $line");
+  }
 }
 ```
 
@@ -31,9 +34,10 @@ The information can change at any time if the line is not owned/requested by you
 // Get the main Raspberry Pi GPIO chip.
 // On Raspberry Pi 4 the main GPIO chip is called `pinctrl-bcm2711` and
 // on older Pi's or a Pi 4 with older kernel version it's called `pinctrl-bcm2835`.
-final chip = FlutterGpiod.instance.chips.singleWhere(
+// On newer kernel version the chips may appear twice, so using `singleWhere` would fail.
+final chip = FlutterGpiod.instance.chips.values.firstWhere(
   (chip) => chip.label == 'pinctrl-bcm2711',
-  orElse: () => FlutterGpiod.instance.chips.singleWhere((chip) => chip.label == 'pinctrl-bcm2835'),
+  orElse: () => FlutterGpiod.instance.chips.values.firstWhere((chip) => chip.label == 'pinctrl-bcm2835'),
 );
 
 // Get line 22 of the GPIO chip.
@@ -46,7 +50,7 @@ print("line info: ${line.info}")
 To control a line (to read or write values or to listen for edges),
 you need to request it using [GpioLine.requestInput] or [GpioLine.requestOutput].
 ```dart
-final chip = FlutterGpiod.instance.chips.singleWhere((chip) => chip.label == 'pinctrl-bcm2835');
+final chip = FlutterGpiod.instance.chips.values.firstWhere((chip) => chip.label == 'pinctrl-bcm2835');
 final line = chip.lines[22];
 
 // request it as input.
