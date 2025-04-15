@@ -125,76 +125,80 @@ void main() {
       expect(chips, hasLength(3));
     }, tags: ['pi4']);
 
-    testWidgets('test pi 4 main gpio chip', (_) async {
-      final chip = FlutterGpiod.instance.chips[0];
-      expect(chip.index, 0);
-      expect(chip.name, 'gpiochip0');
-      expect(chip.label, 'pinctrl-bcm2711');
+    group('test pi 4 main gpio chip', () {
+      for (final chipIndex in [0, 4]) {
+        testWidgets('/dev/gpiochip$chipIndex', (_) async {
+          final chip = FlutterGpiod.instance.chips[chipIndex]!;
+          expect(chip.index, chipIndex);
+          expect(chip.name, 'gpiochip0');
+          expect(chip.label, 'pinctrl-bcm2711');
 
-      final lines = chip.lines;
-      expect(lines, hasLength(58));
-      expect(lines[0], isFreeInputLine('ID_SDA'));
-      expect(lines[1], isFreeInputLine('ID_SCL'));
-      expect(lines[2], isFreeInputLine('SDA1'));
-      expect(lines[3], isFreeInputLine('SCL1'));
-      expect(lines[4], isFreeInputLine('GPIO_GCLK'));
-      expect(lines[5], isFreeInputLine('GPIO5'));
-      expect(lines[6], isFreeInputLine('GPIO6'));
-      expect(lines[7], isFreeInputLine('SPI_CE1_N'));
-      expect(lines[8], isFreeInputLine('SPI_CE0_N'));
-      expect(lines[9], isFreeInputLine('SPI_MISO'));
-      expect(lines[10], isFreeInputLine('SPI_MOSI'));
-      expect(lines[11], isFreeInputLine('SPI_SCLK'));
-      expect(lines[12], isFreeInputLine('GPIO12'));
-      expect(lines[13], isFreeInputLine('GPIO13'));
-      expect(lines[14], isFreeInputLine('TXD1'));
-      expect(lines[15], isFreeInputLine('RXD1'));
-      expect(lines[16], isFreeInputLine('GPIO16'));
-      expect(lines[17], isFreeInputLine('GPIO17'));
-      expect(lines[18], isFreeInputLine('GPIO18'));
-      expect(lines[19], isFreeInputLine('GPIO19'));
-      expect(lines[20], isFreeInputLine('GPIO20'));
-      expect(lines[21], isFreeInputLine('GPIO21'));
-      expect(lines[22], isFreeInputLine('GPIO22'));
-      expect(lines[23], isFreeInputLine('GPIO23'));
-      expect(lines[24], isFreeInputLine('GPIO24'));
-      expect(lines[25], isFreeInputLine('GPIO25'));
-      expect(lines[26], isFreeInputLine('GPIO26'));
-      expect(lines[27], isFreeInputLine('GPIO27'));
-      expect(lines[28], isFreeInputLine('RGMII_MDIO'));
-      expect(lines[29], isFreeInputLine('RGMIO_MDC'));
-      expect(lines[30], isFreeInputLine('CTS0'));
-      expect(lines[31], isFreeInputLine('RTS0'));
-      expect(lines[32], isFreeInputLine('TXD0'));
-      expect(lines[33], isFreeInputLine('RXD0'));
-      expect(lines[34], isFreeInputLine('SD1_CLK'));
-      expect(lines[35], isFreeInputLine('SD1_CMD'));
-      expect(lines[36], isFreeInputLine('SD1_DATA0'));
-      expect(lines[37], isFreeInputLine('SD1_DATA1'));
-      expect(lines[38], isFreeInputLine('SD1_DATA2'));
-      expect(lines[39], isFreeInputLine('SD1_DATA3'));
-      expect(lines[40], isFreeInputLine('PWM0_MISO'));
-      expect(lines[41], isFreeInputLine('PWM1_MOSI'));
-      expect(lines[42], isKernelOutputLine('STATUS_LED_G_CLK', 'led0'));
-      expect(lines[43], isFreeInputLine('SPIFLASH_CE_N'));
-      expect(lines[44], isFreeInputLine('SDA0'));
-      expect(lines[45], isFreeInputLine('SCL0'));
-      expect(lines[46], isFreeInputLine('RGMII_RXCLK'));
-      expect(lines[47], isFreeInputLine('RGMII_RXCTL'));
-      expect(lines[48], isFreeInputLine('RGMII_RXD0'));
-      expect(lines[49], isFreeInputLine('RGMII_RXD1'));
-      expect(lines[50], isFreeInputLine('RGMII_RXD2'));
-      expect(lines[51], isFreeInputLine('RGMII_RXD3'));
-      expect(lines[52], isFreeInputLine('RGMII_TXCLK'));
-      expect(lines[53], isFreeInputLine('RGMII_TXCTL'));
-      expect(lines[54], isFreeInputLine('RGMII_TXD0'));
-      expect(lines[55], isFreeInputLine('RGMII_TXD1'));
-      expect(lines[56], isFreeInputLine('RGMII_TXD2'));
-      expect(lines[57], isFreeInputLine('RGMII_TXD3'));
-    }, tags: ['pi4']);
+          final lines = chip.lines;
+          expect(lines, hasLength(58));
+          expect(lines[0], isFreeInputLine('ID_SDA'));
+          expect(lines[1], isFreeInputLine('ID_SCL'));
+          expect(lines[2], isFreeInputLine('SDA1'));
+          expect(lines[3], isFreeInputLine('SCL1'));
+          expect(lines[4], isFreeInputLine('GPIO_GCLK'));
+          expect(lines[5], isFreeInputLine('GPIO5'));
+          expect(lines[6], isFreeInputLine('GPIO6'));
+          expect(lines[7], isFreeInputLine('SPI_CE1_N'));
+          expect(lines[8], isFreeInputLine('SPI_CE0_N'));
+          expect(lines[9], isFreeInputLine('SPI_MISO'));
+          expect(lines[10], isFreeInputLine('SPI_MOSI'));
+          expect(lines[11], isFreeInputLine('SPI_SCLK'));
+          expect(lines[12], isFreeInputLine('GPIO12'));
+          expect(lines[13], isFreeInputLine('GPIO13'));
+          expect(lines[14], isFreeInputLine('TXD1'));
+          expect(lines[15], isFreeInputLine('RXD1'));
+          expect(lines[16], isFreeInputLine('GPIO16'));
+          expect(lines[17], isFreeInputLine('GPIO17'));
+          expect(lines[18], isFreeInputLine('GPIO18'));
+          expect(lines[19], isFreeInputLine('GPIO19'));
+          expect(lines[20], isFreeInputLine('GPIO20'));
+          expect(lines[21], isFreeInputLine('GPIO21'));
+          expect(lines[22], isFreeInputLine('GPIO22'));
+          expect(lines[23], isFreeInputLine('GPIO23'));
+          expect(lines[24], isFreeInputLine('GPIO24'));
+          expect(lines[25], isFreeInputLine('GPIO25'));
+          expect(lines[26], isFreeInputLine('GPIO26'));
+          expect(lines[27], isFreeInputLine('GPIO27'));
+          expect(lines[28], isFreeInputLine('RGMII_MDIO'));
+          expect(lines[29], isFreeInputLine('RGMIO_MDC'));
+          expect(lines[30], isFreeInputLine('CTS0'));
+          expect(lines[31], isFreeInputLine('RTS0'));
+          expect(lines[32], isFreeInputLine('TXD0'));
+          expect(lines[33], isFreeInputLine('RXD0'));
+          expect(lines[34], isFreeInputLine('SD1_CLK'));
+          expect(lines[35], isFreeInputLine('SD1_CMD'));
+          expect(lines[36], isFreeInputLine('SD1_DATA0'));
+          expect(lines[37], isFreeInputLine('SD1_DATA1'));
+          expect(lines[38], isFreeInputLine('SD1_DATA2'));
+          expect(lines[39], isFreeInputLine('SD1_DATA3'));
+          expect(lines[40], isFreeInputLine('PWM0_MISO'));
+          expect(lines[41], isFreeInputLine('PWM1_MOSI'));
+          expect(lines[42], isKernelOutputLine('STATUS_LED_G_CLK', 'led0'));
+          expect(lines[43], isFreeInputLine('SPIFLASH_CE_N'));
+          expect(lines[44], isFreeInputLine('SDA0'));
+          expect(lines[45], isFreeInputLine('SCL0'));
+          expect(lines[46], isFreeInputLine('RGMII_RXCLK'));
+          expect(lines[47], isFreeInputLine('RGMII_RXCTL'));
+          expect(lines[48], isFreeInputLine('RGMII_RXD0'));
+          expect(lines[49], isFreeInputLine('RGMII_RXD1'));
+          expect(lines[50], isFreeInputLine('RGMII_RXD2'));
+          expect(lines[51], isFreeInputLine('RGMII_RXD3'));
+          expect(lines[52], isFreeInputLine('RGMII_TXCLK'));
+          expect(lines[53], isFreeInputLine('RGMII_TXCTL'));
+          expect(lines[54], isFreeInputLine('RGMII_TXD0'));
+          expect(lines[55], isFreeInputLine('RGMII_TXD1'));
+          expect(lines[56], isFreeInputLine('RGMII_TXD2'));
+          expect(lines[57], isFreeInputLine('RGMII_TXD3'));
+        }, tags: ['pi4']);
+      }
+    });
 
     testWidgets('test pi 4 secondary gpio chip', (_) async {
-      final chip = FlutterGpiod.instance.chips[1];
+      final chip = FlutterGpiod.instance.chips[1]!;
       expect(chip.index, 1);
       expect(chip.name, 'gpiochip1');
       expect(chip.label, 'raspberrypi-exp-gpio');
@@ -212,7 +216,7 @@ void main() {
     }, tags: ['pi4']);
 
     testWidgets('test pi 4 third gpio chip', (_) async {
-      final chip = FlutterGpiod.instance.chips[2];
+      final chip = FlutterGpiod.instance.chips[2]!;
       expect(chip.index, 2);
       expect(chip.name, 'gpiochip2');
       expect(chip.label, '7inch-touchscreen-p');
@@ -240,7 +244,7 @@ void main() {
     );
 
     testWidgets('test odroid c4 first gpio chip', (_) async {
-      final chip = FlutterGpiod.instance.chips[0];
+      final chip = FlutterGpiod.instance.chips[0]!;
       expect(chip.index, 0);
       expect(chip.name, 'gpiochip0');
       expect(chip.label, 'aobus-banks');
@@ -266,7 +270,7 @@ void main() {
     }, tags: ['odroidc4']);
 
     testWidgets('test odroid c4 second gpio chip', (_) async {
-      final chip = FlutterGpiod.instance.chips[1];
+      final chip = FlutterGpiod.instance.chips[1]!;
       expect(chip.index, 1);
       expect(chip.name, 'gpiochip1');
       expect(chip.label, 'periphs-banks');
@@ -438,7 +442,7 @@ void main() {
         }
 
         if (rerequestGpiox0AsInput) {
-          final gpiox0 = FlutterGpiod.instance.chips[1].lines[476 - 410];
+          final gpiox0 = FlutterGpiod.instance.chips[1]!.lines[476 - 410];
           requestInput(gpiox0);
           release(gpiox0);
         }
@@ -449,7 +453,7 @@ void main() {
       });
 
       testWidgets('test odroid c4 first gpio chip requesting lines', (_) async {
-        final lines = FlutterGpiod.instance.chips[0].lines;
+        final lines = FlutterGpiod.instance.chips[0]!.lines;
 
         // request all the lines
         expect(() => requestInput(lines[0], consumer: 'test0'), returnsNormally);
@@ -490,7 +494,7 @@ void main() {
       }, tags: ['odroidc4']);
 
       testWidgets('test odroid c4 second gpio chip requesting lines', (_) async {
-        final lines = FlutterGpiod.instance.chips[1].lines;
+        final lines = FlutterGpiod.instance.chips[1]!.lines;
 
         // request all the lines
         expect(() => requestInput(lines[0], consumer: 'test0'), returnsNormally);
@@ -683,10 +687,10 @@ void main() {
         // aobus-banks has export numbers 496-511.
 
         // This is GPIOX.4 (export number 480)
-        final gpiox4 = FlutterGpiod.instance.chips[1].lines[480 - 410];
+        final gpiox4 = FlutterGpiod.instance.chips[1]!.lines[480 - 410];
 
         // This is GPIOX.0 (export number 476)
-        final gpiox0 = FlutterGpiod.instance.chips[1].lines[476 - 410];
+        final gpiox0 = FlutterGpiod.instance.chips[1]!.lines[476 - 410];
 
         // Now request GPIOX.4 as input and GPIOX.0 as output
         requestInput(gpiox4, consumer: 'test', triggers: const {SignalEdge.rising});
@@ -761,7 +765,7 @@ void main() {
     );
 
     testWidgets('test lattepanda first gpio chip', (_) async {
-      final chip = FlutterGpiod.instance.chips[0];
+      final chip = FlutterGpiod.instance.chips[0]!;
       expect(chip.index, 0);
       expect(chip.name, 'gpiochip0');
       expect(chip.label, 'aobus-banks');
@@ -777,7 +781,7 @@ void main() {
     }, tags: ['panda']);
 
     testWidgets('test lattepanda second gpio chip', (_) async {
-      final chip = FlutterGpiod.instance.chips[1];
+      final chip = FlutterGpiod.instance.chips[1]!;
       expect(chip.index, 1);
       expect(chip.name, 'gpiochip1');
       expect(chip.label, 'aobus-banks');
@@ -818,7 +822,7 @@ void main() {
     }, tags: ['panda']);
 
     testWidgets('test lattepanda third gpio chip', (_) async {
-      final chip = FlutterGpiod.instance.chips[2];
+      final chip = FlutterGpiod.instance.chips[2]!;
       expect(chip.index, 2);
       expect(chip.name, 'gpiochip2');
       expect(chip.label, 'aobus-banks');
@@ -837,7 +841,7 @@ void main() {
     }, tags: ['panda']);
 
     testWidgets('test lattepanda fourth gpio chip', (_) async {
-      final chip = FlutterGpiod.instance.chips[3];
+      final chip = FlutterGpiod.instance.chips[3]!;
       expect(chip.index, 3);
       expect(chip.name, 'gpiochip3');
       expect(chip.label, 'aobus-banks');
@@ -859,7 +863,7 @@ void main() {
     }, tags: ['panda']);
 
     testWidgets('test lattepanda fifth gpio chip', (_) async {
-      final chip = FlutterGpiod.instance.chips[4];
+      final chip = FlutterGpiod.instance.chips[4]!;
       expect(chip.index, 4);
       expect(chip.name, 'gpiochip4');
       expect(chip.label, 'aobus-banks');

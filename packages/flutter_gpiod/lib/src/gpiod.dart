@@ -233,7 +233,6 @@ Future<void> _eventIsolateEntry2(List args) async {
 class PlatformInterface {
   PlatformInterface._construct(
     this.libc,
-    this._numChips,
     this._chipIndexToFd,
     this._epollFd,
     this._eventReceivePort,
@@ -247,15 +246,22 @@ class PlatformInterface {
       libc = LibC(ffi.DynamicLibrary.open("libc.so.6"));
     }
 
-    final numChips = Directory('/dev')
+    final deviceType = 'gpiochip';
+
+    final chips = Directory('/dev')
         .listSync(followLinks: false, recursive: false)
-        .where((element) => basename(element.path).startsWith('gpiochip'))
-        .length;
+        .where((element) => basename(element.path).startsWith(deviceType));
 
     final chipIndexToFd = <int, int>{};
 
-    for (var i = 0; i < numChips; i++) {
-      final pathPtr = '/dev/gpiochip$i'.toNativeUtf8();
+    for (final chip in chips) {
+      final path = chip.absolute.path;
+      final pathPtr = path.toNativeUtf8();
+
+      final chipIndex = int.parse(
+        basename(path).substring(deviceType.length),
+        radix: 10,
+      );
 
       final fd = libc.open(pathPtr.cast<ffi.Char>(), O_RDWR | O_CLOEXEC);
 
@@ -263,10 +269,11 @@ class PlatformInterface {
 
       if (fd < 0) {
         chipIndexToFd.values.forEach((fd) => libc.close(fd));
-        throw FileSystemException('Could not open GPIO chip $i', '/dev/gpiochip$i');
+
+        throw FileSystemException('Could not open GPIO chip $chipIndex', path);
       }
 
-      chipIndexToFd[i] = fd;
+      chipIndexToFd[chipIndex] = fd;
     }
 
     final epollFd = libc.epoll_create1(0);
@@ -291,11 +298,10 @@ class PlatformInterface {
       throw RemoteError(message[0], message[1]);
     });
 
-    return PlatformInterface._construct(libc, numChips, chipIndexToFd, epollFd, receivePort);
+    return PlatformInterface._construct(libc, chipIndexToFd, epollFd, receivePort);
   }
 
   final LibC libc;
-  final int _numChips;
   final Map<int, int> _chipIndexToFd;
   final int _epollFd;
   final ReceivePort _eventReceivePort;
@@ -322,6 +328,7 @@ class PlatformInterface {
   }
 
   int _chipFdFromChipIndex(int chipIndex) {
+    assert(_chipIndexToFd.containsKey(chipIndex));
     return _chipIndexToFd[chipIndex]!;
   }
 
@@ -330,7 +337,10 @@ class PlatformInterface {
   }
 
   int _chipIndexFromLineHandle(int lineHandle) {
-    return lineHandle >> 32;
+    final chipIndex = lineHandle >> 32;
+    assert(_chipIndexToFd.containsKey(chipIndex));
+
+    return chipIndex;
   }
 
   int _chipFdFromLineHandle(int lineHandle) {
@@ -375,8 +385,8 @@ class PlatformInterface {
     return _eventStream!;
   }
 
-  int getNumChips() {
-    return _numChips;
+  Iterable<int> getChipIndexes() {
+    return _chipIndexToFd.keys;
   }
 
   Map<String, dynamic> getChipDetails(int chipIndex) {
@@ -720,8 +730,8 @@ class FlutterGpiod {
 
   static FlutterGpiod? _instance;
 
-  /// The list of GPIO chips attached to this system.
-  final List<GpioChip> chips;
+  /// The map of GPIO chips and their indexes attached to this system.
+  final Map<int, GpioChip> chips;
 
   /// Whether setting and getting GPIO line bias is supported.
   ///
@@ -741,13 +751,14 @@ class FlutterGpiod {
   /// If none exists, one will be constructed.
   static FlutterGpiod get instance {
     if (_instance == null) {
-      final chips =
-          List.generate(PlatformInterface.instance.getNumChips(), (i) => GpioChip._fromIndex(i), growable: false);
+      final chips = {
+        for (final index in PlatformInterface.instance.getChipIndexes()) index: GpioChip._fromIndex(index)
+      };
 
       final bias = PlatformInterface.instance.supportsBias();
       final reconfig = PlatformInterface.instance.supportsLineReconfiguration();
 
-      _instance = FlutterGpiod._internal(List.unmodifiable(chips), bias, reconfig);
+      _instance = FlutterGpiod._internal(Map.unmodifiable(chips), bias, reconfig);
     }
 
     return _instance!;
@@ -767,8 +778,10 @@ class FlutterGpiod {
 /// some number of GPIO lines / pins.
 @immutable
 class GpioChip {
-  /// The index of the GPIO chip in the [FlutterGpiod.chips] list,
-  /// and at the same time, the numerical suffix of [name].
+  /// The key of the GPIO chip in the [FlutterGpiod.chips] map,
+  /// and most of the time, the numerical suffix of [name].
+  /// A noteable exception to this rule is the Raspberry Pi's main GPIO chip
+  /// when using newer kernel versions.
   final int index;
 
   /// The name of this GPIO chip.
