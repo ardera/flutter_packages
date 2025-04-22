@@ -1,6 +1,6 @@
 tags:
-  pi3-can:
-    # A special CAN test setup, consisting of a Raspberry Pi 3
+  double-can:
+    # A special CAN test setup, consisting of a Raspberry Pi
     # and two MCP2515 CAN controllers connected via SPI.
     #
     # I have connected one controller to SPI0 and one to SPI1,
