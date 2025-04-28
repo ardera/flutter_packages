@@ -255,6 +255,7 @@ class EpollIsolate {
 
   static const _maxEvents = 128;
   final _events = ffi.calloc<epoll_event>(_maxEvents);
+  final _eventFdBuffer = ffi.calloc<ffi.Uint8>(8);
 
   var _shouldRun = true;
   var _nextCapabilityMapIndex = 1;
@@ -456,6 +457,7 @@ class EpollIsolate {
   void dispose() {
     _subscription.cancel();
     ffi.calloc.free(_events);
+    ffi.calloc.free(_eventFdBuffer);
   }
 
   int _retry(int Function() syscall, {Set<int> retryErrorCodes = const {EINTR}}) {
@@ -505,44 +507,50 @@ class EpollIsolate {
           ));
       if (ok < 0) {
         throw LinuxError('Could not wait for epoll events.', 'epoll_wait', libc.errno);
+      } else if (ok == 0) {
+        continue;
       }
 
-      if (ok > 0) {
-        // process any epoll events
-        for (var i = 0; i < ok; i++) {
-          final event = _events + i;
+      // process any epoll events
+      for (var i = 0; i < ok; i++) {
+        final event = _events + i;
 
-          final capability = _capabilityMap[event.ref.data.u64]!;
+        final capability = _capabilityMap[event.ref.data.u64]!;
 
-          final flags = <EpollFlag>{};
-          for (final flag in EpollFlag.values) {
-            if (event.ref.events & flag._value != 0) {
-              flags.add(flag);
-            }
+        final flags = <EpollFlag>{};
+        for (final flag in EpollFlag.values) {
+          if (event.ref.events & flag._value != 0) {
+            flags.add(flag);
           }
+        }
 
-          if (capability == _eventFdCap) {
-            // do nothing
-          } else {
-            assert(capability is Capability);
+        if (capability == _eventFdCap) {
+          // clear the eventfd buffer.
+          final result = _retry(() => libc.read(_eventFd, _eventFdBuffer.cast<ffi.Void>(), 8));
+          if (result < 0) {
+            throw LinuxError('Could not clear event fd.', 'read', libc.errno);
+          } else if (result == 0) {
+            throw LinuxError('Event fd got EOF.', 'read');
+          }
+        } else {
+          assert(capability is Capability);
 
-            // Find and invoke the handler.
-            final handler = _handlerMap[capability]!;
+          // Find and invoke the handler.
+          final handler = _handlerMap[capability]!;
 
-            try {
-              final value = handler.callback(this, handler.fd, flags, handler.callbackContext);
+          try {
+            final value = handler.callback(this, handler.fd, flags, handler.callbackContext);
 
-              _sendEvent(
-                handlerId: handler.id,
-                event: value,
-              );
-            } on Exception catch (err, st) {
-              _sendError(
-                handlerId: handler.id,
-                error: err,
-                stackTrace: st,
-              );
-            }
+            _sendEvent(
+              handlerId: handler.id,
+              event: value,
+            );
+          } on Exception catch (err, st) {
+            _sendError(
+              handlerId: handler.id,
+              error: err,
+              stackTrace: st,
+            );
           }
         }
       }
@@ -818,7 +826,7 @@ class EpollEventLoop {
     ValueCallback? callback,
   }) async {
     assert(_alive);
-    assert(_handlers.containsKey(listener));
+    assert(_handlers.containsKey(listener._id));
 
     final seq = Capability();
 
