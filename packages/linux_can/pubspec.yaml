@@ -15,4 +15,5 @@ dependencies:
   collection: ^1.17.0
   either_dart: ^1.0.0
   ffi: ^2.0.1
+  meta: ^1.16.0
   quiver: ^3.2.1

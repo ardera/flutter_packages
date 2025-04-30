@@ -1173,4 +1173,12 @@ void main() {
       });
     });
   });
+
+  pkg_test.test('Event Listener Isolate terminates gracefully', () async {
+    late Future future;
+    expect(() {
+      future = LinuxCan.instance.interface.dispose();
+    }, returnsNormally);
+    await expectLater(future, completes);
+  });
 }
