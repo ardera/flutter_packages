@@ -26,6 +26,8 @@ class CanDevice {
   final PlatformInterface _platformInterface;
   final NetworkInterface networkInterface;
 
+  bool get isFlexibleDataRateCapable => _platformInterface.isFlexibleDataRateCapable(networkInterface.name);
+
   CanInterfaceAttributes _queryAttributes({Set<CanInterfaceAttribute>? interests}) {
     return _platformInterface.queryAttributes(networkInterface.index, interests: interests);
   }
