@@ -26,17 +26,15 @@ jobs:
       
       - run: flutter precache
 
-      - name: melos bootstrap
-        run: dart pub global run melos bootstrap
+      - run: melos bootstrap
         
-      - name: melos checkformat
-        run: dart pub global run melos run checkformat
+      - run: |
+          melos run format
+          git diff
         
-      - name: melos analyze
-        run: dart pub global run melos run analyze
+      - run: melos run analyze
         
-      - name: melos test
-        run: dart pub global run melos test
+      - run: melos run test
   
   can-test:
     runs-on: doublecan
@@ -50,10 +48,9 @@ jobs:
       - name: Setup melos
         run: dart pub global activate melos
       
-      - name: melos bootstrap
-        run: dart pub global run melos bootstrap --no-flutter
+      - run: melos bootstrap --no-flutter
       
       - name: Test linux_can
         working-directory: packages/linux_can
         run:
-          dart test --tags "double-can"
+          dart test integration_test --tags "double-can"
