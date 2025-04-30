@@ -717,7 +717,7 @@ class EpollEventLoop {
 
       throw RemoteError(_isolateError!, _isolateErrorStackTrace!);
     } else {
-      assert(false);
+      throw StateError('Got unexpected message from isolate: $msg');
     }
   }
 

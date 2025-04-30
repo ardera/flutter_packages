@@ -1180,5 +1180,5 @@ void main() {
       future = LinuxCan.instance.interface.dispose();
     }, returnsNormally);
     await expectLater(future, completes);
-  });
+  }, tags: ['double-can', 'vcan']);
 }
