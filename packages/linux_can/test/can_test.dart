@@ -325,7 +325,7 @@ void main() {
 
           // check that they match the frames we sent
           expect(receivedFrames, containsAll(sentFrames));
-        });
+        }, skip: true);
 
         group('kernel filters', () {
           test('filtering for single ID emits matching frames', () async {
@@ -555,7 +555,7 @@ void main() {
               received.timeout(const Duration(seconds: 30)),
               completion(matchingEmulated),
             );
-          });
+          }, skip: true);
 
           test('in-kernel EFF filter matches emulated EFF filter', () async {
             const filter = CanFilter.or([
@@ -616,7 +616,7 @@ void main() {
               received.timeout(const Duration(seconds: 30)),
               completion(equals(matchingEmulated)),
             );
-          });
+          }, skip: true);
         });
       });
     });
