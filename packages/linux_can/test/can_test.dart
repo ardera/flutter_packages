@@ -199,26 +199,28 @@ void main() {
 
         test(
           'writing empty standard CAN frame to can0 and reading from can1',
-          () {
+          () async {
             final sentFrame = CanFrame.standard(id: 0x120, data: []);
 
-            expectLater(can1.receiveSingle(), completion(equals(sentFrame)));
+            final receivedFrame = can1.receiveSingle();
 
-            can0.send(sentFrame);
+            await can0.send(sentFrame);
+            await expectLater(receivedFrame, completion(equals(sentFrame)));
           },
         );
 
         test(
           'writing full-length CAN frame to can0 and reading from can1',
-          () {
+          () async {
             final sentFrame = CanFrame.standard(
               id: 0x120,
               data: [0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08],
             );
 
-            expectLater(can1.receiveSingle(), completion(equals(sentFrame)));
+            final receivedFrame = can1.receiveSingle();
 
-            can0.send(sentFrame);
+            await can0.send(sentFrame);
+            await expectLater(receivedFrame, completion(equals(sentFrame)));
           },
         );
 
