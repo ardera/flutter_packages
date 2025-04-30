@@ -28,9 +28,7 @@ jobs:
 
       - run: melos bootstrap
         
-      - run: |
-          melos run format
-          git diff
+      - run: melos run checkformat
         
       - run: melos run analyze
         
