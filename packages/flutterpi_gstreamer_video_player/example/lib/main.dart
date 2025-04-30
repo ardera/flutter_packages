@@ -39,24 +39,24 @@ class _ExampleVideoPageState extends State<ExampleVideoPage> {
       autoInitialize: true,
       autoPlay: true,
       looping: true,
-      additionalOptions: (context) {
+      additionalOptions: (_) {
         return [
           OptionItem(
-            onTap: () {
+            onTap: (_) {
               _controller.stepForward();
             },
             iconData: Icons.arrow_right,
             title: 'Step Forward',
           ),
           OptionItem(
-            onTap: () {
+            onTap: (_) {
               _controller.stepBackward();
             },
             iconData: Icons.arrow_left,
             title: 'Step Backward',
           ),
           OptionItem(
-            onTap: () {},
+            onTap: (_) {},
             iconData: Icons.fast_forward_outlined,
             title: 'Fast Seek',
           ),
@@ -120,7 +120,8 @@ class _CameraViewPageState extends State<CameraViewPage> {
 }
 
 class _VideoApp extends StatefulWidget {
-  const _VideoApp({Key? key}) : super(key: key);
+  // ignore: unused_element_parameter
+  const _VideoApp({super.key}) : super();
 
   @override
   _VideoAppState createState() => _VideoAppState();

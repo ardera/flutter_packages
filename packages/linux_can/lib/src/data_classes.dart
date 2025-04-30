@@ -590,7 +590,8 @@ class CanExtendedRemoteFrame extends CanFrame implements CanLegacyFrame, CanExte
 
 class CanFdBaseFrame extends CanFrame implements CanBaseFrame, CanDataFrame, CanFdFrame {
   const CanFdBaseFrame({required this.id, required this.data, required this.flags})
-      : assert((id & ~CAN_SFF_MASK == 0) && 0 <= data.length &&
+      : assert((id & ~CAN_SFF_MASK == 0) &&
+            0 <= data.length &&
             data.length <= 64 &&
             (data.length <= 8 ||
                 data.length == 12 ||

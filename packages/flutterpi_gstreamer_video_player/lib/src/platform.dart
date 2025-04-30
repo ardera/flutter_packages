@@ -33,8 +33,8 @@ class FlutterpiVideoPlayer extends VideoPlayerPlatform {
   }
 
   @override
-  Future<void> dispose(int textureId) async {
-    return await _invoke('dispose', textureId);
+  Future<void> dispose(int playerId) async {
+    return await _invoke('dispose', playerId);
   }
 
   static const pipelineUrlScheme = 'gstreamerPipeline';
@@ -89,30 +89,30 @@ class FlutterpiVideoPlayer extends VideoPlayerPlatform {
   }
 
   @override
-  Future<void> setLooping(int textureId, bool looping) async {
-    return await _invoke('setLooping', [textureId, looping]);
+  Future<void> setLooping(int playerId, bool looping) async {
+    return await _invoke('setLooping', [playerId, looping]);
   }
 
   @override
-  Future<void> play(int textureId) async {
-    return await _invoke('play', textureId);
+  Future<void> play(int playerId) async {
+    return await _invoke('play', playerId);
   }
 
   @override
-  Future<void> pause(int textureId) async {
-    return await _invoke('pause', textureId);
+  Future<void> pause(int playerId) async {
+    return await _invoke('pause', playerId);
   }
 
   @override
-  Future<void> setVolume(int textureId, double volume) async {
-    return await _invoke('setVolume', [textureId, volume]);
+  Future<void> setVolume(int playerId, double volume) async {
+    return await _invoke('setVolume', [playerId, volume]);
   }
 
   @override
-  Future<void> setPlaybackSpeed(int textureId, double speed) async {
+  Future<void> setPlaybackSpeed(int playerId, double speed) async {
     assert(speed > 0);
 
-    return await _invoke('setPlaybackSpeed', [textureId, speed]);
+    return await _invoke('setPlaybackSpeed', [playerId, speed]);
   }
 
   /// Controls the behaviour of [seekTo]. (Dirty workaround because sanely extending VideoPlayerController is hard.)
@@ -124,19 +124,19 @@ class FlutterpiVideoPlayer extends VideoPlayerPlatform {
   var seekMode = SeekMode.normal;
 
   @override
-  Future<void> seekTo(int textureId, Duration position) async {
+  Future<void> seekTo(int playerId, Duration position) async {
     late Future<void> future;
 
     switch (seekMode) {
       case SeekMode.normal:
         future = _invoke(
           'seekTo',
-          [textureId, position.inMilliseconds],
+          [playerId, position.inMilliseconds],
         );
         break;
       case SeekMode.fast:
         try {
-          future = _invoke('fastSeek', [textureId, position.inMilliseconds]);
+          future = _invoke('fastSeek', [playerId, position.inMilliseconds]);
         } finally {
           seekMode = SeekMode.normal;
         }
@@ -151,14 +151,14 @@ class FlutterpiVideoPlayer extends VideoPlayerPlatform {
   }
 
   @override
-  Future<Duration> getPosition(int textureId) async {
-    final millis = await _invoke('getPosition', textureId);
+  Future<Duration> getPosition(int playerId) async {
+    final millis = await _invoke('getPosition', playerId);
     return Duration(milliseconds: millis);
   }
 
   @override
-  Stream<VideoEvent> videoEventsFor(int textureId) {
-    return _eventChannelFor(textureId).receiveBroadcastStream().map((dynamic event) {
+  Stream<VideoEvent> videoEventsFor(int playerId) {
+    return _eventChannelFor(playerId).receiveBroadcastStream().map((dynamic event) {
       final Map<dynamic, dynamic> map = event as Map<dynamic, dynamic>;
       switch (map['event']) {
         case 'initialized':
@@ -190,8 +190,8 @@ class FlutterpiVideoPlayer extends VideoPlayerPlatform {
   }
 
   @override
-  Widget buildView(int textureId) {
-    return Texture(textureId: textureId);
+  Widget buildView(int playerId) {
+    return Texture(textureId: playerId);
   }
 
   @override

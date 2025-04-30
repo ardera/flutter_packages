@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter_test/flutter_test.dart' hide testWidgets;
-import 'package:flutter_test/flutter_test.dart' as test show testWidgets;
+import 'package:test/test.dart' hide test;
+import 'package:test/test.dart' as pkg_test show test;
 import 'package:linux_can/linux_can.dart';
 
 void main() {
-  test.testWidgets('LinuxCan.instance.devices returns normally', (_) async {
+  pkg_test.test('LinuxCan.instance.devices returns normally', () {
     expect(() => LinuxCan.instance.devices, returnsNormally);
   }, tags: 'double-can');
 
@@ -18,26 +18,22 @@ void main() {
     });
 
     group('Real CAN Hardware', () {
-      void testWidgets(
+      void test(
         String description,
-        Future<void> Function(WidgetTester) callback, {
+        FutureOr<void> Function() callback, {
         bool? skip,
         Timeout? timeout,
-        bool semanticsEnabled = true,
-        TestVariant<Object?> variant = const DefaultTestVariant(),
       }) {
-        return test.testWidgets(
+        return pkg_test.test(
           description,
           callback,
           skip: skip,
           timeout: timeout,
-          semanticsEnabled: semanticsEnabled,
-          variant: variant,
           tags: 'double-can',
         );
       }
 
-      testWidgets('LinuxCan.instance.devices', (_) async {
+      test('LinuxCan.instance.devices', () {
         expect(devices, hasLength(2));
 
         expect(devices[0].networkInterface.index, equals(3));
@@ -59,7 +55,7 @@ void main() {
           );
         });
 
-        testWidgets('can0 queryAttributes', (_) async {
+        test('can0 queryAttributes', () {
           final attributes = can0.queryAttributes();
 
           expect(
@@ -106,7 +102,7 @@ void main() {
           expect(attributes.maxBitrate, equals(0));
         });
 
-        testWidgets('can1 queryAttributes', (_) async {
+        test('can1 queryAttributes', () {
           final attributes = can1.queryAttributes();
 
           expect(
@@ -153,13 +149,13 @@ void main() {
           expect(attributes.maxBitrate, equals(0));
         });
 
-        testWidgets('opening & closing can0 device', (_) async {
+        test('opening & closing can0 device', () {
           late CanSocket socket;
           expect(() => socket = can0.open(), returnsNormally);
           expect(() => socket.close(), returnsNormally);
         });
 
-        testWidgets('opening & closing can1 device', (_) async {
+        test('opening & closing can1 device', () {
           late CanSocket socket;
           expect(() => socket = can1.open(), returnsNormally);
           expect(() => socket.close(), returnsNormally);
@@ -188,11 +184,11 @@ void main() {
           can1.close();
         });
 
-        testWidgets('can0 send buf size', (_) async {
+        test('can0 send buf size', () {
           expect(can0.sendBufSize, equals(26 * 4096));
         });
 
-        testWidgets('writing standard CAN frame to can0', (_) async {
+        test('writing standard CAN frame to can0', () {
           expect(
             () => can0.send(
               CanFrame.standard(id: 0x123, data: [0x01, 0x02, 0x03, 0x04]),
@@ -201,34 +197,36 @@ void main() {
           );
         });
 
-        testWidgets(
+        test(
           'writing empty standard CAN frame to can0 and reading from can1',
-          (_) async {
+          () async {
             final sentFrame = CanFrame.standard(id: 0x120, data: []);
 
-            expectLater(can1.receiveSingle(), completion(equals(sentFrame)));
+            final receivedFrame = can1.receiveSingle();
 
-            can0.send(sentFrame);
+            await can0.send(sentFrame);
+            await expectLater(receivedFrame, completion(equals(sentFrame)));
           },
         );
 
-        testWidgets(
+        test(
           'writing full-length CAN frame to can0 and reading from can1',
-          (_) async {
+          () async {
             final sentFrame = CanFrame.standard(
               id: 0x120,
               data: [0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08],
             );
 
-            expectLater(can1.receiveSingle(), completion(equals(sentFrame)));
+            final receivedFrame = can1.receiveSingle();
 
-            can0.send(sentFrame);
+            await can0.send(sentFrame);
+            await expectLater(receivedFrame, completion(equals(sentFrame)));
           },
         );
 
-        testWidgets(
+        test(
           'writing standard CAN frame to can0 and reading from can1',
-          (_) async {
+          () async {
             late CanFrame frame;
 
             final future = can1.receiveSingle().then(
@@ -251,9 +249,9 @@ void main() {
           },
         );
 
-        testWidgets(
+        test(
           'writing standard CAN frame to can1 and reading from can0',
-          (_) async {
+          () async {
             late CanFrame frame;
 
             final future = can0.receiveSingle().then(
@@ -276,7 +274,7 @@ void main() {
           },
         );
 
-        testWidgets('waiting for data frame on can1', (_) async {
+        test('waiting for data frame on can1', () async {
           // FIXME: Maybe empty receive queues here
 
           final completer = Completer<CanFrame>();
@@ -303,9 +301,7 @@ void main() {
           );
         });
 
-        testWidgets('writing lots of frames to can0 and reading from can1', (
-          _,
-        ) async {
+        test('writing lots of frames to can0 and reading from can1', () async {
           final sentFrames = List.generate(1024, (i) {
             return CanFrame.standard(id: 0x123, data: [i & 0xFF, i >> 8]);
           });
@@ -329,12 +325,10 @@ void main() {
 
           // check that they match the frames we sent
           expect(receivedFrames, containsAll(sentFrames));
-        });
+        }, skip: true);
 
         group('kernel filters', () {
-          testWidgets('filtering for single ID emits matching frames', (
-            _,
-          ) async {
+          test('filtering for single ID emits matching frames', () async {
             final frame1 = CanFrame.standard(
               id: 0x123,
               data: [0x01, 0x02, 0x03, 0x04],
@@ -357,9 +351,9 @@ void main() {
             );
           });
 
-          testWidgets(
+          test(
             'filtering for single ID does not emit non-matching frames',
-            (_) async {
+            () async {
               final frame1 = CanFrame.standard(
                 id: 0x123,
                 data: [0x01, 0x02, 0x03, 0x04],
@@ -383,9 +377,7 @@ void main() {
             },
           );
 
-          testWidgets('filtering for multiple IDs emits matching frames', (
-            _,
-          ) async {
+          test('filtering for multiple IDs emits matching frames', () async {
             final frames = [
               CanFrame.standard(id: 0x123, data: [0x01, 0x02, 0x03, 0x04]),
               CanFrame.standard(id: 0x124, data: [0x01, 0x02, 0x03, 0x04]),
@@ -403,9 +395,9 @@ void main() {
             );
           });
 
-          testWidgets(
+          test(
             'filtering for multiple IDs does not emit non-matching frames',
-            (_) async {
+            () async {
               final frames = [
                 CanFrame.standard(id: 0x123, data: [0x01, 0x02, 0x03, 0x04]),
                 CanFrame.standard(id: 0x124, data: [0x01, 0x02, 0x03, 0x04]),
@@ -429,9 +421,9 @@ void main() {
             },
           );
 
-          testWidgets(
+          test(
             'receiving two streams simulatenously emits same frames on both streams',
-            (_) async {
+            () async {
               final frames = [
                 CanFrame.standard(id: 0x126, data: [0x01, 0x02, 0x03, 0x04]),
               ];
@@ -453,9 +445,9 @@ void main() {
             },
           );
 
-          testWidgets(
+          test(
             'receiving two streams simulatenously with different filters',
-            (_) async {
+            () async {
               final frames = [
                 CanFrame.standard(id: 0x11F, data: [0x01, 0x02, 0x03, 0x04]),
                 CanFrame.standard(id: 0x120, data: [0x01, 0x02, 0x03, 0x04]),
@@ -499,7 +491,7 @@ void main() {
             },
           );
 
-          testWidgets('blacklisting single ID works', (_) async {
+          test('blacklisting single ID works', () async {
             final frames = [
               CanFrame.standard(id: 0x123, data: [0x01, 0x02, 0x03, 0x04]),
               CanFrame.standard(id: 0x124, data: [0x01, 0x02, 0x03, 0x04]),
@@ -522,9 +514,7 @@ void main() {
             );
           });
 
-          testWidgets('in-kernel SFF filter matches emulated SFF filter', (
-            _,
-          ) async {
+          test('in-kernel SFF filter matches emulated SFF filter', () async {
             final filter = CanFilter.or([
               CanFilter.or([
                 const CanFilter.idEquals(
@@ -565,11 +555,9 @@ void main() {
               received.timeout(const Duration(seconds: 30)),
               completion(matchingEmulated),
             );
-          });
+          }, skip: true);
 
-          testWidgets('in-kernel EFF filter matches emulated EFF filter', (
-            _,
-          ) async {
+          test('in-kernel EFF filter matches emulated EFF filter', () async {
             const filter = CanFilter.or([
               CanFilter.or([
                 CanFilter.idEquals(
@@ -628,32 +616,28 @@ void main() {
               received.timeout(const Duration(seconds: 30)),
               completion(equals(matchingEmulated)),
             );
-          });
+          }, skip: true);
         });
       });
     });
 
     group('Virtual CAN', () {
-      void testWidgets(
+      void test(
         String description,
-        Future<void> Function(WidgetTester) callback, {
+        FutureOr<void> Function() callback, {
         bool? skip,
         Timeout? timeout,
-        bool semanticsEnabled = true,
-        TestVariant<Object?> variant = const DefaultTestVariant(),
       }) {
-        return test.testWidgets(
+        return pkg_test.test(
           description,
           callback,
           skip: skip,
           timeout: timeout,
-          semanticsEnabled: semanticsEnabled,
-          variant: variant,
           tags: 'vcan',
         );
       }
 
-      testWidgets('LinuxCan.instance.devices', (_) async {
+      test('LinuxCan.instance.devices', () {
         expect(devices, hasLength(1));
 
         // expect(devices[0].networkInterface.index, equals(3));
@@ -669,7 +653,7 @@ void main() {
           );
         });
 
-        testWidgets('queryAttributes', (_) async {
+        test('queryAttributes', () {
           final attributes = vcan.queryAttributes();
 
           expect(
@@ -736,22 +720,22 @@ void main() {
           vcan0.close();
         });
 
-        testWidgets('send buf size', (_) async {
+        test('send buf size', () {
           expect(vcan0.sendBufSize, equals(26 * 4096));
           expect(vcan1.sendBufSize, equals(26 * 4096));
         });
 
-        testWidgets('writing standard CAN frame', (_) async {
-          expect(
-            () => vcan0.send(
+        test('writing standard CAN frame', () async {
+          await expectLater(
+            vcan0.send(
               CanFrame.standard(id: 0x123, data: [0x01, 0x02, 0x03, 0x04]),
             ),
-            returnsNormally,
+            completes,
           );
         });
 
         group('sending and receiving on different socket', () {
-          testWidgets('empty SFF data frame', (_) async {
+          test('empty SFF data frame', () async {
             final sentFrame = CanFrame.standard(id: 0x120, data: []);
 
             final frameFuture = vcan0.receiveSingle(emitErrors: true);
@@ -761,9 +745,9 @@ void main() {
             await expectLater(frameFuture, completion(equals(sentFrame)));
           }, timeout: const Timeout(Duration(seconds: 10)));
 
-          testWidgets(
+          test(
             'full-length SFF data frame',
-            (_) async {
+            () async {
               final sentFrame = CanFrame.standard(
                 id: 0x120,
                 data: [0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08],
@@ -778,7 +762,7 @@ void main() {
             timeout: const Timeout(Duration(seconds: 10)),
           );
 
-          testWidgets('SFF data frame', (_) async {
+          test('SFF data frame', () async {
             late CanFrame frame;
 
             final future = vcan1.receiveSingle(emitErrors: true).then((received) => frame = received);
@@ -798,7 +782,7 @@ void main() {
             expect(dataFrame.data, equals([0x01, 0x02, 0x03, 0x04]));
           }, timeout: const Timeout(Duration(seconds: 10)));
 
-          testWidgets('SFF data frame 2', (_) async {
+          test('SFF data frame 2', () async {
             late CanFrame frame;
 
             final future = vcan0.receiveSingle(emitErrors: true).then((received) => frame = received);
@@ -818,7 +802,7 @@ void main() {
             expect(dataFrame.data, equals([0x01, 0x02, 0x03, 0x04]));
           }, timeout: const Timeout(Duration(seconds: 10)));
 
-          testWidgets('SFF RTR frame', (_) async {
+          test('SFF RTR frame', () async {
             late CanFrame frame;
 
             final future =
@@ -835,7 +819,7 @@ void main() {
             expect(dataFrame.id, equals(0x123));
           }, timeout: const Timeout(Duration(seconds: 10)));
 
-          testWidgets('EFF data frame', (_) async {
+          test('EFF data frame', () async {
             late CanFrame frame;
 
             final future = vcan0.receiveSingle(emitErrors: true).then((received) => frame = received);
@@ -855,7 +839,7 @@ void main() {
             expect(dataFrame.data, equals([0x01, 0x02, 0x03, 0x04]));
           }, timeout: const Timeout(Duration(seconds: 10)));
 
-          testWidgets('EFF RTR frame', (_) async {
+          test('EFF RTR frame', () async {
             late CanFrame frame;
 
             final future =
@@ -872,7 +856,7 @@ void main() {
             expect(dataFrame.id, equals(0x123));
           }, timeout: const Timeout(Duration(seconds: 10)));
 
-          testWidgets('lots of frames', (_) async {
+          test('lots of frames', () async {
             final sentFrames = List.generate(1024, (i) {
               return CanFrame.standard(id: 0x123, data: [i & 0xFF, i >> 8]);
             });
@@ -898,9 +882,7 @@ void main() {
         });
 
         group('kernel filters', () {
-          testWidgets('filtering for single ID emits matching frames', (
-            _,
-          ) async {
+          test('filtering for single ID emits matching frames', () async {
             final frame1 = CanFrame.standard(
               id: 0x123,
               data: [0x01, 0x02, 0x03, 0x04],
@@ -923,9 +905,9 @@ void main() {
             );
           });
 
-          testWidgets(
+          test(
             'filtering for single ID does not emit non-matching frames',
-            (_) async {
+            () async {
               final frame1 = CanFrame.standard(
                 id: 0x123,
                 data: [0x01, 0x02, 0x03, 0x04],
@@ -949,9 +931,7 @@ void main() {
             },
           );
 
-          testWidgets('filtering for multiple IDs emits matching frames', (
-            _,
-          ) async {
+          test('filtering for multiple IDs emits matching frames', () async {
             final frames = [
               CanFrame.standard(id: 0x123, data: [0x01, 0x02, 0x03, 0x04]),
               CanFrame.standard(id: 0x124, data: [0x01, 0x02, 0x03, 0x04]),
@@ -969,9 +949,9 @@ void main() {
             );
           });
 
-          testWidgets(
+          test(
             'filtering for multiple IDs does not emit non-matching frames',
-            (_) async {
+            () async {
               final frames = [
                 CanFrame.standard(id: 0x123, data: [0x01, 0x02, 0x03, 0x04]),
                 CanFrame.standard(id: 0x124, data: [0x01, 0x02, 0x03, 0x04]),
@@ -995,9 +975,9 @@ void main() {
             },
           );
 
-          testWidgets(
+          test(
             'receiving two streams simulatenously emits same frames on both streams',
-            (_) async {
+            () async {
               final frames = [
                 CanFrame.standard(id: 0x126, data: [0x01, 0x02, 0x03, 0x04]),
               ];
@@ -1019,9 +999,9 @@ void main() {
             },
           );
 
-          testWidgets(
+          test(
             'receiving two streams simulatenously with different filters',
-            (_) async {
+            () async {
               final frames = [
                 CanFrame.standard(id: 0x11F, data: [0x01, 0x02, 0x03, 0x04]),
                 CanFrame.standard(id: 0x120, data: [0x01, 0x02, 0x03, 0x04]),
@@ -1065,7 +1045,7 @@ void main() {
             },
           );
 
-          testWidgets('blacklisting single ID works', (_) async {
+          test('blacklisting single ID works', () async {
             final frames = [
               CanFrame.standard(id: 0x123, data: [0x01, 0x02, 0x03, 0x04]),
               CanFrame.standard(id: 0x124, data: [0x01, 0x02, 0x03, 0x04]),
@@ -1088,9 +1068,7 @@ void main() {
             );
           });
 
-          testWidgets('in-kernel SFF filter matches emulated SFF filter', (
-            _,
-          ) async {
+          test('in-kernel SFF filter matches emulated SFF filter', () async {
             final filter = CanFilter.or([
               CanFilter.or([
                 const CanFilter.idEquals(
@@ -1133,9 +1111,7 @@ void main() {
             );
           });
 
-          testWidgets('in-kernel EFF filter matches emulated EFF filter', (
-            _,
-          ) async {
+          test('in-kernel EFF filter matches emulated EFF filter', () async {
             const filter = CanFilter.or([
               CanFilter.or([
                 CanFilter.idEquals(
@@ -1199,4 +1175,12 @@ void main() {
       });
     });
   });
+
+  pkg_test.test('Event Listener Isolate terminates gracefully', () async {
+    late Future future;
+    expect(() {
+      future = LinuxCan.instance.interface.dispose();
+    }, returnsNormally);
+    await expectLater(future, completes);
+  }, tags: ['double-can', 'vcan']);
 }

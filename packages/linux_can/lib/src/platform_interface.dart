@@ -11,6 +11,7 @@ import 'package:either_dart/either.dart';
 import 'package:ffi/ffi.dart' as ffi;
 import 'package:linux_can/src/can_device.dart';
 import 'package:linux_can/src/data_classes.dart';
+import 'package:meta/meta.dart';
 
 void _writeStringToArrayHelper(
   String str,
@@ -1404,5 +1405,10 @@ class PlatformInterface {
         throw LinuxError('Could not set CAN error filter.', 'setsockopt', libc.errno);
       }
     });
+  }
+
+  @visibleForTesting
+  Future<void> dispose() async {
+    await eventListener.dispose();
   }
 }

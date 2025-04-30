@@ -69,10 +69,11 @@ class CanDevice {
 
   /// True if the network interface is up and running.
   bool get isUp => switch (operationalState) {
-    NetInterfaceOperState.up => true,
-    NetInterfaceOperState.unknown => interfaceFlags.containsAll({NetInterfaceFlag.up, NetInterfaceFlag.running}),
-    _ => false,
-  };
+        NetInterfaceOperState.up => true,
+        NetInterfaceOperState.unknown => interfaceFlags.containsAll({NetInterfaceFlag.up, NetInterfaceFlag.running}),
+        _ => false,
+      };
+
   /// Some general statistics for this network interface.
   ///
   /// Not yet implemented.
@@ -458,17 +459,20 @@ class CanSocket implements Sink<CanFrame> {
     onListen: () {
       // we don't need to drain here since the filter was
       // set to CanFilter.none directly after opening.
-      _socketListen(
-        (frames) {
+      _socketListen((frames) {
+        if (_listening) {
           frames?.forEach((frame) {
             frame.either(
               (errors) => errors.forEach(_socketController.addError),
               _socketController.add,
             );
           });
-        },
-        _socketController.addError,
-      );
+        }
+      }, (err, st) {
+        if (_listening) {
+          _socketController.addError(err, st);
+        }
+      });
     },
     onCancel: () {
       if (_listening) {
