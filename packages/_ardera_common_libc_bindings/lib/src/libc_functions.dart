@@ -19,9 +19,9 @@ typedef SymbolLookupFn = ffi.Pointer<T> Function<T extends ffi.NativeType>(Strin
 class LibCArm extends LibC {
   final backend.LibCArm _backend;
 
-  LibCArm.fromLookup(SymbolLookupFn _lookup)
+  LibCArm.fromLookup(super._lookup)
       : _backend = backend.LibCArm.fromLookup(_lookup),
-        super._fromLookup(_lookup);
+        super._fromLookup();
 
   @override
   int bind(int __fd, ffi.Pointer<sockaddr> __addr, int __len) {
@@ -222,9 +222,9 @@ class LibCArm extends LibC {
 class LibCArm64 extends LibC {
   final backend.LibCArm64 _backend;
 
-  LibCArm64.fromLookup(SymbolLookupFn _lookup)
+  LibCArm64.fromLookup(super._lookup)
       : _backend = backend.LibCArm64.fromLookup(_lookup),
-        super._fromLookup(_lookup);
+        super._fromLookup();
 
   @override
   int bind(int __fd, ffi.Pointer<sockaddr> __addr, int __len) {
@@ -425,9 +425,9 @@ class LibCArm64 extends LibC {
 class LibCI386 extends LibC {
   final backend.LibCI386 _backend;
 
-  LibCI386.fromLookup(SymbolLookupFn _lookup)
+  LibCI386.fromLookup(super._lookup)
       : _backend = backend.LibCI386.fromLookup(_lookup),
-        super._fromLookup(_lookup);
+        super._fromLookup();
 
   @override
   int bind(int __fd, ffi.Pointer<sockaddr> __addr, int __len) {
@@ -628,9 +628,9 @@ class LibCI386 extends LibC {
 class LibCAmd64 extends LibC {
   final backend.LibCAmd64 _backend;
 
-  LibCAmd64.fromLookup(SymbolLookupFn _lookup)
+  LibCAmd64.fromLookup(super._lookup)
       : _backend = backend.LibCAmd64.fromLookup(_lookup),
-        super._fromLookup(_lookup);
+        super._fromLookup();
 
   @override
   int bind(int __fd, ffi.Pointer<sockaddr> __addr, int __len) {
