@@ -69,10 +69,11 @@ class CanDevice {
 
   /// True if the network interface is up and running.
   bool get isUp => switch (operationalState) {
-    NetInterfaceOperState.up => true,
-    NetInterfaceOperState.unknown => interfaceFlags.containsAll({NetInterfaceFlag.up, NetInterfaceFlag.running}),
-    _ => false,
-  };
+        NetInterfaceOperState.up => true,
+        NetInterfaceOperState.unknown => interfaceFlags.containsAll({NetInterfaceFlag.up, NetInterfaceFlag.running}),
+        _ => false,
+      };
+
   /// Some general statistics for this network interface.
   ///
   /// Not yet implemented.
