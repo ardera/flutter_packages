@@ -458,17 +458,20 @@ class CanSocket implements Sink<CanFrame> {
     onListen: () {
       // we don't need to drain here since the filter was
       // set to CanFilter.none directly after opening.
-      _socketListen(
-        (frames) {
+      _socketListen((frames) {
+        if (_listening) {
           frames?.forEach((frame) {
             frame.either(
               (errors) => errors.forEach(_socketController.addError),
               _socketController.add,
             );
           });
-        },
-        _socketController.addError,
-      );
+        }
+      }, (err, st) {
+        if (_listening) {
+          _socketController.addError(err, st);
+        }
+      });
     },
     onCancel: () {
       if (_listening) {
