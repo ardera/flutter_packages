@@ -15,10 +15,26 @@ enum SeekMode {
   noop
 }
 
+/// Determines whether, and how audio support is enabled for the Video Player Platform.
+///
+/// [AudioSupport.auto] is the default, and will enable audio playback if supported by flutter-pi, otherwise will play
+/// the video without audio.
+///
+/// [AudioSupport.enabled] will error if flutter-pi doesn't support audio playback.
+///
+/// [AudioSupport.disabled] will disable audio playback completely. Useful if e.g. flutter-pi does support audio
+/// playback, but trying to play back videos with it does not work. (Because audio decoding plugins are missing,
+/// for example)
+enum AudioSupport { enabled, auto, disabled }
+
 class FlutterpiVideoPlayer extends VideoPlayerPlatform {
+  FlutterpiVideoPlayer({this.audio = AudioSupport.auto});
+
+  final AudioSupport audio;
+
   /// Registers this class as the default instance of [VideoPlayerPlatform].
-  static void registerWith() {
-    VideoPlayerPlatform.instance = FlutterpiVideoPlayer();
+  static void registerWith({AudioSupport audio = AudioSupport.auto}) {
+    VideoPlayerPlatform.instance = FlutterpiVideoPlayer(audio: audio);
   }
 
   static const channel = MethodChannel('flutter-pi/gstreamerVideoPlayer');
@@ -75,17 +91,61 @@ class FlutterpiVideoPlayer extends VideoPlayerPlatform {
         break;
     }
 
-    return await _invoke(
-      'create',
-      [
-        asset,
-        packageName,
-        uri,
-        formatHint,
-        httpHeaders,
-        gstreamerPipeline,
-      ],
-    );
+    if (gstreamerPipeline != null || audio == AudioSupport.disabled) {
+      return await _invoke(
+        'create',
+        [
+          asset,
+          packageName,
+          uri,
+          formatHint,
+          httpHeaders,
+          gstreamerPipeline,
+        ],
+      );
+    } else if (audio == AudioSupport.auto) {
+      try {
+        return await _invoke(
+          'createWithAudio',
+          [
+            asset,
+            packageName,
+            uri,
+            formatHint,
+            httpHeaders,
+            gstreamerPipeline,
+          ],
+        );
+      } on MissingPluginException catch (_) {
+        // catch the missing plugin exception but don't do anything.
+      }
+
+      return await _invoke(
+        'create',
+        [
+          asset,
+          packageName,
+          uri,
+          formatHint,
+          httpHeaders,
+          gstreamerPipeline,
+        ],
+      );
+    } else {
+      assert(audio == AudioSupport.enabled);
+
+      return await _invoke(
+        'createWithAudio',
+        [
+          asset,
+          packageName,
+          uri,
+          formatHint,
+          httpHeaders,
+          gstreamerPipeline,
+        ],
+      );
+    }
   }
 
   @override
