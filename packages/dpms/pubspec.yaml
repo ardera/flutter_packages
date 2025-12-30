@@ -1,6 +1,6 @@
 name: dpms
 description: Package for using DPMS (Display Power Management Signaling) on linux.
-version: 0.1.0+1
+version: 1.0.0+1
 repository: https://github.com/ardera/flutter_packages
 
 environment:
