@@ -1,0 +1,4 @@
+enum PowerMode {
+  on,
+  off,
+}
