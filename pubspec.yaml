@@ -1,7 +1,17 @@
 name: arderas_flutter_packages_workspace
 
 environment:
-  sdk: '>=2.18.0 <3.0.0'
-  
-dev_dependencies:
-  melos: ^3.1.0
+  sdk: ">=3.5.0 <4.0.0"
+
+workspace:
+  - packages/_ardera_common_libc_bindings
+  - packages/_ardera_libc_bindings_generator
+  - packages/flutter_gpiod
+  - packages/flutter_gpiod_test_app
+  - packages/flutterpi_audioplayers_test
+  - packages/flutterpi_gstreamer_video_player
+  - packages/linux_can
+  - packages/linux_can_test_app
+  - packages/linux_serial
+  - packages/linux_spidev
+  - packages/omxplayer_video_player

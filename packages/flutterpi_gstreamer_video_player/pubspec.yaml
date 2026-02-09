@@ -2,9 +2,10 @@ name: flutterpi_gstreamer_video_player
 description: video_player platform implementation for flutter-pi.
 version: 0.1.1+1
 repository: https://github.com/ardera/flutter_packages
+resolution: workspace
 
 environment:
-  sdk: '>=2.18.6 <3.0.0'
+  sdk: '>=3.5.0 <4.0.0'
   flutter: ">=2.5.0"
 
 dependencies:
