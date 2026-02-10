@@ -15,3 +15,6 @@ workspace:
   - packages/linux_serial
   - packages/linux_spidev
   - packages/omxplayer_video_player
+
+dev_dependencies:
+  melos: ^7.4.0
