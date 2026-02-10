@@ -1,9 +1,12 @@
 name: linux_can_example
 description: Demonstrates how to use the linux_can package.
-publish_to: 'none'
+publish_to: "none"
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: ">=3.0.0 <4.0.0"
+
+dev_dependencies:
+  lints: ^3.0.0
 
 dependencies:
   linux_can:

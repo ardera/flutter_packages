@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutterpi_gstreamer_video_player/src/platform.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_player_platform_interface/video_player_platform_interface.dart';
@@ -17,6 +18,13 @@ FlutterpiVideoPlayer get _platform {
 }
 
 extension FlutterpiVideoPlayerControllerAdvancedControls on VideoPlayerController {
+  @internal
+  // There is unfortunately no other way to expand video_player
+  // functionality other than depending on this internal member
+  // somehow.
+  // ignore: invalid_use_of_visible_for_testing_member
+  int get textureId => playerId;
+
   Future<void> fastSeek(Duration position) {
     _platform.seekMode = SeekMode.fast;
     return seekTo(position);
@@ -29,7 +37,6 @@ extension FlutterpiVideoPlayerControllerAdvancedControls on VideoPlayerControlle
       await pause();
     }
 
-    // ignore: invalid_use_of_visible_for_testing_member
     await _platform.stepForward(textureId);
 
     final position = await this.position;
@@ -46,7 +53,6 @@ extension FlutterpiVideoPlayerControllerAdvancedControls on VideoPlayerControlle
       await pause();
     }
 
-    // ignore: invalid_use_of_visible_for_testing_member
     await _platform.stepBackward(textureId);
 
     final position = await this.position;

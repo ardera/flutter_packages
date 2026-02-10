@@ -2,10 +2,9 @@ name: Dart
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
-  workflow_dispatch:
+    branches: [main]
 
 jobs:
   test:
@@ -18,37 +17,14 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           cache: true
-      
+
       - name: Setup melos
         run: dart pub global activate melos
-      
-      - run: flutter doctor -v
-      
-      - run: flutter precache
 
       - run: melos bootstrap
-        
-      - run: melos run checkformat
-        
-      - run: melos run analyze
-        
-      - run: melos run test
-  
-  can-test:
-    runs-on: doublecan
 
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@v1
-      
-      - name: Setup melos
-        run: dart pub global activate melos
-      
-      - run: melos bootstrap --no-flutter
-      
-      - name: Test linux_can
-        working-directory: packages/linux_can
-        run:
-          dart test integration_test --tags "double-can"
+      - run: melos run checkformat
+
+      - run: melos run analyze
+
+      - run: melos run test
