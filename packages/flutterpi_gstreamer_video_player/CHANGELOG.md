@@ -1,3 +1,7 @@
+## 0.2.0
+
+- fix video_player 2.10.0 compatibility issue
+
 ## 0.1.1+1
 
  - **FIX**(flutterpi_gstreamer_video_player): fix deprecations. ([74b8cb56](https://github.com/ardera/flutter_packages/commit/74b8cb562f0d60714580fd787f81f782d7a2e679))
