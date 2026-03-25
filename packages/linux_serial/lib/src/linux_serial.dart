@@ -219,7 +219,7 @@ class PlatformInterface {
   final int epollFd;
   final Stream<List<int>> onFdReady;
   final Map<int, ffi.Pointer<epoll_event>?> _epollEventForFd = <int, ffi.Pointer<epoll_event>>{};
-  final Map<int, Computer?> _computerForFd = <int, Computer>{};
+  final Map<int, Computer> _computerForFd = <int, Computer>{};
 
   static PlatformInterface? _instance;
 
@@ -414,7 +414,7 @@ class PlatformInterface {
     assert(_epollEventForFd[fd] != null);
     assert(_computerForFd[fd] != null);
     _computerForFd[fd]!.turnOff();
-    _computerForFd[fd] = null;
+    _computerForFd.remove(fd);
 
     final result = libc.close(fd);
     if (result < 0) {
@@ -422,7 +422,7 @@ class PlatformInterface {
     }
 
     ffi.calloc.free(_epollEventForFd[fd]!);
-    _epollEventForFd[fd] = null;
+    _epollEventForFd.remove(fd);
   }
 }
 
