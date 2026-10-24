@@ -1,0 +1,11 @@
+name: dpms
+description: Display power management for supported Linux embedders, including flutter-pi.
+version: 1.0.0+1
+repository: https://github.com/ardera/flutter_packages
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dev_dependencies:
+  lints: ^3.0.0
+  test: ^1.21.0
